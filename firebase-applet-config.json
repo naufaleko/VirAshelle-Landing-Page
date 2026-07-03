@@ -1,10 +1,10 @@
 {
-  "projectId": "gen-lang-client-0009333899",
-  "appId": "1:826888509817:web:0771292652facb332db7a8",
-  "apiKey": "AIzaSyDpTpNBuNv1l_-26l1HJBkfAMAv1Ho6Eng",
-  "authDomain": "gen-lang-client-0009333899.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-creativeagencyla-cfa05794-9491-4748-8045-c46e5ed37f9c",
-  "storageBucket": "gen-lang-client-0009333899.firebasestorage.app",
-  "messagingSenderId": "826888509817",
+  "projectId": "virashelle-homepage",
+  "appId": "1:1022881419018:web:838d34887b24e8a459b4f3",
+  "apiKey": "AIzaSyDV2bjkC2-Xjq7JthbjbhAcsevBrzJ8oGM",
+  "authDomain": "virashelle-homepage.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "virashelle-homepage.firebasestorage.app",
+  "messagingSenderId": "1022881419018",
   "measurementId": ""
 }
