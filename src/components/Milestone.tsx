@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { motion } from 'motion/react';
 import { useAdmin } from '../lib/AdminContext';
 
 function Counter({ target }: { target: string }) {
@@ -52,7 +53,11 @@ function Counter({ target }: { target: string }) {
     requestAnimationFrame(updateCount);
   };
 
-  return <div ref={ref} className="text-5xl font-display font-bold text-white mb-6">{count}</div>;
+  return (
+    <div ref={ref} className="text-5xl md:text-6xl font-display font-bold text-white mb-3">
+      <span className="text-gradient">{count}</span>
+    </div>
+  );
 }
 
 export function Milestone() {
@@ -60,25 +65,64 @@ export function Milestone() {
   const milestoneData = content.milestone;
 
   return (
-    <section id="milestones" className="py-24 bg-transparent text-white relative px-6 border-t border-white/5">
-      <div className="max-w-7xl mx-auto">
+    <section id="milestones" className="relative py-32 md:py-40 bg-transparent text-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        {/* Section header */}
         <div className="flex flex-col items-center text-center mb-16">
-          <span className="text-[#7d39eb] uppercase font-bold tracking-widest text-sm mb-4">{milestoneData?.subtitle || "Our Journey"}</span>
-          <h2 className="text-4xl md:text-5xl font-display font-bold tracking-tighter">{milestoneData?.title || "Milestones"}</h2>
+          <motion.span
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] font-ui text-brand-light mb-6"
+          >
+            <span className="w-8 h-[1px] bg-brand-light" />
+            {milestoneData?.subtitle || "Our Journey"}
+            <span className="w-8 h-[1px] bg-brand-light" />
+          </motion.span>
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="text-4xl md:text-6xl font-display font-bold tracking-[-0.03em]"
+          >
+            {milestoneData?.title || "Milestones"}
+          </motion.h2>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Milestone Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {milestoneData?.items?.map((m, i) => (
-            <div key={i} className={`bg-[#0C0C0C] border ${m.color} p-8 rounded-2xl relative overflow-hidden group`}>
-              <div className="absolute top-0 right-0 p-6 opacity-10 font-display text-8xl font-bold group-hover:scale-110 transition-transform duration-500">
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.6, delay: i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+              className="group relative glass rounded-2xl p-8 md:p-10 overflow-hidden hover:border-brand/30 transition-all duration-500"
+            >
+              {/* Background glow on hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-brand/8 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+              
+              {/* Ghost number */}
+              <div className="absolute top-2 right-4 font-display text-[100px] font-bold text-white/[0.02] group-hover:text-brand/[0.05] leading-none transition-all duration-700 pointer-events-none select-none">
                 {("0" + (i + 1)).slice(-2)}
               </div>
+              
               <div className="relative z-10">
-                <h3 className="text-sm uppercase tracking-widest text-zinc-400 mb-2">{m.status}</h3>
+                <span className="text-[10px] uppercase tracking-[0.3em] font-ui text-zinc-500 mb-4 block">
+                  {m.status}
+                </span>
                 <Counter target={m.count} />
-                <p className="text-zinc-500 text-sm leading-relaxed">{m.desc}</p>
+                <p className="text-zinc-400 text-sm font-body leading-relaxed mt-2">
+                  {m.desc}
+                </p>
               </div>
-            </div>
+
+              {/* Bottom accent */}
+              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand via-brand-light to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700 origin-left" />
+            </motion.div>
           ))}
         </div>
       </div>

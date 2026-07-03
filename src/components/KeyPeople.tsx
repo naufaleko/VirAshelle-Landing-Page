@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { useAdmin } from '../lib/AdminContext';
 import { Supergraphic } from './Supergraphic';
 
@@ -7,45 +8,83 @@ export function KeyPeople() {
   const people = content.keyPeople || [];
 
   return (
-    <section id="team" className="py-24 bg-zinc-950 text-white relative px-6 overflow-hidden">
-      {/* Background abstract supergraphic */}
-      <div className="absolute right-0 top-0 translate-x-1/3 -translate-y-1/3 z-0 opacity-[0.04] pointer-events-none w-[100vw] h-[100vw] mix-blend-screen">
-        <Supergraphic className="w-full h-full text-[#7d39eb] animate-spin-slow" />
-      </div>
-      <div className="absolute left-0 bottom-0 -translate-x-1/2 translate-y-1/2 z-0 opacity-[0.02] pointer-events-none w-[100vw] h-[100vw] mix-blend-screen">
-        <Supergraphic className="w-full h-full text-white animate-spin-slow" style={{ animationDirection: 'reverse', animationDuration: '60s' }} />
-      </div>
+    <section id="team" className="relative py-32 md:py-40 bg-transparent text-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        {/* Section header */}
+        <motion.span
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] font-ui text-brand-light mb-6 block"
+        >
+          <span className="w-8 h-[1px] bg-brand-light" />
+          The Team
+        </motion.span>
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="border-b-[12px] border-[#7d39eb] pb-2 mb-16 relative">
-          <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter">Key People</h2>
-        </div>
+        <motion.h2
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className="text-4xl md:text-6xl lg:text-7xl font-display font-bold tracking-[-0.03em] mb-16"
+        >
+          Key People
+        </motion.h2>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* People Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {people.map((person, i) => (
-            <div key={i} className="group relative bg-gradient-to-b from-white/10 to-[#7d39eb] rounded-xl overflow-hidden flex flex-col text-center shadow-lg border-none h-[450px]">
-              {/* Photo Area */}
-              <div className="flex-1 relative flex items-end justify-center pt-8 px-4">
-                {person.imageUrl ? (
-                  <img src={person.imageUrl} alt={person.name} className="w-full h-auto object-cover object-bottom" />
-                ) : (
-                  <div className="w-full h-full bg-white/5 rounded-t-lg flex items-center justify-center">
-                    <span className="text-white/30 text-xs font-mono">No Image</span>
-                  </div>
-                )}
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="group relative rounded-2xl overflow-hidden h-[480px] cursor-default"
+              style={{ perspective: '800px' }}
+            >
+              {/* Card with subtle 3D tilt on hover */}
+              <div className="relative w-full h-full transition-transform duration-500 group-hover:[transform:rotateY(-2deg)_rotateX(1deg)]">
+                {/* Background gradient */}
+                <div className="absolute inset-0 bg-gradient-to-b from-surface-card via-surface-card to-brand rounded-2xl" />
+                
+                {/* Photo Area */}
+                <div className="absolute inset-0 flex items-end justify-center pt-8 px-4">
+                  {person.imageUrl ? (
+                    <img 
+                      src={person.imageUrl} 
+                      alt={person.name} 
+                      className="w-full h-auto object-cover object-bottom relative z-10 transition-transform duration-700 group-hover:scale-105" 
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="w-24 h-24 rounded-full bg-brand/10 border border-brand/20 flex items-center justify-center">
+                        <span className="text-4xl font-display font-bold text-brand/30">{person.name.charAt(0)}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Gradient overlay at bottom */}
+                <div className="absolute inset-0 bg-gradient-to-t from-brand via-brand/80 to-transparent opacity-90 translate-y-[60%] group-hover:translate-y-[50%] transition-transform duration-500 rounded-2xl" />
+                
+                {/* Text Area */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 relative z-20">
+                  <h3 className="text-xl font-display font-bold mb-1 text-white">{person.name}</h3>
+                  <p className="text-white/80 tracking-[0.15em] uppercase text-[10px] mb-3 font-ui font-bold">{person.role}</p>
+                  <p className="text-white/70 text-xs leading-relaxed font-body opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                    {person.desc}
+                  </p>
+                </div>
+
+                {/* Border glow */}
+                <div className="absolute inset-0 rounded-2xl border border-white/5 group-hover:border-brand/30 transition-all duration-500 pointer-events-none" />
               </div>
-              
-              {/* Text Area */}
-              <div className="p-6 pt-0 flex flex-col relative z-10 bg-gradient-to-t from-[#7d39eb] via-[#7d39eb] to-transparent">
-                <h3 className="text-2xl font-display font-bold mb-1 text-white">{person.name}</h3>
-                <p className="text-white tracking-widest uppercase text-[10px] mb-4 font-bold">{person.role}</p>
-                <p className="text-white/90 text-xs leading-tight mt-auto font-medium">{person.desc}</p>
-              </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
     </section>
   );
 }
-

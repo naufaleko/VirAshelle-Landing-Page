@@ -1,31 +1,212 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* ───────────────── Base Reset & Smooth Scroll ───────────────── */
 html {
   scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+body {
+  overflow-x: hidden;
+}
 
+::selection {
+  background: #7d39eb;
+  color: #fff;
+}
+
+/* ───────────────── Design System (Tailwind v4 @theme) ───────────────── */
+@theme {
+  /* Brand Colors */
+  --color-brand: #7d39eb;
+  --color-brand-deep: #5624a3;
+  --color-brand-dark: #311166;
+  --color-brand-light: #b588f3;
+  --color-brand-wash: #ebe0fc;
+  --color-surface: #000000;
+  --color-surface-raised: #0a0a0f;
+  --color-surface-card: #111118;
+  --color-surface-glass: rgba(17, 17, 24, 0.6);
+
+  /* Fonts */
+  --font-body: "Helvetica Neue", "Helvetica", "Arial", "Arsenal", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter", "Gordita", ui-sans-serif, system-ui, sans-serif;
+  --font-accent: "Georgia", "The Seasons", "Times New Roman", serif;
+  --font-ui: "Arsenal", "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Custom Animations */
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-delayed: float 8s ease-in-out 2s infinite;
+  --animate-pulse-glow: pulse-glow 4s ease-in-out infinite;
+  --animate-marquee: marquee 30s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 30s linear infinite;
+  --animate-gradient-shift: gradient-shift 8s ease-in-out infinite;
+  --animate-spin-slow: spin-slow 60s linear infinite;
+  --animate-draw-line: draw-line 1.5s ease-out forwards;
+  --animate-breathe: breathe 6s ease-in-out infinite;
   --animate-val-pan: val-pan 30s ease-in-out infinite;
 
-  @keyframes val-pan {
-    0%, 100% {
-      transform: translate(-50%, -50%) scale(1);
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33% { transform: translateY(-20px) rotate(1deg); }
+    66% { transform: translateY(10px) rotate(-1deg); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { 
+      opacity: 0.4; 
+      box-shadow: 0 0 20px rgba(125, 57, 235, 0.2); 
     }
-    20% {
-      transform: translate(-45%, -50%) scale(1.1);
-    }
-    40% {
-      transform: translate(-55%, -48%) scale(1.15);
-    }
-    60% {
-      transform: translate(-50%, -55%) scale(1.2);
-    }
-    80% {
-      transform: translate(-48%, -50%) scale(1.05);
+    50% { 
+      opacity: 0.8; 
+      box-shadow: 0 0 60px rgba(125, 57, 235, 0.5); 
     }
   }
+
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+  }
+
+  @keyframes marquee-reverse {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0%); }
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  @keyframes spin-slow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes draw-line {
+    0% { width: 0; }
+    100% { width: 100%; }
+  }
+
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); opacity: 0.3; }
+    50% { transform: scale(1.05); opacity: 0.6; }
+  }
+
+  @keyframes val-pan {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    20% { transform: translate(-45%, -50%) scale(1.1); }
+    40% { transform: translate(-55%, -48%) scale(1.15); }
+    60% { transform: translate(-50%, -55%) scale(1.2); }
+    80% { transform: translate(-48%, -50%) scale(1.05); }
+  }
+}
+
+/* ───────────────── Glass Utility ───────────────── */
+.glass {
+  background: rgba(17, 17, 24, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-strong {
+  background: rgba(17, 17, 24, 0.85);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ───────────────── Text Gradient Utility ───────────────── */
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-light, #b588f3) 50%, white 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-bright {
+  background: linear-gradient(135deg, var(--color-brand-light, #b588f3) 0%, #ffffff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ───────────────── Glow Utilities ───────────────── */
+.glow-brand {
+  box-shadow: 0 0 30px color-mix(in srgb, var(--color-brand) 30%, transparent), 0 0 60px color-mix(in srgb, var(--color-brand) 10%, transparent);
+}
+
+.glow-brand-strong {
+  box-shadow: 0 0 40px color-mix(in srgb, var(--color-brand) 50%, transparent), 0 0 80px color-mix(in srgb, var(--color-brand) 20%, transparent);
+}
+
+/* ───────────────── Gradient Border Utility ───────────────── */
+.border-gradient {
+  position: relative;
+}
+
+.border-gradient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(125, 57, 235, 0.5), rgba(181, 136, 243, 0.2), transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ───────────────── Noise Texture Overlay ───────────────── */
+.noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* ───────────────── Scrollbar Styling ───────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #311166;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7d39eb;
+}
+
+/* ───────────────── Preloader ───────────────── */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.preloader-exit {
+  animation: preloader-exit 0.8s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+@keyframes preloader-exit {
+  0% { clip-path: inset(0 0 0 0); }
+  100% { clip-path: inset(0 0 100% 0); }
 }

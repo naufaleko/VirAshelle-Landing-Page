@@ -78,13 +78,13 @@ export type SiteContent = {
 
 const defaultContent: SiteContent = {
   hero: {
-    title: "WE\n<span class=\"text-[#7d39eb]\">ARCHITECT</span>\nIDENTITY.",
-    subtitle: "A creative collective pushing the boundaries of spatial and digital experiences through geometric precision and radical aesthetics.",
+    title: "WE\n<span class=\"text-brand\">ARCHITECT</span>\nIDENTITY.",
+    subtitle: "We don't just design. We engineer digital experiences that dominate the tactical space.",
     buttonText: "Launch Project"
   },
   about: {
     title: "About Us",
-    content: "<span class=\"text-[#7d39eb] font-semibold\">VirAshelle</span> is a modern multimedia creative studio specializing in high-impact digital visual production.\n\n<span class=\"text-[#7d39eb] font-medium\">We exist to help your brand communicate more powerfully</span>, capture audience's attention within the first few seconds, and turn viewers into <span class=\"text-[#7d39eb] underline decoration-2 underline-offset-4\">loyal admirers</span>."
+    content: "<span class=\"text-brand font-semibold\">VirAshelle</span> is a modern multimedia creative studio specializing in high-impact digital visual production.\n\n<span class=\"text-brand font-medium\">We exist to help your brand communicate more powerfully</span>, capture audience's attention within the first few seconds, and turn viewers into <span class=\"text-brand underline decoration-2 underline-offset-4\">loyal admirers</span>."
   },
   services: {
     title: "What We Can Do?",
@@ -123,8 +123,8 @@ const defaultContent: SiteContent = {
     title: "Milestones",
     subtitle: "Our Journey",
     items: [
-      { status: "Project Done", count: "45+", desc: "Successfully delivered high-impact visual campaigns.", color: "border-[#7d39eb]" },
-      { status: "On Going Project", count: "12", desc: "Currently crafting digital experiences in the lab.", color: "border-[#a472f2]" },
+      { status: "Project Done", count: "45+", desc: "Successfully delivered high-impact visual campaigns.", color: "border-brand" },
+      { status: "On Going Project", count: "12", desc: "Currently crafting digital experiences in the lab.", color: "border-brand-light" },
       { status: "Future Plan", count: "2025", desc: "Expanding to interactive AR/VR web experiences.", color: "border-white/20" }
     ]
   },
@@ -138,13 +138,13 @@ const defaultContent: SiteContent = {
     {
       name: "Marshall Ramsey",
       role: "Finance/Copywriter",
-      desc: "Handles both the creative side of generating revenue through persuasive writing, and managing the budgets, expenses of the business.",
+      desc: "The brains behind the words and the money. Ensures the message hits hard and the budget makes sense.",
       imageUrl: ""
     },
     {
-      name: "Matias Calderon",
-      role: "Executant",
-      desc: "The builder. Does the heavy lifting to turn the strategy and words into final designs, videos, or websites.",
+      name: "Iqbaal Fadilla",
+      role: "Production",
+      desc: "The builder. Takes the concept and turns it into a high-quality visual reality.",
       imageUrl: ""
     },
     {
@@ -171,11 +171,34 @@ const defaultContent: SiteContent = {
     established: "EST. 2024"
   },
   footer: {
-    title: "LET'S <span class=\"text-[#7d39eb]\">BUILD</span><br/>THE FUTURE",
+    title: "LET'S <span class=\"text-brand\">BUILD</span><br/>THE FUTURE",
     email: "virashelle@gmail.com",
     phones: ["+62 88 1212 8323", "+62 851 7333 9084"],
     address: "Jakarta, Indonesia"
   }
+};
+
+// Helper to sanitize old firestore data
+const sanitizeData = (obj: any): any => {
+  if (typeof obj === 'string') {
+    return obj
+      .replace(/text-\[#7d39eb\]/g, 'text-brand')
+      .replace(/border-\[#7d39eb\]/g, 'border-brand')
+      .replace(/bg-\[#7d39eb\]/g, 'bg-brand')
+      .replace(/text-\[#a472f2\]/g, 'text-brand-light')
+      .replace(/border-\[#a472f2\]/g, 'border-brand-light');
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(sanitizeData);
+  }
+  if (obj && typeof obj === 'object') {
+    const newObj: any = {};
+    for (const key in obj) {
+      newObj[key] = sanitizeData(obj[key]);
+    }
+    return newObj;
+  }
+  return obj;
 };
 
 export function useCms() {
@@ -188,7 +211,7 @@ export function useCms() {
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
-        setContent({ ...defaultContent, ...data });
+        setContent({ ...defaultContent, ...sanitizeData(data) });
       } else {
         setContent(defaultContent);
       }

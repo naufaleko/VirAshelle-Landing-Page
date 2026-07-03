@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { Supergraphic } from './Supergraphic';
 import { useAdmin } from '../lib/AdminContext';
 
@@ -6,33 +7,84 @@ export function Services() {
   const { content } = useAdmin();
   const servicesData = content.services;
 
+  const icons = ['🎬', '✨', '🧊', '🎨'];
+
   return (
-    <section id="services" className="py-24 bg-zinc-950 text-white relative px-6 overflow-hidden">
-      {/* Background abstract supergraphic */}
-      <div className="absolute inset-0 z-0 opacity-[0.04] pointer-events-none flex items-center justify-center mix-blend-screen">
-        <Supergraphic className="w-[200vw] md:w-[120vw] max-w-none text-[#7d39eb] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-      </div>
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="border-b-4 border-[#7d39eb] pb-4 mb-16 flex justify-between items-end">
-          <h2 className="text-4xl md:text-5xl font-display font-bold tracking-tighter">{servicesData.title}</h2>
-          <span className="text-[#7d39eb] font-bold tracking-widest uppercase hidden md:block">{servicesData.description}</span>
+    <section id="services" className="relative py-32 md:py-40 bg-transparent text-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        {/* Section header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+          <div>
+            <motion.span
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] font-ui text-brand-light mb-6 block"
+            >
+              <span className="w-8 h-[1px] bg-brand-light" />
+              {servicesData.description}
+            </motion.span>
+            <motion.h2
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.1 }}
+              className="text-4xl md:text-6xl font-display font-bold tracking-[-0.03em]"
+            >
+              {servicesData.title}
+            </motion.h2>
+          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="hidden md:block w-32 h-[2px] bg-gradient-to-r from-brand to-transparent mb-3"
+          />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
           {servicesData.items.map((service, index) => (
-            <div key={index} className="group relative bg-zinc-900/50 backdrop-blur-md rounded-2xl p-10 border border-white/5 hover:border-[#7d39eb]/50 transition-all duration-500 overflow-hidden cursor-default">
-              {/* Subtle hover gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#7d39eb]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="group relative glass rounded-2xl p-8 md:p-10 overflow-hidden cursor-default hover:border-brand/30 transition-all duration-500"
+            >
+              {/* Hover gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-brand/8 via-transparent to-brand-dark/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+              
+              {/* Ghost number */}
+              <div className="absolute top-4 right-6 text-[120px] font-display font-bold text-white/[0.02] group-hover:text-brand/[0.05] leading-none transition-all duration-700 pointer-events-none select-none">
+                0{index + 1}
+              </div>
               
               <div className="relative z-10">
-                <h3 className="text-2xl font-display font-bold tracking-tight mb-4 uppercase text-white group-hover:text-[#7d39eb] transition-colors duration-300">
-                  {service.title} <span className="text-[#7d39eb] group-hover:text-white transition-colors duration-300">:</span>
+                {/* Icon + label row */}
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-xl group-hover:bg-brand/20 group-hover:border-brand/40 group-hover:shadow-[0_0_20px_rgba(125,57,235,0.2)] transition-all duration-500">
+                    {icons[index] || '✦'}
+                  </div>
+                  <span className="text-[10px] uppercase tracking-[0.3em] font-ui text-zinc-500 group-hover:text-brand-light transition-colors duration-300">
+                    Service 0{index + 1}
+                  </span>
+                </div>
+
+                <h3 className="text-xl md:text-2xl font-display font-bold tracking-tight mb-4 text-white group-hover:text-gradient transition-all duration-300">
+                  {service.title}
                 </h3>
-                <p className="text-zinc-400 leading-relaxed font-light text-lg">
+                <p className="text-zinc-400 leading-relaxed font-body text-[15px]">
                   {service.desc}
                 </p>
               </div>
-            </div>
+
+              {/* Bottom accent line */}
+              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand/40 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700" />
+            </motion.div>
           ))}
         </div>
       </div>
