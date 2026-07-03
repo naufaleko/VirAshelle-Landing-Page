@@ -1,0 +1,20 @@
+{
+  "siteContent": {
+    "__schema__": {
+      "hero": {
+        "title": "string",
+        "subtitle": "string",
+        "buttonText": "string"
+      },
+      "about": {
+        "title": "string",
+        "content": "string"
+      }
+    }
+  },
+  "admins": {
+    "__schema__": {
+      "email": "string"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Creative Agency Landing Page",
+  "description": "A landing page for a creative agency with dynamic Google Drive portfolio support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
