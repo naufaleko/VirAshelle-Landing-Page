@@ -10,6 +10,7 @@ interface ImageUploadProps {
 
 export function ImageUpload({ currentUrl, onUploadSuccess, path }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,18 +24,22 @@ export function ImageUpload({ currentUrl, onUploadSuccess, path }: ImageUploadPr
 
     try {
       setIsUploading(true);
+      setUploadProgress(0);
       setError(null);
       
       const fileName = `${Date.now()}_${file.name}`;
       const fullPath = `${path}/${fileName}`;
       
-      const url = await uploadImage(file, fullPath);
+      const url = await uploadImage(file, fullPath, (progress) => {
+        setUploadProgress(progress);
+      });
       onUploadSuccess(url);
     } catch (err: any) {
       console.error('Upload error:', err);
       setError(err.message || 'Failed to upload image');
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -56,9 +61,17 @@ export function ImageUpload({ currentUrl, onUploadSuccess, path }: ImageUploadPr
             disabled={isUploading}
           />
           {isUploading ? (
-            <div className="flex items-center gap-2 text-zinc-400">
-              <Loader2 size={18} className="animate-spin" />
-              <span className="text-xs font-medium">Uploading...</span>
+            <div className="flex flex-col items-center gap-2 w-full max-w-[200px] text-zinc-400">
+              <div className="flex items-center justify-between w-full text-xs font-medium">
+                <span>Uploading...</span>
+                <span>{Math.round(uploadProgress)}%</span>
+              </div>
+              <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-brand transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
             </div>
           ) : (
             <div className="flex items-center gap-2 text-zinc-400 group-hover:text-white">
