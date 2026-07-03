@@ -20,11 +20,11 @@ body {
 /* ───────────────── Design System (Tailwind v4 @theme) ───────────────── */
 @theme {
   /* Brand Colors */
-  --color-brand: #7d39eb;
-  --color-brand-deep: #5624a3;
-  --color-brand-dark: #311166;
-  --color-brand-light: #b588f3;
-  --color-brand-wash: #ebe0fc;
+  --color-brand: #4BD200;
+  --color-brand-deep: #328c00;
+  --color-brand-dark: #194600;
+  --color-brand-light: #7cff33;
+  --color-brand-wash: #e5ffd6;
   --color-surface: #000000;
   --color-surface-raised: #0a0a0f;
   --color-surface-card: #111118;

@@ -13,28 +13,13 @@ const navItems = [
   { label: 'Team', href: '#team' },
 ];
 
-const PALETTE = [
-  { name: 'Original', hex: '#7d39eb' },
-  { name: 'Fluorescent Yellow', hex: '#D2FF28' },
-  { name: 'Acid Green', hex: '#9BF019' },
-  { name: 'Toxic Green', hex: '#4BD200' },
-];
+
 
 export function Header() {
   const [activeSection, setActiveSection] = useState<string>('');
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeColor, setActiveColor] = useState('#7d39eb');
   const { content } = useAdmin();
-
-  const handleColorChange = (hex: string) => {
-    setActiveColor(hex);
-    document.documentElement.style.setProperty('--color-brand', hex);
-    document.documentElement.style.setProperty('--color-brand-light', hex);
-    // Setting dark a bit opaque just for a rough darker version
-    document.documentElement.style.setProperty('--color-brand-dark', hex);
-  };
-
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 80);
@@ -130,22 +115,7 @@ export function Header() {
 
           {/* Right Side: Colors / CTA */}
           <div className="hidden md:flex items-center gap-6">
-            
-            {/* Color Palette Selector */}
-            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-md">
-              {PALETTE.map((c) => (
-                <button
-                  key={c.hex}
-                  onClick={() => handleColorChange(c.hex)}
-                  title={c.name}
-                  className={`w-4 h-4 rounded-full transition-transform hover:scale-125 ${
-                    activeColor === c.hex ? 'ring-2 ring-white ring-offset-2 ring-offset-black scale-110' : 'opacity-70 hover:opacity-100'
-                  }`}
-                  style={{ backgroundColor: c.hex }}
-                />
-              ))}
-            </div>
-
+            {/* Contact CTA */}
             <button className="px-5 py-2 bg-brand hover:brightness-110 text-white font-display font-bold text-[11px] tracking-[0.1em] uppercase rounded-sm transition-all duration-300 shadow-[0_0_15px_var(--color-brand)] opacity-90 hover:opacity-100">
               Contact Us
             </button>
