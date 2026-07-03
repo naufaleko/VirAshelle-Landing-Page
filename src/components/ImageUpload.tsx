@@ -16,12 +16,12 @@ export function ImageUpload({ currentUrl, onUploadSuccess }: ImageUploadProps) {
     // Check for drive.google.com/file/d/ID/...
     const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
     if (fileIdMatch && fileIdMatch[1]) {
-      url = `https://drive.google.com/uc?export=view&id=${fileIdMatch[1]}`;
+      url = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}`;
     } else {
       // Check for drive.google.com/open?id=ID
       const openIdMatch = url.match(/open\?id=([a-zA-Z0-9_-]+)/);
       if (openIdMatch && openIdMatch[1]) {
-        url = `https://drive.google.com/uc?export=view&id=${openIdMatch[1]}`;
+        url = `https://lh3.googleusercontent.com/d/${openIdMatch[1]}`;
       }
     }
     
