@@ -100,7 +100,7 @@ export function Services() {
 
                     {/* Right: Description */}
                     <div className="flex items-center">
-                      <p className="text-zinc-400 leading-relaxed font-body text-[15px] md:text-base max-w-xl">
+                      <p className="text-zinc-400 leading-relaxed font-body text-[15px] md:text-base max-w-xl whitespace-pre-wrap">
                         {service.desc}
                       </p>
                     </div>

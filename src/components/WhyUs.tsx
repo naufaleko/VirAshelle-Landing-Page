@@ -407,10 +407,22 @@ export function WhyUs() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="text-4xl md:text-6xl font-display font-bold tracking-[-0.03em] mb-16"
+          className="text-4xl md:text-6xl font-display font-bold tracking-[-0.03em] mb-6"
         >
           {whyUs?.title || 'Why VirAshelle?'}
         </motion.h2>
+
+        {whyUs?.description && (
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="text-zinc-400 font-body text-lg md:text-xl max-w-3xl mb-16 whitespace-pre-wrap"
+          >
+            {whyUs.description}
+          </motion.p>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           {/* Feature Cards */}

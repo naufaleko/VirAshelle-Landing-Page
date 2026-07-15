@@ -114,7 +114,7 @@ export function Workflow() {
                     <h3 className="text-base md:text-lg font-display font-bold mb-3 text-white group-hover:text-brand-light transition-colors duration-300 leading-tight">
                       {step.title}
                     </h3>
-                    <p className="text-zinc-500 font-body text-sm leading-relaxed">
+                    <p className="text-zinc-500 font-body text-sm leading-relaxed whitespace-pre-wrap">
                       {step.desc}
                     </p>
                   </div>

@@ -268,8 +268,9 @@ export function Milestone() {
                           marginTop: 5, fontFamily: 'sans-serif',
                           overflow: 'hidden',
                           display: '-webkit-box',
-                          WebkitLineClamp: 2,
+                          WebkitLineClamp: 3,
                           WebkitBoxOrient: 'vertical',
+                          whiteSpace: 'pre-wrap',
                         }}>
                           {item.desc}
                         </div>
