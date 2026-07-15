@@ -433,16 +433,43 @@ export function AdminDashboard() {
                                       <Trash2 size={14} />
                                     </button>
                                     
-                                    <div className="w-full md:w-32 shrink-0">
-                                      <ImageUpload 
-                                        path="portfolio" 
-                                        currentUrl={portItem.src} 
-                                        onUploadSuccess={(url) => {
+                                    <div className="w-full md:w-32 shrink-0 flex flex-col gap-2">
+                                      <select
+                                        value={portItem.type}
+                                        onChange={(e) => {
                                           const newItems = [...(localContent.portfolio?.items || [])];
-                                          newItems[portIndex] = { ...newItems[portIndex], src: url };
+                                          newItems[portIndex] = { ...newItems[portIndex], type: e.target.value as 'image' | 'video', src: '' };
                                           setLocalContent({...localContent, portfolio: {...localContent.portfolio, items: newItems}});
-                                        }} 
-                                      />
+                                        }}
+                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] focus:outline-none focus:border-[#7d39eb] text-zinc-300"
+                                      >
+                                        <option value="image">Image</option>
+                                        <option value="video">Video Link</option>
+                                      </select>
+                                      
+                                      {portItem.type === 'image' ? (
+                                        <ImageUpload 
+                                          path="portfolio" 
+                                          currentUrl={portItem.src} 
+                                          onUploadSuccess={(url) => {
+                                            const newItems = [...(localContent.portfolio?.items || [])];
+                                            newItems[portIndex] = { ...newItems[portIndex], src: url };
+                                            setLocalContent({...localContent, portfolio: {...localContent.portfolio, items: newItems}});
+                                          }} 
+                                        />
+                                      ) : (
+                                        <input 
+                                          type="text"
+                                          placeholder="Video URL (e.g. YouTube Embed)"
+                                          value={portItem.src}
+                                          onChange={(e) => {
+                                            const newItems = [...(localContent.portfolio?.items || [])];
+                                            newItems[portIndex] = { ...newItems[portIndex], src: e.target.value };
+                                            setLocalContent({...localContent, portfolio: {...localContent.portfolio, items: newItems}});
+                                          }}
+                                          className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[10px] focus:outline-none focus:border-[#7d39eb] transition-all"
+                                        />
+                                      )}
                                     </div>
                                     
                                     <div className="flex-1 space-y-3">
