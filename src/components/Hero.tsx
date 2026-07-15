@@ -85,7 +85,9 @@ export function Hero() {
           className="mt-12 flex items-center gap-6"
         >
           <motion.a 
-            href="#work" 
+            href="https://wa.me/6285173339084" 
+            target="_blank"
+            rel="noopener noreferrer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="group relative inline-flex items-center gap-3 px-8 py-4 bg-brand rounded-full text-sm font-display font-semibold tracking-wide text-white overflow-hidden transition-shadow duration-500 hover:shadow-[0_0_40px_rgba(125,57,235,0.4)]"
