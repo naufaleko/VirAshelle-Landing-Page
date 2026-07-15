@@ -238,20 +238,22 @@ export function Services() {
               >
                 <X size={20} />
               </button>
-              <div
-                className="flex-1 overflow-hidden relative bg-black flex items-center justify-center"
-                style={{ minHeight: '55vh' }}
-              >
-                {selectedItem.type === 'image' ? (
+              {selectedItem.type === 'image' ? (
+                <div
+                  className="flex-1 overflow-hidden relative bg-black flex items-center justify-center"
+                  style={{ minHeight: '55vh' }}
+                >
                   <img
                     src={selectedItem.src}
                     alt={selectedItem.title}
                     className="w-full h-full object-contain"
                   />
-                ) : (
+                </div>
+              ) : (
+                <div className="w-full relative bg-black aspect-video flex-shrink-0">
                   <VideoPlayer src={selectedItem.src} />
-                )}
-              </div>
+                </div>
+              )}
               <div className="p-6 md:p-8 bg-surface-card border-t border-white/10">
                 <h3 className="text-2xl font-display font-bold tracking-tight">{selectedItem.title}</h3>
                 <p className="text-brand-light mt-2 text-sm font-ui uppercase tracking-widest">
