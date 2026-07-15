@@ -19,6 +19,21 @@ const TABS = [
   { id: 'footer', label: 'Footer', icon: PanelBottom },
 ];
 
+const SERVICE_CATEGORY_MAP: Record<number, string[]> = {
+  0: ['video', 'editing', 'video editing', 'film', 'commercial'],
+  1: ['motion', 'motion graphic', 'animation', 'explainer'],
+  2: ['3d', '3d production', 'modeling', 'render', 'cgi'],
+  3: ['graphic', 'graphic design', 'branding', 'identity', 'design'],
+};
+
+function matchesService(category: string | undefined, serviceIndex: number): boolean {
+  if (!category) return false;
+  const lc = category.toLowerCase();
+  return SERVICE_CATEGORY_MAP[serviceIndex]?.some((kw) => lc.includes(kw)) ?? false;
+}
+
+const DEFAULT_CATEGORIES = ['video', 'motion', '3d', 'graphic'];
+
 export function AdminDashboard() {
   const { user, loginWithId, logout, error, content, updateContent } = useAdmin();
   const [adminId, setAdminId] = useState('');
@@ -303,7 +318,7 @@ export function AdminDashboard() {
                 <div className="space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-zinc-900 rounded-2xl border border-white/5">
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Title</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Services Title</label>
                       <input 
                         type="text"
                         value={localContent.services?.title || ""}
@@ -312,10 +327,28 @@ export function AdminDashboard() {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Description</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Portfolio Title</label>
+                      <input 
+                        type="text"
+                        value={localContent.portfolio?.title || ""}
+                        onChange={(e) => setLocalContent({...localContent, portfolio: {...localContent.portfolio, title: e.target.value}})}
+                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Services Description</label>
                       <textarea 
                         value={localContent.services?.description || ""}
                         onChange={(e) => setLocalContent({...localContent, services: {...localContent.services, description: e.target.value}})}
+                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Portfolio Description</label>
+                      <textarea 
+                        value={localContent.portfolio?.description || ""}
+                        onChange={(e) => setLocalContent({...localContent, portfolio: {...localContent.portfolio, description: e.target.value}})}
                         className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
                         rows={3}
                       />
@@ -362,6 +395,98 @@ export function AdminDashboard() {
                             className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
                             rows={3}
                           />
+
+                          {/* PORTFOLIO WORKS FOR THIS SERVICE */}
+                          <div className="mt-8 pt-6 border-t border-white/10">
+                            <div className="flex items-center justify-between mb-4">
+                              <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#7d39eb]">Portfolio Works</label>
+                              <button 
+                                onClick={() => {
+                                  const newItems = [...(localContent.portfolio?.items || []), { 
+                                    id: Date.now().toString(), 
+                                    title: "New Item", 
+                                    category: DEFAULT_CATEGORIES[index] || 'video', 
+                                    type: "image" as 'image', 
+                                    src: "" 
+                                  }];
+                                  setLocalContent({...localContent, portfolio: {...localContent.portfolio, items: newItems}});
+                                }}
+                                className="flex items-center text-xs bg-[#7d39eb]/10 text-[#7d39eb] hover:bg-[#7d39eb]/20 px-3 py-1.5 rounded-lg transition-colors"
+                              >
+                                <Plus size={14} className="mr-1" /> Add Work
+                              </button>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 gap-4">
+                              {localContent.portfolio?.items?.map((portItem, portIndex) => {
+                                if (!matchesService(portItem.category, index)) return null;
+                                return (
+                                  <div key={portIndex} className="bg-black/20 p-4 rounded-xl border border-white/5 flex flex-col md:flex-row gap-4 relative group">
+                                    <button 
+                                      onClick={() => {
+                                        const newItems = localContent.portfolio.items.filter((_, i) => i !== portIndex);
+                                        setLocalContent({...localContent, portfolio: {...localContent.portfolio, items: newItems}});
+                                      }}
+                                      className="absolute top-2 right-2 p-1.5 bg-red-500/10 text-red-400 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/20 z-10"
+                                      title="Remove Item"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                    
+                                    <div className="w-full md:w-32 shrink-0">
+                                      <ImageUpload 
+                                        path="portfolio" 
+                                        currentUrl={portItem.src} 
+                                        onUploadSuccess={(url) => {
+                                          const newItems = [...(localContent.portfolio?.items || [])];
+                                          newItems[portIndex] = { ...newItems[portIndex], src: url };
+                                          setLocalContent({...localContent, portfolio: {...localContent.portfolio, items: newItems}});
+                                        }} 
+                                      />
+                                    </div>
+                                    
+                                    <div className="flex-1 space-y-3">
+                                      <div>
+                                        <label className="block text-[9px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-1">Title</label>
+                                        <input 
+                                          type="text"
+                                          value={portItem.title}
+                                          onChange={(e) => {
+                                            const newItems = [...(localContent.portfolio?.items || [])];
+                                            newItems[portIndex] = { ...newItems[portIndex], title: e.target.value };
+                                            setLocalContent({...localContent, portfolio: {...localContent.portfolio, items: newItems}});
+                                          }}
+                                          className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-[9px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-1">Move to Service Category</label>
+                                        <select 
+                                          value={DEFAULT_CATEGORIES[index]}
+                                          onChange={(e) => {
+                                            const newItems = [...(localContent.portfolio?.items || [])];
+                                            newItems[portIndex] = { ...newItems[portIndex], category: e.target.value };
+                                            setLocalContent({...localContent, portfolio: {...localContent.portfolio, items: newItems}});
+                                          }}
+                                          className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb] text-zinc-300"
+                                        >
+                                          <option value="video">Service 1: Video & Editing</option>
+                                          <option value="motion">Service 2: Motion Graphics</option>
+                                          <option value="3d">Service 3: 3D Production</option>
+                                          <option value="graphic">Service 4: Graphic Design</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                              {(!localContent.portfolio?.items || localContent.portfolio.items.filter(item => matchesService(item.category, index)).length === 0) && (
+                                <div className="text-center p-4 border border-dashed border-white/10 rounded-xl text-zinc-600 text-xs uppercase tracking-widest font-ui">
+                                  No portfolio works assigned to this service
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -374,113 +499,6 @@ export function AdminDashboard() {
                     >
                       <Plus size={18} className="mr-2" /> Add New Service
                     </button>
-                  </div>
-
-                  {/* PORTFOLIO SECTION COMBINED */}
-                  <div className="pt-8 mt-8 border-t border-white/10">
-                    <div className="border-b border-white/10 pb-4 mb-6 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center">
-                        <ImageIcon size={20} className="text-[#7d39eb]" />
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-display font-bold">Portfolio Gallery</h2>
-                        <p className="text-sm text-zinc-400">Manage portfolio items for your services.</p>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-zinc-900 rounded-2xl border border-white/5 mb-8">
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Portfolio Title</label>
-                        <input 
-                          type="text"
-                          value={localContent.portfolio?.title || ""}
-                          onChange={(e) => setLocalContent({...localContent, portfolio: {...localContent.portfolio, title: e.target.value}})}
-                          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Portfolio Description</label>
-                        <textarea 
-                          value={localContent.portfolio?.description || ""}
-                          onChange={(e) => setLocalContent({...localContent, portfolio: {...localContent.portfolio, description: e.target.value}})}
-                          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
-                          rows={3}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Portfolio Items</label>
-                      <div className="grid grid-cols-1 gap-6">
-                        {localContent.portfolio?.items?.map((item, index) => (
-                          <div key={index} className="bg-zinc-950 p-6 rounded-2xl border border-white/5 space-y-4 relative group hover:border-[#7d39eb]/30 transition-all flex flex-col md:flex-row gap-6">
-                            <button 
-                              onClick={() => {
-                                const newItems = localContent.portfolio.items.filter((_, i) => i !== index);
-                                setLocalContent({...localContent, portfolio: {...localContent.portfolio, items: newItems}});
-                              }}
-                              className="absolute top-4 right-4 p-2 bg-red-500/10 text-red-400 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/20 z-10"
-                              title="Remove Item"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                            
-                            <div className="w-full md:w-1/3 shrink-0">
-                              <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Media File (Image)</label>
-                              <ImageUpload 
-                                path="portfolio" 
-                                currentUrl={item.src} 
-                                onUploadSuccess={(url) => {
-                                  const newItems = [...(localContent.portfolio?.items || [])];
-                                  newItems[index] = { ...newItems[index], src: url };
-                                  setLocalContent({...localContent, portfolio: {...localContent.portfolio, items: newItems}});
-                                }} 
-                              />
-                            </div>
-                            
-                            <div className="flex-1 space-y-4 pt-2">
-                              <div className="text-[10px] font-bold uppercase text-[#7d39eb] tracking-[0.1em]">Item {index + 1}</div>
-                              <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Title</label>
-                                <input 
-                                  type="text"
-                                  value={item.title}
-                                  onChange={(e) => {
-                                    const newItems = [...(localContent.portfolio?.items || [])];
-                                    newItems[index] = { ...newItems[index], title: e.target.value };
-                                    setLocalContent({...localContent, portfolio: {...localContent.portfolio, items: newItems}});
-                                  }}
-                                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Category (e.g. video, 3d, design)</label>
-                                <input 
-                                  type="text"
-                                  value={item.category}
-                                  onChange={(e) => {
-                                    const newItems = [...(localContent.portfolio?.items || [])];
-                                    newItems[index] = { ...newItems[index], category: e.target.value };
-                                    setLocalContent({...localContent, portfolio: {...localContent.portfolio, items: newItems}});
-                                  }}
-                                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      <button 
-                        onClick={() => {
-                          const newItems = [...(localContent.portfolio?.items || []), { id: Date.now().toString(), title: "New Item", category: "Uncategorized", type: "image" as 'image', src: "" }];
-                          setLocalContent({...localContent, portfolio: {...localContent.portfolio, items: newItems}});
-                        }}
-                        className="flex items-center justify-center w-full bg-zinc-900 hover:bg-zinc-800 border border-dashed border-white/20 rounded-2xl p-6 transition-all text-sm font-medium hover:border-[#7d39eb]"
-                      >
-                        <Plus size={18} className="mr-2" /> Add Portfolio Item
-                      </button>
-                    </div>
                   </div>
                 </div>
               )}
