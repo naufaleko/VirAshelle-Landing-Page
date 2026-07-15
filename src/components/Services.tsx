@@ -5,16 +5,19 @@ import { useAdmin } from '../lib/AdminContext';
 
 const SERVICE_ICONS = ['🎬', '✨', '🧊', '🎨'];
 
-const SERVICE_CATEGORY_MAP: Record<number, string[]> = {
-  0: ['video', 'editing', 'video editing', 'film', 'commercial'],
-  1: ['motion', 'motion graphic', 'animation', 'explainer'],
-  2: ['3d', '3d production', 'modeling', 'render', 'cgi'],
-  3: ['graphic', 'graphic design', 'branding', 'identity', 'design'],
-};
-
 function matchesService(category: string, serviceIndex: number): boolean {
-  const lc = category.toLowerCase();
-  return SERVICE_CATEGORY_MAP[serviceIndex]?.some((kw) => lc.includes(kw)) ?? false;
+  if (!category) return false;
+  const lc = category.toLowerCase().trim();
+  
+  const defaults = ['video', 'motion', '3d', 'graphic'];
+  if (defaults.includes(lc)) return lc === defaults[serviceIndex];
+
+  if (lc.includes('video') || lc.includes('editing') || lc.includes('film') || lc.includes('commercial')) return serviceIndex === 0;
+  if (lc.includes('motion') || lc.includes('animation') || lc.includes('explainer')) return serviceIndex === 1;
+  if (lc.includes('3d') || lc.includes('cgi') || lc.includes('render')) return serviceIndex === 2;
+  if (lc.includes('graphic') || lc.includes('branding') || lc.includes('design') || lc.includes('identity')) return serviceIndex === 3;
+  
+  return false;
 }
 
 function VideoPlayer({ src }: { src: string }) {
