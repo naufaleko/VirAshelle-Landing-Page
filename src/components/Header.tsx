@@ -186,6 +186,19 @@ export function Header() {
                 </motion.a>
               ))}
             </nav>
+            
+            <motion.a
+              href="https://wa.me/6285173339084"
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: navItems.length * 0.08 + 0.1 }}
+              className="mt-8 px-8 py-3 bg-brand hover:brightness-110 text-white font-display font-bold text-sm tracking-[0.1em] uppercase rounded-sm shadow-[0_0_20px_var(--color-brand)]"
+            >
+              Contact Us
+            </motion.a>
+            
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
