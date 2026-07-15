@@ -39,6 +39,7 @@ export type SiteContent = {
       id: string;
       title: string;
       category: string;
+      desc?: string;
       type: 'image' | 'video';
       src: string;
     }[];

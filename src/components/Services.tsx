@@ -220,6 +220,11 @@ export function Services() {
                 <p className="text-brand-light mt-2 text-sm font-ui uppercase tracking-widest">
                   {selectedItem.category}
                 </p>
+                {selectedItem.desc && (
+                  <p className="text-zinc-400 mt-4 text-sm font-body leading-relaxed whitespace-pre-wrap">
+                    {selectedItem.desc}
+                  </p>
+                )}
               </div>
             </motion.div>
           </div>

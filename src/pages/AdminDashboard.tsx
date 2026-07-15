@@ -460,21 +460,17 @@ export function AdminDashboard() {
                                         />
                                       </div>
                                       <div>
-                                        <label className="block text-[9px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-1">Move to Service Category</label>
-                                        <select 
-                                          value={DEFAULT_CATEGORIES[index]}
+                                        <label className="block text-[9px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-1">Description</label>
+                                        <textarea
+                                          value={portItem.desc || ""}
                                           onChange={(e) => {
                                             const newItems = [...(localContent.portfolio?.items || [])];
-                                            newItems[portIndex] = { ...newItems[portIndex], category: e.target.value };
+                                            newItems[portIndex] = { ...newItems[portIndex], desc: e.target.value };
                                             setLocalContent({...localContent, portfolio: {...localContent.portfolio, items: newItems}});
                                           }}
-                                          className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb] text-zinc-300"
-                                        >
-                                          <option value="video">Service 1: Video & Editing</option>
-                                          <option value="motion">Service 2: Motion Graphics</option>
-                                          <option value="3d">Service 3: 3D Production</option>
-                                          <option value="graphic">Service 4: Graphic Design</option>
-                                        </select>
+                                          className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb] text-zinc-300 whitespace-pre-wrap"
+                                          rows={3}
+                                        />
                                       </div>
                                     </div>
                                   </div>
