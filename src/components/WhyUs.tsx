@@ -417,8 +417,9 @@ export function WhyUs() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           {/* Feature Cards */}
           <div className="space-y-6">
-            {features.map((feature, i) => {
-              const Icon = feature.icon;
+            {whyUs?.items?.map((feature, i) => {
+              const ICONS = [Puzzle, Target, Award, Shield, Zap];
+              const Icon = ICONS[i % ICONS.length];
               return (
                 <motion.div
                   key={i}
@@ -437,7 +438,7 @@ export function WhyUs() {
                         {feature.title}
                       </h3>
                       <p className="text-zinc-400 text-sm font-body leading-relaxed">{feature.desc}</p>
-                      <AnimatedBar value={feature.value} delay={0.3 + i * 0.15} />
+                      <AnimatedBar value={100} delay={0.3 + i * 0.15} />
                     </div>
                   </div>
                 </motion.div>

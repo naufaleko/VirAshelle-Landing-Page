@@ -23,6 +23,10 @@ export type SiteContent = {
   whyUs: {
     title: string;
     description: string;
+    items?: {
+      title: string;
+      desc: string;
+    }[];
   };
   workflow: {
     title: string;
@@ -99,7 +103,12 @@ const defaultContent: SiteContent = {
   },
   whyUs: {
     title: "Why VirAshelle?",
-    description: "Data-driven creative decisions paired with radical aesthetics."
+    description: "Data-driven creative decisions paired with radical aesthetics.",
+    items: [
+      { title: 'Integrated Visual Solutions', desc: 'No need to juggle multiple vendors for 3D, animation, or editing. We handle your entire visual ecosystem under one roof.' },
+      { title: 'Result-Driven Creativity', desc: "We don't just create beautiful visuals; we design them strategically to boost engagement and maximize your product's ad conversions." },
+      { title: 'Proven Track Record', desc: 'Backed by a solid portfolio, we have successfully produced high-performing product commercials across various digital platforms.' }
+    ]
   },
   workflow: {
     title: "Our Workflow",

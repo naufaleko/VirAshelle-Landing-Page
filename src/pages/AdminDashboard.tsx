@@ -529,24 +529,84 @@ export function AdminDashboard() {
               )}
 
               {activeTab === 'whyUs' && (
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Title</label>
-                    <input 
-                      type="text"
-                      value={localContent.whyUs?.title || ""}
-                      onChange={(e) => setLocalContent({...localContent, whyUs: {...localContent.whyUs, title: e.target.value}})}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
-                    />
+                <div className="space-y-8">
+                  <div className="p-6 bg-zinc-900 rounded-2xl border border-white/5 space-y-6">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Title</label>
+                      <input 
+                        type="text"
+                        value={localContent.whyUs?.title || ""}
+                        onChange={(e) => setLocalContent({...localContent, whyUs: {...localContent.whyUs, title: e.target.value}})}
+                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Description</label>
+                      <textarea 
+                        value={localContent.whyUs?.description || ""}
+                        onChange={(e) => setLocalContent({...localContent, whyUs: {...localContent.whyUs, description: e.target.value}})}
+                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
+                        rows={3}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Description</label>
-                    <textarea 
-                      value={localContent.whyUs?.description || ""}
-                      onChange={(e) => setLocalContent({...localContent, whyUs: {...localContent.whyUs, description: e.target.value}})}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
-                      rows={6}
-                    />
+
+                  <div className="space-y-4">
+                    <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Why Us Points</label>
+                    <div className="grid grid-cols-1 gap-4">
+                      {localContent.whyUs?.items?.map((item, index) => (
+                        <div key={index} className="bg-zinc-950 p-6 rounded-2xl border border-white/5 space-y-4 relative group hover:border-[#7d39eb]/30 transition-all">
+                          <button 
+                            onClick={() => {
+                              const newItems = localContent.whyUs?.items?.filter((_, i) => i !== index);
+                              setLocalContent({...localContent, whyUs: {...localContent.whyUs, items: newItems}});
+                            }}
+                            className="absolute top-4 right-4 p-2 bg-red-500/10 text-red-400 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/20"
+                            title="Remove Point"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                          
+                          <div className="text-[10px] font-bold uppercase text-[#7d39eb] tracking-[0.1em]">Point {index + 1}</div>
+                          
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Point Title</label>
+                            <input 
+                              type="text"
+                              value={item.title}
+                              onChange={(e) => {
+                                const newItems = [...(localContent.whyUs?.items || [])];
+                                newItems[index] = { ...newItems[index], title: e.target.value };
+                                setLocalContent({...localContent, whyUs: {...localContent.whyUs, items: newItems}});
+                              }}
+                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-2">Point Description</label>
+                            <textarea 
+                              value={item.desc}
+                              onChange={(e) => {
+                                const newItems = [...(localContent.whyUs?.items || [])];
+                                newItems[index] = { ...newItems[index], desc: e.target.value };
+                                setLocalContent({...localContent, whyUs: {...localContent.whyUs, items: newItems}});
+                              }}
+                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7d39eb] transition-all focus:ring-1 focus:ring-[#7d39eb]"
+                              rows={2}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button 
+                      onClick={() => {
+                        const newItems = [...(localContent.whyUs?.items || []), { title: "New Point", desc: "Description here" }];
+                        setLocalContent({...localContent, whyUs: {...localContent.whyUs, items: newItems}});
+                      }}
+                      className="flex items-center justify-center w-full bg-zinc-900 hover:bg-zinc-800 border border-dashed border-white/20 rounded-2xl p-6 transition-all text-sm font-medium hover:border-[#7d39eb]"
+                    >
+                      <Plus size={18} className="mr-2" /> Add New Point
+                    </button>
                   </div>
                 </div>
               )}
