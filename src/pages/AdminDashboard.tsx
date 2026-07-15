@@ -9,14 +9,14 @@ import { motion, AnimatePresence } from 'motion/react';
 const TABS = [
   { id: 'header', label: 'Header', icon: PanelTop },
   { id: 'hero', label: 'Hero', icon: LayoutDashboard },
-  { id: 'about', label: 'About', icon: Type },
+  { id: 'clients', label: 'Clients', icon: FileText },
   { id: 'services', label: 'Services', icon: Briefcase },
-  { id: 'whyUs', label: 'Why Us', icon: Target },
-  { id: 'workflow', label: 'Workflow', icon: CheckCircle },
   { id: 'portfolio', label: 'Portfolio', icon: ImageIcon },
   { id: 'milestone', label: 'Milestones', icon: Award },
+  { id: 'whyUs', label: 'Why Us', icon: Target },
   { id: 'keyPeople', label: 'Key People', icon: Users },
-  { id: 'clients', label: 'Clients', icon: FileText },
+  { id: 'workflow', label: 'Workflow', icon: CheckCircle },
+  { id: 'about', label: 'About', icon: Type },
   { id: 'footer', label: 'Footer', icon: PanelBottom },
 ];
 

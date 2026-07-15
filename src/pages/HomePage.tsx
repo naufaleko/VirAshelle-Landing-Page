@@ -5,7 +5,7 @@ import { About } from '../components/About';
 import { Services } from '../components/Services';
 import { WhyUs } from '../components/WhyUs';
 import { Workflow } from '../components/Workflow';
-import { Portfolio } from '../components/Portfolio';
+
 import { Milestone } from '../components/Milestone';
 import { KeyPeople } from '../components/KeyPeople';
 import { Clients } from '../components/Clients';
@@ -16,7 +16,7 @@ import { Logo } from '../components/Logo';
 import { motion, AnimatePresence } from 'motion/react';
 import { GlobalBackground } from '../components/GlobalBackground';
 
-function Preloader({ onComplete }: { onComplete: () => void }) {
+function Preloader({ onComplete }: { key?: string; onComplete: () => void }) {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -91,14 +91,20 @@ export function HomePage() {
           <Header />
           <main>
             <Hero />
-            <About />
-            <Services />
-            <WhyUs />
-            <Workflow />
-            <Portfolio />
-            <Milestone />
-            <KeyPeople />
+            {/* Client logos — immediate social proof */}
             <Clients />
+            {/* Services + portfolio examples */}
+            <Services />
+            {/* Social proof numbers */}
+            <Milestone />
+            {/* Differentiator */}
+            <WhyUs />
+            {/* Team */}
+            <KeyPeople />
+            {/* Process */}
+            <Workflow />
+            {/* Story */}
+            <About />
           </main>
           <Footer />
         </>

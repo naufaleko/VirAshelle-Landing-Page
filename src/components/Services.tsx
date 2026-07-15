@@ -1,19 +1,35 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { Supergraphic } from './Supergraphic';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { X } from 'lucide-react';
 import { useAdmin } from '../lib/AdminContext';
+
+const SERVICE_ICONS = ['🎬', '✨', '🧊', '🎨'];
+
+const SERVICE_CATEGORY_MAP: Record<number, string[]> = {
+  0: ['video', 'editing', 'video editing', 'film', 'commercial'],
+  1: ['motion', 'motion graphic', 'animation', 'explainer'],
+  2: ['3d', '3d production', 'modeling', 'render', 'cgi'],
+  3: ['graphic', 'graphic design', 'branding', 'identity', 'design'],
+};
+
+function matchesService(category: string, serviceIndex: number): boolean {
+  const lc = category.toLowerCase();
+  return SERVICE_CATEGORY_MAP[serviceIndex]?.some((kw) => lc.includes(kw)) ?? false;
+}
 
 export function Services() {
   const { content } = useAdmin();
   const servicesData = content.services;
-
-  const icons = ['🎬', '✨', '🧊', '🎨'];
+  const portfolioItems = content.portfolio?.items || [];
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedItem = portfolioItems.find((item) => item.id === selectedId);
 
   return (
     <section id="services" className="relative py-32 md:py-40 bg-transparent text-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* Section header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+
+        {/* ── Section Header ── */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-20">
           <div>
             <motion.span
               initial={{ opacity: 0, y: 20 }}
@@ -43,51 +59,172 @@ export function Services() {
             className="hidden md:block w-32 h-[2px] bg-gradient-to-r from-brand to-transparent mb-3"
           />
         </div>
-        
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-          {servicesData.items.map((service, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative glass rounded-2xl p-8 md:p-10 overflow-hidden cursor-default hover:border-brand/30 transition-all duration-500"
-            >
-              {/* Hover gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-brand/8 via-transparent to-brand-dark/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-              
-              {/* Ghost number */}
-              <div className="absolute top-4 right-6 text-[120px] font-display font-bold text-white/[0.02] group-hover:text-brand/[0.05] leading-none transition-all duration-700 pointer-events-none select-none">
-                0{index + 1}
-              </div>
-              
-              <div className="relative z-10">
-                {/* Icon + label row */}
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-xl group-hover:bg-brand/20 group-hover:border-brand/40 group-hover:shadow-[0_0_20px_rgba(125,57,235,0.2)] transition-all duration-500">
-                    {icons[index] || '✦'}
+
+        {/* ── Service Rows ── */}
+        <div className="flex flex-col gap-0">
+          {servicesData.items.map((service, index) => {
+            const filtered = portfolioItems.filter((item) => matchesService(item.category, index));
+            // If nothing matches, show all items as fallback
+            const works = filtered.length > 0 ? filtered : portfolioItems;
+
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.7, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className="group"
+              >
+                {/* Divider */}
+                <div className="w-full h-[1px] bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+
+                <div className="py-10 md:py-12">
+                  {/* ── Service Info Row ── */}
+                  <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-8 md:gap-16 mb-8 md:mb-10">
+
+                    {/* Left: Number + Title + Icon */}
+                    <div className="flex flex-col justify-center">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-11 h-11 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-lg group-hover:bg-brand/20 group-hover:border-brand/40 group-hover:shadow-[0_0_20px_rgba(125,57,235,0.2)] transition-all duration-500">
+                          {SERVICE_ICONS[index] || '✦'}
+                        </div>
+                        <span className="text-[10px] uppercase tracking-[0.35em] font-ui text-zinc-500 group-hover:text-brand-light transition-colors duration-400">
+                          Service 0{index + 1}
+                        </span>
+                      </div>
+                      <h3 className="text-2xl md:text-3xl font-display font-bold tracking-tight text-white group-hover:text-gradient transition-all duration-400">
+                        {service.title}
+                      </h3>
+                    </div>
+
+                    {/* Right: Description */}
+                    <div className="flex items-center">
+                      <p className="text-zinc-400 leading-relaxed font-body text-[15px] md:text-base max-w-xl">
+                        {service.desc}
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-[10px] uppercase tracking-[0.3em] font-ui text-zinc-500 group-hover:text-brand-light transition-colors duration-300">
-                    Service 0{index + 1}
-                  </span>
+
+                  {/* ── Portfolio Works directly below ── */}
+                  {works.length > 0 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {works.slice(0, 4).map((item, idx) => (
+                        <motion.div
+                          key={item.id}
+                          initial={{ opacity: 0, scale: 0.96 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true, margin: '-40px' }}
+                          transition={{ duration: 0.5, delay: idx * 0.06, ease: [0.22, 1, 0.36, 1] }}
+                          onClick={() => setSelectedId(item.id)}
+                          className="group/card relative rounded-xl overflow-hidden cursor-pointer border border-white/8 hover:border-brand/40 transition-all duration-400 hover:shadow-[0_0_24px_rgba(125,57,235,0.15)]"
+                        >
+                          {/* Thumbnail */}
+                          <div className="aspect-[4/3] w-full overflow-hidden relative bg-surface-card">
+                            {item.type === 'image' ? (
+                              <img
+                                src={item.src}
+                                alt={item.title}
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                                <span className="text-2xl">▶</span>
+                                <span className="text-zinc-500 uppercase tracking-widest text-[9px] font-ui">Video</span>
+                              </div>
+                            )}
+
+                            {/* Hover overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-400 flex flex-col justify-end p-3">
+                              <span className="text-white font-display font-bold text-xs tracking-tight leading-tight">
+                                {item.title}
+                              </span>
+                              <span className="text-brand-light text-[9px] font-ui uppercase tracking-wider mt-1">
+                                {item.category}
+                              </span>
+                            </div>
+
+                            {/* View icon */}
+                            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300 scale-75 group-hover/card:scale-100">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                              </svg>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border border-white/8 p-8 text-center">
+                      <p className="text-zinc-600 text-xs font-ui uppercase tracking-widest">
+                        No works yet — add portfolio items from the admin dashboard.
+                      </p>
+                    </div>
+                  )}
                 </div>
+              </motion.div>
+            );
+          })}
 
-                <h3 className="text-xl md:text-2xl font-display font-bold tracking-tight mb-4 text-white group-hover:text-gradient transition-all duration-300">
-                  {service.title}
-                </h3>
-                <p className="text-zinc-400 leading-relaxed font-body text-[15px]">
-                  {service.desc}
-                </p>
-              </div>
-
-              {/* Bottom accent line */}
-              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand/40 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700" />
-            </motion.div>
-          ))}
+          {/* Final bottom divider */}
+          <div className="w-full h-[1px] bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
         </div>
       </div>
+
+      {/* ── Lightbox Modal ── */}
+      <AnimatePresence>
+        {selectedId && selectedItem && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-12">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedId(null)}
+              className="absolute inset-0 bg-black/90 backdrop-blur-xl cursor-pointer"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="relative w-full max-w-5xl max-h-[90vh] bg-surface-card border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-2xl z-10"
+            >
+              <button
+                onClick={() => setSelectedId(null)}
+                className="absolute top-4 right-4 z-20 p-2 glass rounded-full text-white hover:text-brand transition-colors"
+              >
+                <X size={20} />
+              </button>
+              <div
+                className="flex-1 overflow-hidden relative bg-black flex items-center justify-center"
+                style={{ minHeight: '55vh' }}
+              >
+                {selectedItem.type === 'image' ? (
+                  <img
+                    src={selectedItem.src}
+                    alt={selectedItem.title}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <iframe
+                    src={selectedItem.src}
+                    className="w-full h-full"
+                    allow="autoplay"
+                    allowFullScreen
+                  />
+                )}
+              </div>
+              <div className="p-6 md:p-8 bg-surface-card border-t border-white/10">
+                <h3 className="text-2xl font-display font-bold tracking-tight">{selectedItem.title}</h3>
+                <p className="text-brand-light mt-2 text-sm font-ui uppercase tracking-widest">
+                  {selectedItem.category}
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

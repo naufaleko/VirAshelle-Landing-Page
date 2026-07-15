@@ -6,11 +6,12 @@ import { useAdmin } from '../lib/AdminContext';
 import { motion, AnimatePresence } from 'motion/react';
 
 const navItems = [
-  { label: 'About', href: '#about' },
   { label: 'Services', href: '#services' },
+  { label: 'Milestones', href: '#milestones' },
+  { label: 'Why Us', href: '#why-us' },
+  { label: 'Team', href: '#key-people' },
   { label: 'Workflow', href: '#workflow' },
-  { label: 'Portfolio', href: '#work' },
-  { label: 'Team', href: '#team' },
+  { label: 'About', href: '#about' },
 ];
 
 
@@ -21,28 +22,28 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { content } = useAdmin();
   useEffect(() => {
+    const THRESHOLD = 120; // px from top of viewport (accounts for navbar height)
+    const sectionIds = ['services', 'milestones', 'why-us', 'key-people', 'workflow', 'about'];
+
     const handleScroll = () => {
       setScrolled(window.scrollY > 80);
 
-      const sections = ['about', 'services', 'workflow', 'work', 'team'];
+      // Find the last section whose top edge has passed the threshold
       let current = '';
-      
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
-            current = section;
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (el) {
+          const { top } = el.getBoundingClientRect();
+          if (top <= THRESHOLD) {
+            current = id;
           }
         }
       }
-      
       setActiveSection(current);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    
+    handleScroll(); // run on mount
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 

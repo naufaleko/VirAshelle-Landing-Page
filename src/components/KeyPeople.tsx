@@ -8,7 +8,7 @@ export function KeyPeople() {
   const people = content.keyPeople || [];
 
   return (
-    <section id="team" className="relative py-32 md:py-40 bg-transparent text-white overflow-hidden">
+    <section id="key-people" className="relative py-32 md:py-40 bg-transparent text-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         {/* Section header */}
         <motion.span

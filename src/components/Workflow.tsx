@@ -1,17 +1,17 @@
 import React from 'react';
-import { Supergraphic } from './Supergraphic';
-import { Logo } from './Logo';
 import { useAdmin } from '../lib/AdminContext';
 import { motion } from 'motion/react';
 
 export function Workflow() {
   const { content } = useAdmin();
   const workflowData = content.workflow;
+  const steps = workflowData?.items || [];
 
   return (
     <section id="workflow" className="relative py-32 md:py-40 bg-transparent text-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* Section header */}
+
+        {/* ── Section Header ── */}
         <motion.span
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -23,7 +23,7 @@ export function Workflow() {
           Process
         </motion.span>
 
-        <div className="flex items-end justify-between mb-16">
+        <div className="flex items-end justify-between mb-20">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -31,7 +31,7 @@ export function Workflow() {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-4xl md:text-6xl font-display font-bold tracking-[-0.03em]"
           >
-            {workflowData?.title || "Our Workflow"}
+            {workflowData?.title || 'Our Workflow'}
           </motion.h2>
           <motion.div
             initial={{ scaleX: 0 }}
@@ -41,112 +41,131 @@ export function Workflow() {
             className="hidden md:block w-32 h-[2px] bg-gradient-to-r from-brand to-transparent origin-left mb-3"
           />
         </div>
-        
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-16 lg:gap-24">
-          {/* Timeline Steps */}
-          <div className="relative">
-            {/* Animated vertical connector line */}
-            <div className="absolute left-[31px] top-10 bottom-10 w-px bg-white/5 hidden sm:block">
-              <motion.div
-                initial={{ scaleY: 0 }}
-                whileInView={{ scaleY: 1 }}
-                viewport={{ once: true, margin: '-100px' }}
-                transition={{ duration: 1.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="w-full h-full bg-gradient-to-b from-brand via-brand-light/50 to-transparent origin-top"
-              />
-            </div>
 
-            <div className="space-y-4">
-              {workflowData?.items?.map((step, i) => (
-                <motion.div 
-                  key={i}
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: '-60px' }}
-                  transition={{ duration: 0.6, delay: i * 0.15, ease: [0.22, 1, 0.36, 1] }}
-                  className="group relative flex gap-6 sm:gap-8 items-start glass rounded-2xl p-6 md:p-8 hover:border-brand/30 transition-all duration-500"
-                >
-                  {/* Step number */}
-                  <motion.div 
-                    whileHover={{ scale: 1.1, rotate: -3 }}
-                    className="relative shrink-0 z-10"
+        {/* ── Horizontal Timeline ── */}
+        <div className="relative">
+
+          {/* Horizontal connector line */}
+          <div className="absolute top-[52px] left-0 right-0 h-px hidden md:block overflow-hidden">
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 1.4, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full h-full bg-gradient-to-r from-transparent via-brand/50 to-transparent origin-left"
+            />
+          </div>
+
+          {/* Steps */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-4">
+            {steps.map((step, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.6, delay: i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+                className="group relative flex flex-col items-center md:items-start text-center md:text-left"
+              >
+                {/* Step number node */}
+                <div className="relative mb-6 z-10">
+                  {/* Outer ring */}
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.4 + i * 0.15, type: 'spring', stiffness: 200 }}
+                    className="w-[104px] h-[104px] rounded-full border border-brand/20 absolute -top-4 -left-4 group-hover:border-brand/40 transition-colors duration-500"
+                    style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                  />
+
+                  {/* Number badge */}
+                  <motion.div
+                    whileHover={{ scale: 1.08 }}
+                    className="relative w-[72px] h-[72px] rounded-full bg-surface-card border-2 border-brand/30 group-hover:border-brand group-hover:shadow-[0_0_30px_rgba(125,57,235,0.35)] flex items-center justify-center transition-all duration-500 z-10"
                   >
-                    <div className="bg-surface-raised border-2 border-brand/30 group-hover:border-brand text-white font-display font-bold text-xl w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-2xl transition-all duration-500 group-hover:shadow-[0_0_25px_rgba(125,57,235,0.3)]">
+                    <span className="font-display font-bold text-2xl text-white group-hover:text-brand-light transition-colors duration-300">
                       {step.number}
-                    </div>
+                    </span>
                   </motion.div>
 
-                  <div className="pt-1 sm:pt-2 flex-1">
-                    <h3 className="text-lg sm:text-xl font-display font-bold mb-2 text-white group-hover:text-brand-light transition-colors duration-300">
+                  {/* Glow dot behind badge */}
+                  <motion.div
+                    className="absolute inset-0 rounded-full bg-brand/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  />
+                </div>
+
+                {/* Content card */}
+                <div className="glass rounded-2xl p-6 w-full group-hover:border-brand/30 transition-all duration-500 relative overflow-hidden">
+                  {/* Hover gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-brand/8 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl" />
+
+                  {/* Ghost number */}
+                  <div className="absolute -bottom-2 -right-2 text-[72px] font-display font-bold text-white/[0.025] leading-none pointer-events-none select-none">
+                    {step.number}
+                  </div>
+
+                  <div className="relative z-10">
+                    {/* Step label */}
+                    <span className="text-[9px] uppercase tracking-[0.3em] font-ui text-brand-light/70 mb-3 block">
+                      Step {step.number}
+                    </span>
+
+                    <h3 className="text-base md:text-lg font-display font-bold mb-3 text-white group-hover:text-brand-light transition-colors duration-300 leading-tight">
                       {step.title}
                     </h3>
-                    <p className="text-zinc-400 font-body font-light leading-relaxed text-sm sm:text-[15px]">
+                    <p className="text-zinc-500 font-body text-sm leading-relaxed">
                       {step.desc}
                     </p>
                   </div>
 
-                  {/* Hover accent */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-brand/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none" />
-                </motion.div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Visual side panel */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="relative hidden xl:flex items-center justify-center"
-          >
-            <div className="relative w-full max-w-lg aspect-square">
-              {/* Breathing gradient glow */}
-              <motion.div 
-                className="absolute inset-0 bg-gradient-to-tr from-brand/15 to-transparent rounded-full blur-3xl"
-                animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
-                transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-              />
-              
-              {/* Logo breathing */}
-              <motion.div
-                className="w-full h-full flex items-center justify-center"
-                animate={{ scale: [1, 1.04, 0.98, 1.02, 1], opacity: [0.04, 0.07, 0.03, 0.06, 0.04] }}
-                transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <Logo className="w-3/4 text-white" />
+                  {/* Bottom accent */}
+                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand/50 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700" />
+                </div>
+
+                {/* Arrow connector (between cards, hidden on last) */}
+                {i < steps.length - 1 && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: 0.6 + i * 0.15 }}
+                    className="hidden md:flex absolute top-9 -right-3 z-20 items-center"
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <motion.path
+                        d="M5 12h14M13 6l6 6-6 6"
+                        stroke="#7d39eb"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        whileInView={{ pathLength: 1, opacity: 0.6 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5, delay: 0.8 + i * 0.15 }}
+                      />
+                    </svg>
+                  </motion.div>
+                )}
               </motion.div>
-              
-              {/* Concentric rings */}
-              {[10, 20, 32].map((inset, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute rounded-full border border-brand/10"
-                  style={{ inset: `${inset * 4}px` }}
-                  animate={{ 
-                    scale: [1, 1 + (i * 0.02 + 0.03), 1 - (i * 0.01 + 0.02), 1],
-                    opacity: [0.1, 0.25, 0.08, 0.1],
-                  }}
-                  transition={{ duration: 7 + i * 2, repeat: Infinity, ease: 'easeInOut', delay: i * 1.5 }}
-                />
-              ))}
-              
-              {/* Center pulse dot */}
-              <motion.div 
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-brand rounded-full"
-                animate={{ 
-                  boxShadow: [
-                    '0 0 20px rgba(125,57,235,0.4), 0 0 60px rgba(125,57,235,0.1)',
-                    '0 0 40px rgba(125,57,235,0.8), 0 0 80px rgba(125,57,235,0.3)',
-                    '0 0 20px rgba(125,57,235,0.4), 0 0 60px rgba(125,57,235,0.1)',
-                  ],
-                  scale: [1, 1.3, 1]
-                }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              />
-            </div>
+            ))}
+          </div>
+
+          {/* Bottom tagline */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            className="mt-16 flex items-center gap-4"
+          >
+            <div className="w-8 h-[1px] bg-brand/40" />
+            <p className="text-zinc-600 text-xs font-ui uppercase tracking-widest">
+              From brief to delivery — every step, on purpose.
+            </p>
           </motion.div>
         </div>
+
       </div>
     </section>
   );
