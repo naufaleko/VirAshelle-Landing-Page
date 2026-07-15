@@ -17,6 +17,48 @@ function matchesService(category: string, serviceIndex: number): boolean {
   return SERVICE_CATEGORY_MAP[serviceIndex]?.some((kw) => lc.includes(kw)) ?? false;
 }
 
+function VideoPlayer({ src }: { src: string }) {
+  if (!src) return null;
+  
+  let embedUrl = src;
+  const isDirectVideo = src.endsWith('.mp4') || src.endsWith('.webm') || src.endsWith('.mov') || src.includes('cloudinary.com/video/upload');
+
+  if (isDirectVideo) {
+    return (
+      <video controls className="w-full h-full object-contain bg-black">
+        <source src={src} type={src.endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
+        Your browser does not support the video tag.
+      </video>
+    );
+  }
+
+  // Handle YouTube
+  if (src.includes('youtube.com/watch')) {
+    try {
+      const urlObj = new URL(src);
+      const videoId = urlObj.searchParams.get('v');
+      if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    } catch (e) {}
+  } else if (src.includes('youtu.be/')) {
+    const videoId = src.split('youtu.be/')[1]?.split('?')[0];
+    if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}`;
+  } 
+  // Handle Vimeo
+  else if (src.includes('vimeo.com/') && !src.includes('player.vimeo.com')) {
+    const videoId = src.split('vimeo.com/')[1]?.split('?')[0];
+    if (videoId) embedUrl = `https://player.vimeo.com/video/${videoId}`;
+  }
+
+  return (
+    <iframe
+      src={embedUrl}
+      className="w-full h-full border-none"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowFullScreen
+    />
+  );
+}
+
 export function Services() {
   const { content } = useAdmin();
   const servicesData = content.services;
@@ -207,12 +249,7 @@ export function Services() {
                     className="w-full h-full object-contain"
                   />
                 ) : (
-                  <iframe
-                    src={selectedItem.src}
-                    className="w-full h-full"
-                    allow="autoplay"
-                    allowFullScreen
-                  />
+                  <VideoPlayer src={selectedItem.src} />
                 )}
               </div>
               <div className="p-6 md:p-8 bg-surface-card border-t border-white/10">
