@@ -59,6 +59,21 @@ function VideoPlayer({ src }: { src: string }) {
   );
 }
 
+function getVideoThumbnail(url: string) {
+  if (!url) return null;
+  if (url.includes('youtube.com/watch')) {
+    try {
+      const urlObj = new URL(url);
+      const videoId = urlObj.searchParams.get('v');
+      if (videoId) return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    } catch (e) {}
+  } else if (url.includes('youtu.be/')) {
+    const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+    if (videoId) return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+  }
+  return null;
+}
+
 export function Services() {
   const { content } = useAdmin();
   const servicesData = content.services;
@@ -171,9 +186,25 @@ export function Services() {
                                 loading="lazy"
                               />
                             ) : (
-                              <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-                                <span className="text-2xl">▶</span>
-                                <span className="text-zinc-500 uppercase tracking-widest text-[9px] font-ui">Video</span>
+                              <div className="w-full h-full relative bg-zinc-900">
+                                {getVideoThumbnail(item.src) ? (
+                                  <>
+                                    <img
+                                      src={getVideoThumbnail(item.src)!}
+                                      alt={item.title}
+                                      className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110 opacity-70 group-hover/card:opacity-50"
+                                      loading="lazy"
+                                    />
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center drop-shadow-2xl">
+                                      <span className="text-4xl text-white opacity-90 group-hover/card:scale-110 transition-transform">▶</span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                                    <span className="text-2xl">▶</span>
+                                    <span className="text-zinc-500 uppercase tracking-widest text-[9px] font-ui">Video</span>
+                                  </div>
+                                )}
                               </div>
                             )}
 
@@ -230,7 +261,7 @@ export function Services() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="relative w-full max-w-5xl max-h-[90vh] bg-surface-card border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-2xl z-10"
+              className="relative w-full max-w-5xl max-h-[90vh] bg-surface-card border border-white/10 rounded-2xl overflow-y-auto flex flex-col shadow-2xl z-10"
             >
               <button
                 onClick={() => setSelectedId(null)}
