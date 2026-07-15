@@ -117,9 +117,14 @@ export function Header() {
           {/* Right Side: Colors / CTA */}
           <div className="hidden md:flex items-center gap-6">
             {/* Contact CTA */}
-            <button className="px-5 py-2 bg-brand hover:brightness-110 text-white font-display font-bold text-[11px] tracking-[0.1em] uppercase rounded-sm transition-all duration-300 shadow-[0_0_15px_var(--color-brand)] opacity-90 hover:opacity-100">
+            <a 
+              href="https://wa.me/6285173339084" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="px-5 py-2 bg-brand hover:brightness-110 text-white font-display font-bold text-[11px] tracking-[0.1em] uppercase rounded-sm transition-all duration-300 shadow-[0_0_15px_var(--color-brand)] opacity-90 hover:opacity-100"
+            >
               Contact Us
-            </button>
+            </a>
           </div>
           
           {/* Mobile Menu Toggle */}
