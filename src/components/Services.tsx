@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { useAdmin } from '../lib/AdminContext';
 
-const SERVICE_ICONS = ['🎬', '✨', '🧊', '🎨'];
+const SERVICE_ICONS = [];
 
 function matchesService(category: string, serviceIndex: number): boolean {
   if (!category) return false;
@@ -131,9 +131,7 @@ export function Services() {
         {/* ── Service Rows ── */}
         <div className="flex flex-col gap-0">
           {servicesData.items.map((service, index) => {
-            const filtered = portfolioItems.filter((item) => matchesService(item.category, index));
-            // If nothing matches, show all items as fallback
-            const works = filtered.length > 0 ? filtered : portfolioItems;
+            const works = portfolioItems.filter((item) => matchesService(item.category, index));
 
             return (
               <motion.div
@@ -154,9 +152,7 @@ export function Services() {
                     {/* Left: Number + Title + Icon */}
                     <div className="flex flex-col justify-center">
                       <div className="flex items-center gap-4 mb-4">
-                        <div className="w-11 h-11 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-lg group-hover:bg-brand/20 group-hover:border-brand/40 group-hover:shadow-[0_0_20px_rgba(125,57,235,0.2)] transition-all duration-500">
-                          {SERVICE_ICONS[index] || '✦'}
-                        </div>
+                        <div className="w-8 h-[1px] bg-brand-light/30 group-hover:bg-brand-light transition-colors duration-400" />
                         <span className="text-[10px] uppercase tracking-[0.35em] font-ui text-zinc-500 group-hover:text-brand-light transition-colors duration-400">
                           Service 0{index + 1}
                         </span>
