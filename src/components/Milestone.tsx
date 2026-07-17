@@ -118,9 +118,9 @@ function MilestoneCard({
   const hasOverflow = isList || item.desc.length > 45;
 
   // Dynamic font sizes based on card scale
-  const statusFs = Math.max(5, Math.round(7 * sizeScale * 10) / 10);
-  const countFs = Math.max(14, Math.round(22 * sizeScale));
-  const descFs = Math.max(6, Math.round(8.5 * sizeScale * 10) / 10);
+  const statusFs = Math.max(6, Math.round(8 * sizeScale * 10) / 10);
+  const countFs = Math.max(24, Math.round(36 * sizeScale));
+  const descFs = Math.max(7, Math.round(9.5 * sizeScale * 10) / 10);
   const pad = Math.max(5, Math.round(10 * sizeScale));
   const borderRad = Math.max(8, Math.round(12 * sizeScale));
 
