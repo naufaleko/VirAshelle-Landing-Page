@@ -230,7 +230,7 @@ function MilestoneCard({
         style={{
           overflowY: isExpanded && hasOverflow ? 'auto' : 'hidden',
           overflowX: 'hidden',
-          height: isExpanded && hasOverflow ? 130 : Math.round(22 * sizeScale),
+          height: isExpanded && hasOverflow ? 65 : Math.round(22 * sizeScale),
           transition: 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
         }}>
         <div style={{
