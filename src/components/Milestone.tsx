@@ -226,7 +226,6 @@ function MilestoneCard({
       {/* Desc area — smooth expand/collapse */}
       <div 
         className="milestone-scroll"
-        onClick={(e) => e.stopPropagation()}
         style={{
           overflowY: isExpanded && hasOverflow ? 'auto' : 'hidden',
           overflowX: 'hidden',
