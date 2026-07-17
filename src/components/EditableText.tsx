@@ -66,11 +66,15 @@ export function EditableText({ contentKey, field, className = '', as: Component 
     );
   }
 
+  // Convert \n to <br> so line breaks from Firebase are rendered properly
+  const processedValue = initialValue.replace(/\n/g, '<br/>');
+
   return (
     <Component 
       className={`${className} ${isAdminMode ? 'hover:outline hover:outline-2 hover:outline-dashed hover:outline-[#7d39eb] hover:bg-[#7d39eb]/10 cursor-pointer transition-all rounded px-1 -mx-1' : ''}`}
       onClick={() => isAdminMode && setIsEditing(true)}
-      dangerouslySetInnerHTML={{ __html: initialValue }}
+      dangerouslySetInnerHTML={{ __html: processedValue }}
     />
   );
 }
+

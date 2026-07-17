@@ -91,20 +91,20 @@ export function HomePage() {
           <Header />
           <main>
             <Hero />
-            {/* Client logos — immediate social proof */}
+            {/* Client logos — social proof */}
             <Clients />
             {/* Services + portfolio examples */}
             <Services />
-            {/* Social proof numbers */}
-            <Milestone />
             {/* Differentiator */}
             <WhyUs />
-            {/* Team */}
-            <KeyPeople />
+            {/* Social proof numbers */}
+            <Milestone />
             {/* Process */}
             <Workflow />
             {/* Story */}
             <About />
+            {/* Team — last section */}
+            <KeyPeople />
           </main>
           <Footer />
         </>

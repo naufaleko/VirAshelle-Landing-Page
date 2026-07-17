@@ -3,7 +3,7 @@ import { motion, useInView } from 'motion/react';
 import { useAdmin } from '../lib/AdminContext';
 
 // ── Counter ─────────────────────────────────────────────────────────────────
-function Counter({ target, color }: { target: string; color: string }) {
+function Counter({ target, color, fontSize = 22 }: { target: string; color: string; fontSize?: number }) {
   const [display, setDisplay] = useState('0');
   const ref = useRef<HTMLDivElement>(null);
   const done = useRef(false);
@@ -27,33 +27,59 @@ function Counter({ target, color }: { target: string; color: string }) {
     obs.observe(el); return () => obs.disconnect();
   }, [target]);
   return (
-    <div ref={ref} style={{ fontSize: 26, fontWeight: 800, color, lineHeight: 1, fontFamily: 'inherit' }}>
+    <div ref={ref} style={{ fontSize, fontWeight: 800, color, lineHeight: 1, fontFamily: 'inherit' }}>
       {display}
     </div>
   );
 }
 
-// ── Chart constants ──────────────────────────────────────────────────────────
-// All in SVG user units (scales proportionally — no stretching)
+// ── Parse desc text into structured lines ────────────────────────────────────
+function parseDescLines(desc: string): { isList: boolean; lines: string[] } {
+  if (!desc) return { isList: false, lines: [] };
+  const raw = desc.split(/\n/).map(l => l.trim()).filter(Boolean);
+  const listPattern = /^(?:[-•*]|\d+[.)]\s*)/;
+  const listCount = raw.filter(l => listPattern.test(l)).length;
+  const isList = listCount >= 2 || (raw.length >= 2 && listCount / raw.length > 0.5);
+
+  if (isList) {
+    return {
+      isList: true,
+      lines: raw.map(l => l.replace(/^(?:[-•*]\s*|\d+[.)]\s*)/, '').trim()),
+    };
+  }
+  return { isList: false, lines: [desc] };
+}
+
+// ── Chart constants (fixed) ─────────────────────────────────────────────────
 const VW         = 1000;
-const ABOVE_H    = 110;  // card zone above chart
-const CHART_H    = 180;  // chart drawing area
-const BELOW_H    = 110;  // card zone below chart
+const ABOVE_H    = 110;
+const CHART_H    = 180;
+const BELOW_H    = 110;
 const VH         = ABOVE_H + CHART_H + BELOW_H; // 400
 
 const CHART_T    = ABOVE_H;           // 110
 const CHART_B    = ABOVE_H + CHART_H; // 290
-const PAD_L      = 110;
-const PAD_R      = 110;
+const PAD_L      = 80;
+const PAD_R      = 80;
 
-const CARD_W     = 152;
-const CARD_H_SVG = 98;
+const MAX_CARD_W    = 152;
+const BASE_CARD_H   = 88;
+const BASE_NODE_GAP = 14;
 
-// Height fraction = position within chart (0=top 1=bottom)
-// isAbove = node is in lower half → card zone above; !isAbove = upper half → card zone below
 const H_PAT = [0.62, 0.88, 0.22, 0.75, 0.38, 0.9, 0.18];
-
 const PALETTE = ['#7d39eb', '#a472f2', '#c4a0ff', '#8b5cf6', '#6d28d9', '#7c3aed', '#9333ea'];
+
+// ── Dynamic sizing based on item count ───────────────────────────────────────
+function getDynamicSizes(itemCount: number) {
+  const usableW = VW - PAD_L - PAD_R;
+  // Card width shrinks to fit all items without overlap, with a minimum gap of 6
+  const cardW = Math.min(MAX_CARD_W, Math.max(72, Math.floor(usableW / Math.max(itemCount, 1)) - 6));
+  const scale = cardW / MAX_CARD_W;
+  const compactH = Math.round(BASE_CARD_H * Math.max(0.7, scale));
+  const nodeGap = Math.round(BASE_NODE_GAP * Math.max(0.7, scale));
+  const expandBuffer = Math.round(140 * Math.max(0.6, scale));
+  return { cardW, scale, compactH, nodeGap, expandBuffer };
+}
 
 function getNodes(count: number) {
   const usableW = VW - PAD_L - PAD_R;
@@ -77,6 +103,201 @@ function buildPath(nodes: { x: number; y: number }[]) {
   return d;
 }
 
+// ── Expandable Milestone Card ────────────────────────────────────────────────
+function MilestoneCard({
+  item, col, isAbove, cardW, sizeScale,
+}: {
+  item: { status: string; count: string; desc: string };
+  col: string;
+  isAbove: boolean;
+  cardW: number;
+  sizeScale: number;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const { isList, lines } = parseDescLines(item.desc);
+  const hasOverflow = isList || item.desc.length > 45;
+
+  // Dynamic font sizes based on card scale
+  const statusFs = Math.max(5, Math.round(7 * sizeScale * 10) / 10);
+  const countFs = Math.max(14, Math.round(22 * sizeScale));
+  const descFs = Math.max(6, Math.round(8.5 * sizeScale * 10) / 10);
+  const pad = Math.max(5, Math.round(10 * sizeScale));
+  const borderRad = Math.max(8, Math.round(12 * sizeScale));
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={() => hasOverflow && setHovered(h => !h)}
+      style={{
+        width: cardW,
+        background: hovered
+          ? 'rgba(18, 14, 38, 0.97)'
+          : 'rgba(255,255,255,0.03)',
+        border: `1px solid ${hovered ? col + '90' : col + '30'}`,
+        borderRadius: borderRad,
+        padding: `${pad - 2}px ${pad}px`,
+        textAlign: 'center',
+        boxSizing: 'border-box',
+        position: 'relative',
+        overflow: 'hidden',
+        cursor: hasOverflow ? 'pointer' : 'default',
+        transition: 'all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        transform: hovered ? 'scale(1.15)' : 'scale(1)',
+        transformOrigin: isAbove ? 'center bottom' : 'center top',
+        boxShadow: hovered
+          ? `0 14px 44px rgba(0,0,0,0.65), 0 0 50px ${col}20, 0 0 100px ${col}08, inset 0 1px 0 rgba(255,255,255,0.06)`
+          : '0 2px 6px rgba(0,0,0,0.15)',
+        backdropFilter: hovered ? 'blur(24px)' : 'none',
+        zIndex: hovered ? 20 : 1,
+      }}
+    >
+      {/* Shimmer sweep on hover */}
+      <div style={{
+        position: 'absolute',
+        top: 0, left: 0,
+        width: '100%', height: '100%',
+        backgroundImage: hovered
+          ? `linear-gradient(105deg, transparent 35%, ${col}12 45%, ${col}20 50%, ${col}12 55%, transparent 65%)`
+          : 'none',
+        backgroundSize: '200% 100%',
+        animation: hovered ? 'milestone-shimmer 2.5s ease-in-out infinite' : 'none',
+        pointerEvents: 'none',
+        borderRadius: borderRad,
+      }} />
+
+      {/* Accent bar with glow */}
+      <div style={{
+        position: 'absolute',
+        [isAbove ? 'bottom' : 'top']: 0,
+        left: 0, right: 0,
+        height: hovered ? 3 : 2,
+        background: hovered
+          ? `linear-gradient(90deg, transparent 0%, ${col} 25%, ${col} 75%, transparent 100%)`
+          : col,
+        transition: 'all 0.4s ease',
+        boxShadow: hovered ? `0 ${isAbove ? '-' : ''}4px 16px ${col}60` : 'none',
+      }} />
+
+      {/* Corner radial glow on hover */}
+      {hovered && (
+        <div style={{
+          position: 'absolute',
+          top: isAbove ? 'auto' : -12,
+          bottom: isAbove ? -12 : 'auto',
+          left: '50%', transform: 'translateX(-50%)',
+          width: 60, height: 24,
+          background: `radial-gradient(ellipse, ${col}35, transparent 70%)`,
+          pointerEvents: 'none',
+          filter: 'blur(6px)',
+          animation: 'milestone-glow-pulse 2s ease-in-out infinite',
+        }} />
+      )}
+
+      {/* Status label */}
+      <div style={{
+        fontSize: statusFs, fontFamily: 'monospace', fontWeight: 700,
+        textTransform: 'uppercase', letterSpacing: '0.15em',
+        color: col, marginBottom: 2,
+        transition: 'all 0.35s ease',
+        transform: hovered ? 'scale(1.06)' : 'scale(1)',
+        textShadow: hovered ? `0 0 8px ${col}50` : 'none',
+        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+      }}>
+        {item.status}
+      </div>
+
+      {/* Counter number */}
+      <Counter target={item.count} color={col} fontSize={countFs} />
+
+      {/* Desc area — smooth expand/collapse */}
+      <div style={{
+        overflow: 'hidden',
+        maxHeight: hovered && hasOverflow ? 240 : Math.round(22 * sizeScale),
+        transition: 'max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}>
+        <div style={{
+          fontSize: descFs,
+          color: hovered ? '#d4d4d8' : '#71717a',
+          lineHeight: 1.4,
+          marginTop: Math.max(2, Math.round(4 * sizeScale)),
+          fontFamily: 'sans-serif',
+          textAlign: isList && hovered ? 'left' : 'center',
+          transition: 'color 0.3s ease',
+        }}>
+          {isList && hovered ? (
+            /* Expanded list with staggered bullet points */
+            <ul style={{
+              listStyle: 'none', margin: 0, padding: 0,
+              display: 'flex', flexDirection: 'column',
+              gap: Math.max(2, Math.round(4 * sizeScale)),
+            }}>
+              {lines.map((line, li) => (
+                <li key={li} style={{
+                  display: 'flex', alignItems: 'flex-start',
+                  gap: Math.max(3, Math.round(5 * sizeScale)),
+                  opacity: hovered ? 1 : 0,
+                  transform: hovered ? 'translateX(0)' : 'translateX(-12px)',
+                  transition: `all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) ${0.12 + li * 0.07}s`,
+                }}>
+                  <span style={{
+                    color: col,
+                    fontSize: Math.max(4, Math.round(5 * sizeScale)),
+                    lineHeight: `${Math.round(descFs * 1.5)}px`,
+                    flexShrink: 0,
+                    opacity: hovered ? 1 : 0,
+                    transform: hovered ? 'scale(1) rotate(0deg)' : 'scale(0) rotate(-90deg)',
+                    transition: `all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) ${0.18 + li * 0.07}s`,
+                  }}>●</span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+          ) : isList ? (
+            /* Compact: join list items with separator */
+            <span style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical' as const,
+              overflow: 'hidden',
+            }}>
+              {lines.join(' · ')}
+            </span>
+          ) : (
+            /* Plain text with clamp */
+            <span style={{
+              whiteSpace: 'pre-wrap',
+              display: '-webkit-box',
+              WebkitLineClamp: hovered ? 99 : 2,
+              WebkitBoxOrient: 'vertical' as const,
+              overflow: 'hidden',
+            }}>
+              {item.desc}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Expand hint indicator */}
+      {hasOverflow && (
+        <div style={{
+          fontSize: Math.max(4, Math.round(5 * sizeScale)),
+          color: col, marginTop: 1,
+          opacity: hovered ? 0 : 0.4,
+          letterSpacing: '0.1em',
+          fontFamily: 'monospace',
+          transition: 'opacity 0.3s ease',
+          height: hovered ? 0 : 'auto',
+          overflow: 'hidden',
+        }}>
+          ▼ HOVER
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main Milestone Section ───────────────────────────────────────────────────
 export function Milestone() {
   const { content } = useAdmin();
   const milestoneData = content.milestone;
@@ -91,8 +312,12 @@ export function Milestone() {
     ? `${linePath} L${nodes[nodes.length - 1].x},${CHART_B} L${nodes[0].x},${CHART_B} Z`
     : '';
 
+  // Dynamic sizes based on item count
+  const { cardW, scale, compactH, nodeGap, expandBuffer } = getDynamicSizes(items.length);
+  const foH = compactH + expandBuffer;
+
   return (
-    <section id="milestones" className="relative py-32 md:py-40 bg-transparent text-white overflow-hidden">
+    <section id="milestones" className="relative pt-20 pb-0 md:pt-28 md:pb-0 bg-transparent text-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
 
         {/* Header */}
@@ -115,11 +340,11 @@ export function Milestone() {
           </motion.h2>
         </div>
 
-        {/* Chart — single proportional SVG, no stretching */}
-        <div ref={wrapRef} className="w-full">
+        {/* Chart — single proportional SVG */}
+        <div ref={wrapRef} className="w-full" style={{ position: 'relative' }}>
           <svg
             viewBox={`0 0 ${VW} ${VH}`}
-            style={{ width: '100%', display: 'block' }}
+            style={{ width: '100%', display: 'block', overflow: 'visible' }}
           >
             <defs>
               <linearGradient id="mgArea2" x1="0" y1="0" x2="0" y2="1">
@@ -177,33 +402,44 @@ export function Milestone() {
               />
             )}
 
-            {/* Per-node: connector line + dot + card */}
+            {/* Per-node: short connector + dot + card close to node */}
             {nodes.map((nd, i) => {
               const col  = PALETTE[i % PALETTE.length];
               const item = items[i];
               if (!item) return null;
 
-              // Card position (in SVG units)
-              const cardX = nd.x - CARD_W / 2;
-              const GAP   = 14;
-              const connY1 = nd.isAbove ? ABOVE_H - GAP       : nd.y + 12;
-              const connY2 = nd.isAbove ? nd.y - 12            : CHART_B + GAP;
-              const cardY  = nd.isAbove ? 6                    : CHART_B + GAP + 4;
+              const cardX = nd.x - cardW / 2;
+              const nodeR = 11;
+
+              // ── Card position: directly above or below its node ──
+              const foY = nd.isAbove
+                ? nd.y - nodeGap - foH
+                : nd.y + nodeGap;
+
+              // Short connector line between card edge and node ring
+              const connY1 = nd.isAbove
+                ? nd.y - nodeGap
+                : nd.y + nodeR + 2;
+              const connY2 = nd.isAbove
+                ? nd.y - nodeR - 2
+                : nd.y + nodeGap;
+
               const enterDelay = 1.25 + i * 0.12;
 
               return (
                 <g key={i}>
-                  {/* Connector line (dashed, from card zone to node) */}
+                  {/* Short connector line */}
                   <motion.line
                     x1={nd.x} y1={connY1} x2={nd.x} y2={connY2}
-                    stroke={col} strokeWidth="1" strokeOpacity="0.35" strokeDasharray="3 4"
+                    stroke={col} strokeWidth="1" strokeOpacity="0.45"
+                    strokeDasharray="2 3"
                     initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}}
                     transition={{ delay: enterDelay - 0.05, duration: 0.3 }}
                   />
 
                   {/* Node outer ring */}
                   <motion.circle
-                    cx={nd.x} cy={nd.y} r={11}
+                    cx={nd.x} cy={nd.y} r={nodeR}
                     fill="none" stroke={col} strokeWidth="1" strokeOpacity="0.45"
                     initial={{ scale: 0, opacity: 0 }}
                     animate={isInView ? { scale: 1, opacity: 1 } : {}}
@@ -220,60 +456,34 @@ export function Milestone() {
                     transition={{ delay: 1.1 + i * 0.12, duration: 0.4, times: [0, 0.3, 0.6, 1] }}
                   />
 
-                  {/* foreignObject card — HTML inside SVG, no stretching issues */}
+                  {/* Card in foreignObject — close to node */}
                   <motion.g
                     initial={{ opacity: 0, y: nd.isAbove ? 6 : -6 }}
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ delay: enterDelay, duration: 0.4, type: 'spring', stiffness: 200 }}
                   >
-                    <foreignObject x={cardX} y={cardY} width={CARD_W} height={CARD_H_SVG}>
-                      <div
-                        style={{
-                          width: CARD_W,
-                          height: CARD_H_SVG,
-                          background: 'rgba(255,255,255,0.03)',
-                          border: `1px solid ${col}40`,
-                          borderRadius: 12,
-                          padding: '10px 12px',
-                          textAlign: 'center',
-                          boxSizing: 'border-box',
-                          position: 'relative',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {/* Top/bottom accent bar */}
-                        <div style={{
-                          position: 'absolute',
-                          [nd.isAbove ? 'bottom' : 'top']: 0,
-                          left: 0, right: 0, height: 2,
-                          background: col,
-                          borderRadius: nd.isAbove ? '0 0 12px 12px' : '12px 12px 0 0',
-                        }} />
-
-                        {/* Status */}
-                        <div style={{
-                          fontSize: 8, fontFamily: 'monospace', fontWeight: 700,
-                          textTransform: 'uppercase', letterSpacing: '0.2em',
-                          color: col, marginBottom: 4,
-                        }}>
-                          {item.status}
-                        </div>
-
-                        {/* Count */}
-                        <Counter target={item.count} color={col} />
-
-                        {/* Desc */}
-                        <div style={{
-                          fontSize: 9.5, color: '#71717a', lineHeight: 1.35,
-                          marginTop: 5, fontFamily: 'sans-serif',
-                          overflow: 'hidden',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 3,
-                          WebkitBoxOrient: 'vertical',
-                          whiteSpace: 'pre-wrap',
-                        }}>
-                          {item.desc}
-                        </div>
+                    <foreignObject
+                      x={cardX}
+                      y={foY}
+                      width={cardW}
+                      height={foH}
+                      style={{ overflow: 'visible' }}
+                    >
+                      {/* Wrapper: pins card to the edge nearest the node */}
+                      <div style={{
+                        width: cardW,
+                        height: foH,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: nd.isAbove ? 'flex-end' : 'flex-start',
+                      }}>
+                        <MilestoneCard
+                          item={item}
+                          col={col}
+                          isAbove={nd.isAbove}
+                          cardW={cardW}
+                          sizeScale={scale}
+                        />
                       </div>
                     </foreignObject>
                   </motion.g>

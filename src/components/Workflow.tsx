@@ -8,38 +8,39 @@ export function Workflow() {
   const steps = workflowData?.items || [];
 
   return (
-    <section id="workflow" className="relative py-32 md:py-40 bg-transparent text-white overflow-hidden">
+    <section id="workflow" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
 
         {/* ── Section Header ── */}
-        <motion.span
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] font-ui text-brand-light mb-6 block"
-        >
-          <span className="w-8 h-[1px] bg-brand-light" />
-          Process
-        </motion.span>
+        <div className="flex flex-col items-center text-center mb-20 w-full">
+          <motion.span
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.3em] font-ui text-brand-light mb-6 w-full"
+          >
+            <span className="w-8 h-[1px] bg-brand-light" />
+            Process
+            <span className="w-8 h-[1px] bg-brand-light" />
+          </motion.span>
 
-        <div className="flex items-end justify-between mb-20">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="text-4xl md:text-6xl font-display font-bold tracking-[-0.03em]"
+            className="text-4xl md:text-6xl font-display font-bold tracking-[-0.03em] relative pb-6 inline-block"
           >
             {workflowData?.title || 'Our Workflow'}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-brand to-brand-light origin-center rounded-full"
+            />
           </motion.h2>
-          <motion.div
-            initial={{ scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="hidden md:block w-32 h-[2px] bg-gradient-to-r from-brand to-transparent origin-left mb-3"
-          />
         </div>
 
         {/* ── Horizontal Timeline ── */}

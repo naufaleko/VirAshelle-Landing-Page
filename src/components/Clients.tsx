@@ -14,8 +14,8 @@ export function Clients() {
   const marqueeItems = [...clientList, ...clientList];
 
   return (
-    <section id="clients" className="relative py-32 md:py-40 bg-transparent text-white overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 relative z-10 mb-12">
+    <section id="clients" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 relative z-10 mb-12 flex flex-col items-center text-center">
         {/* Section header */}
         <motion.span
           initial={{ opacity: 0, y: 20 }}
@@ -65,14 +65,14 @@ export function Clients() {
             {marqueeItems.map((client: { name: string; logoUrl: string }, i: number) => (
               <div 
                 key={`row1-${i}`}
-                className="group flex items-center gap-4 glass rounded-full px-6 py-4 min-w-[200px] hover:border-brand/30 transition-all duration-300 cursor-default"
+                className="group flex items-center gap-4 glass rounded-full px-6 py-4 min-w-[200px] hover:border-[#10b981]/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-all duration-300 cursor-default"
               >
-                <div className="w-10 h-10 rounded-full bg-brand/10 border border-brand/20 flex items-center justify-center shrink-0 group-hover:bg-brand/20 group-hover:shadow-[0_0_15px_rgba(125,57,235,0.15)] transition-all duration-300 overflow-hidden">
+                <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shrink-0 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] group-hover:ring-2 group-hover:ring-[#10b981] transition-all duration-300 overflow-hidden">
                   {client.logoUrl ? (
                     <img 
                       src={client.logoUrl} 
                       alt={`${client.name} logo`} 
-                      className="w-7 h-7 object-contain opacity-50 group-hover:opacity-100 transition-opacity duration-300 grayscale group-hover:grayscale-0" 
+                      className="w-7 h-7 object-contain transition-transform duration-300 group-hover:scale-110" 
                     />
                   ) : (
                     <Building2 size={16} className="text-brand-light/50 group-hover:text-brand-light transition-colors duration-300" />
@@ -97,14 +97,14 @@ export function Clients() {
               {[...marqueeItems].reverse().map((client: { name: string; logoUrl: string }, i: number) => (
                 <div 
                   key={`row2-${i}`}
-                  className="group flex items-center gap-4 glass rounded-full px-6 py-4 min-w-[200px] hover:border-brand/30 transition-all duration-300 cursor-default"
+                  className="group flex items-center gap-4 glass rounded-full px-6 py-4 min-w-[200px] hover:border-[#10b981]/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-all duration-300 cursor-default"
                 >
-                  <div className="w-10 h-10 rounded-full bg-brand/10 border border-brand/20 flex items-center justify-center shrink-0 group-hover:bg-brand/20 transition-all duration-300 overflow-hidden">
+                  <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shrink-0 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] group-hover:ring-2 group-hover:ring-[#10b981] transition-all duration-300 overflow-hidden">
                     {client.logoUrl ? (
                       <img 
                         src={client.logoUrl} 
                         alt={`${client.name} logo`} 
-                        className="w-7 h-7 object-contain opacity-50 group-hover:opacity-100 transition-opacity duration-300 grayscale group-hover:grayscale-0" 
+                        className="w-7 h-7 object-contain transition-transform duration-300 group-hover:scale-110" 
                       />
                     ) : (
                       <Building2 size={16} className="text-brand-light/50 group-hover:text-brand-light transition-colors duration-300" />

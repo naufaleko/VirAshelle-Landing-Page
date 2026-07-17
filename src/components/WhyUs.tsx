@@ -388,18 +388,19 @@ export function WhyUs() {
   const whyUs = content.whyUs;
 
   return (
-    <section id="why-us" className="relative py-32 md:py-40 bg-transparent text-white overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
+    <section id="why-us" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col items-center text-center">
         {/* Section header */}
         <motion.span
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] font-ui text-brand-light mb-6 block"
+          className="inline-flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.3em] font-ui text-brand-light mb-6 w-full"
         >
           <span className="w-8 h-[1px] bg-brand-light" />
           Our Edge
+          <span className="w-8 h-[1px] bg-brand-light" />
         </motion.span>
 
         <motion.h2
@@ -407,14 +408,14 @@ export function WhyUs() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="text-4xl md:text-6xl font-display font-bold tracking-[-0.03em] mb-6"
+          className="text-4xl md:text-6xl font-display font-bold tracking-[-0.03em] mb-16"
         >
           {whyUs?.title || 'Why VirAshelle?'}
         </motion.h2>
 
 
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center w-full text-left">
           {/* Feature Cards */}
           <div className="space-y-6">
             {whyUs?.items?.map((feature, i) => {

@@ -8,18 +8,19 @@ export function KeyPeople() {
   const people = content.keyPeople || [];
 
   return (
-    <section id="key-people" className="relative py-32 md:py-40 bg-transparent text-white overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
+    <section id="key-people" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col items-center">
         {/* Section header */}
         <motion.span
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] font-ui text-brand-light mb-6 block"
+          className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] font-ui text-brand-light mb-6 text-center"
         >
           <span className="w-8 h-[1px] bg-brand-light" />
           The Team
+          <span className="w-8 h-[1px] bg-brand-light" />
         </motion.span>
 
         <motion.h2
@@ -27,13 +28,13 @@ export function KeyPeople() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="text-4xl md:text-6xl lg:text-7xl font-display font-bold tracking-[-0.03em] mb-16"
+          className="text-4xl md:text-6xl lg:text-7xl font-display font-bold tracking-[-0.03em] mb-16 text-center"
         >
           Key People
         </motion.h2>
         
         {/* People Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full text-left">
           {people.map((person, i) => (
             <motion.div
               key={i}

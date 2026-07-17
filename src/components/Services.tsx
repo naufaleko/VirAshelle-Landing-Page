@@ -93,21 +93,22 @@ export function Services() {
   const selectedItem = portfolioItems.find((item) => item.id === selectedId);
 
   return (
-    <section id="services" className="relative py-32 md:py-40 bg-transparent text-white overflow-hidden">
+    <section id="services" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
 
         {/* ── Section Header ── */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-20">
+        <div className="flex flex-col items-center text-center gap-6 mb-20 w-full">
           <div>
             <motion.span
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] font-ui text-brand-light mb-6 block"
+              className="inline-flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.3em] font-ui text-brand-light mb-6 w-full"
             >
               <span className="w-8 h-[1px] bg-brand-light" />
               {servicesData.description}
+              <span className="w-8 h-[1px] bg-brand-light" />
             </motion.span>
             <motion.h2
               initial={{ opacity: 0, y: 30 }}
@@ -119,13 +120,6 @@ export function Services() {
               {servicesData.title}
             </motion.h2>
           </div>
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="hidden md:block w-32 h-[2px] bg-gradient-to-r from-brand to-transparent mb-3"
-          />
         </div>
 
         {/* ── Service Rows ── */}
