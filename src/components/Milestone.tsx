@@ -71,11 +71,8 @@ const PALETTE = ['#7d39eb', '#a472f2', '#c4a0ff', '#8b5cf6', '#6d28d9', '#7c3aed
 
 // ── Dynamic sizing based on item count ───────────────────────────────────────
 function getDynamicSizes(itemCount: number) {
-  // Base constants
-  const MAX_CARD_W = 164;
-  const BASE_CARD_H = 100;
-
-  const usableW = VW - 60;
+  const usableW = VW - PAD_L - PAD_R;
+  // Card width shrinks to fit all items without overlap, with a minimum gap of 6
   const cardW = Math.min(MAX_CARD_W, Math.max(72, Math.floor(usableW / Math.max(itemCount, 1)) - 6));
   const scale = cardW / MAX_CARD_W;
   
@@ -124,17 +121,17 @@ function MilestoneCard({
   const hasOverflow = isList || item.desc.length > 45;
   const isActive = hovered || isExpanded;
 
-  // Dynamic font sizes based on card scale - larger minimums for readability
-  const statusFs = Math.max(12, Math.round(13 * sizeScale));
+  // Dynamic font sizes based on card scale
+  const statusFs = Math.max(5, Math.round(7 * sizeScale * 10) / 10);
   
   // Adjust central text size if it's long text instead of a number
   const countLen = item.count ? item.count.length : 0;
-  const countBaseFs = countLen > 12 ? 16 : (countLen > 7 ? 22 : 36);
-  const countFs = Math.max(18, Math.round(countBaseFs * sizeScale));
+  const countBaseFs = countLen > 12 ? 10 : (countLen > 7 ? 14 : 24);
+  const countFs = Math.max(9, Math.round(countBaseFs * sizeScale));
   
-  const descFs = Math.max(13, Math.round(15 * sizeScale));
-  const pad = Math.max(12, Math.round(16 * sizeScale));
-  const borderRad = Math.max(10, Math.round(18 * sizeScale));
+  const descFs = Math.max(6, Math.round(8.5 * sizeScale * 10) / 10);
+  const pad = Math.max(5, Math.round(10 * sizeScale));
+  const borderRad = Math.max(8, Math.round(12 * sizeScale));
 
   return (
     <div
@@ -232,7 +229,7 @@ function MilestoneCard({
         style={{
           overflowY: isExpanded && hasOverflow ? 'auto' : 'hidden',
           overflowX: 'hidden',
-          height: isExpanded && hasOverflow ? 80 : Math.round(28 * sizeScale),
+          height: isExpanded && hasOverflow ? 65 : Math.round(22 * sizeScale),
           transition: 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
         }}>
         <div style={{
@@ -263,7 +260,7 @@ function MilestoneCard({
                 }}>
                   <span style={{
                     color: col,
-                    fontSize: Math.max(8, Math.round(10 * sizeScale)),
+                    fontSize: Math.max(4, Math.round(5 * sizeScale)),
                     lineHeight: `${Math.round(descFs * 1.5)}px`,
                     flexShrink: 0,
                     opacity: isExpanded ? 1 : 0,
@@ -302,7 +299,7 @@ function MilestoneCard({
       {/* Expand hint indicator */}
       {hasOverflow && (
         <div style={{
-          fontSize: Math.max(8, Math.round(10 * sizeScale)),
+          fontSize: Math.max(4, Math.round(5 * sizeScale)),
           color: col, marginTop: 4,
           opacity: isExpanded ? 0 : (hovered ? 0.9 : 0.4),
           letterSpacing: '0.05em',
@@ -379,12 +376,11 @@ export function Milestone() {
         </div>
 
         {/* Chart — single proportional SVG */}
-        <div ref={wrapRef} className="w-full overflow-x-auto overflow-y-hidden milestone-scroll pb-6" style={{ position: 'relative' }}>
-          <div style={{ minWidth: '950px' }}>
-            <svg
-              viewBox={`0 0 ${VW} ${VH}`}
-              style={{ width: '100%', display: 'block', overflow: 'visible' }}
-            >
+        <div ref={wrapRef} className="w-full" style={{ position: 'relative' }}>
+          <svg
+            viewBox={`0 0 ${VW} ${VH}`}
+            style={{ width: '100%', display: 'block', overflow: 'visible' }}
+          >
             <defs>
               <linearGradient id="mgArea2" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%"   stopColor="#7d39eb" stopOpacity="0.18" />
@@ -530,7 +526,6 @@ export function Milestone() {
               );
             })}
           </svg>
-          </div>
         </div>
 
       </div>
