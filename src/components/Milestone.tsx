@@ -116,8 +116,10 @@ function MilestoneCard({
   sizeScale: number;
 }) {
   const [hovered, setHovered] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const { isList, lines } = parseDescLines(item.desc);
   const hasOverflow = isList || item.desc.length > 45;
+  const isActive = hovered || isExpanded;
 
   // Dynamic font sizes based on card scale
   const statusFs = Math.max(5, Math.round(7 * sizeScale * 10) / 10);
@@ -135,13 +137,15 @@ function MilestoneCard({
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={() => hasOverflow && setHovered(h => !h)}
+      onClick={() => {
+        if (hasOverflow) setIsExpanded(!isExpanded);
+      }}
       style={{
         width: cardW,
-        background: hovered
+        background: isActive
           ? 'rgba(18, 14, 38, 0.97)'
           : 'rgba(255,255,255,0.03)',
-        border: `1px solid ${hovered ? col + '90' : col + '30'}`,
+        border: `1px solid ${isActive ? col + '90' : col + '30'}`,
         borderRadius: borderRad,
         padding: `${pad + 4}px ${pad + 6}px`,
         textAlign: 'center',
@@ -150,13 +154,13 @@ function MilestoneCard({
         overflow: 'hidden',
         cursor: hasOverflow ? 'pointer' : 'default',
         transition: 'all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)',
-        transform: hovered ? 'scale(1.15)' : 'scale(1)',
+        transform: isActive ? 'scale(1.15)' : 'scale(1)',
         transformOrigin: isAbove ? 'center bottom' : 'center top',
-        boxShadow: hovered
+        boxShadow: isActive
           ? `0 14px 44px rgba(0,0,0,0.65), 0 0 50px ${col}20, 0 0 100px ${col}08, inset 0 1px 0 rgba(255,255,255,0.06)`
           : '0 2px 6px rgba(0,0,0,0.15)',
-        backdropFilter: hovered ? 'blur(24px)' : 'none',
-        zIndex: hovered ? 20 : 1,
+        backdropFilter: isActive ? 'blur(24px)' : 'none',
+        zIndex: isActive ? 20 : 1,
       }}
     >
       {/* Shimmer sweep on hover */}
@@ -164,11 +168,11 @@ function MilestoneCard({
         position: 'absolute',
         top: 0, left: 0,
         width: '100%', height: '100%',
-        backgroundImage: hovered
+        backgroundImage: isActive
           ? `linear-gradient(105deg, transparent 35%, ${col}12 45%, ${col}20 50%, ${col}12 55%, transparent 65%)`
           : 'none',
         backgroundSize: '200% 100%',
-        animation: hovered ? 'milestone-shimmer 2.5s ease-in-out infinite' : 'none',
+        animation: isActive ? 'milestone-shimmer 2.5s ease-in-out infinite' : 'none',
         pointerEvents: 'none',
         borderRadius: borderRad,
       }} />
@@ -178,16 +182,16 @@ function MilestoneCard({
         position: 'absolute',
         [isAbove ? 'bottom' : 'top']: 0,
         left: 0, right: 0,
-        height: hovered ? 3 : 2,
-        background: hovered
+        height: isActive ? 3 : 2,
+        background: isActive
           ? `linear-gradient(90deg, transparent 0%, ${col} 25%, ${col} 75%, transparent 100%)`
           : col,
         transition: 'all 0.4s ease',
-        boxShadow: hovered ? `0 ${isAbove ? '-' : ''}4px 16px ${col}60` : 'none',
+        boxShadow: isActive ? `0 ${isAbove ? '-' : ''}4px 16px ${col}60` : 'none',
       }} />
 
       {/* Corner radial glow on hover */}
-      {hovered && (
+      {isActive && (
         <div style={{
           position: 'absolute',
           top: isAbove ? 'auto' : -12,
@@ -207,8 +211,8 @@ function MilestoneCard({
         textTransform: 'uppercase', letterSpacing: '0.15em',
         color: col, marginBottom: 2,
         transition: 'all 0.35s ease',
-        transform: hovered ? 'scale(1.06)' : 'scale(1)',
-        textShadow: hovered ? `0 0 8px ${col}50` : 'none',
+        transform: isActive ? 'scale(1.06)' : 'scale(1)',
+        textShadow: isActive ? `0 0 8px ${col}50` : 'none',
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
       }}>
         {item.status}
@@ -220,22 +224,26 @@ function MilestoneCard({
       </div>
 
       {/* Desc area — smooth expand/collapse */}
-      <div style={{
-        overflow: 'hidden',
-        maxHeight: hovered && hasOverflow ? 800 : Math.round(22 * sizeScale),
-        transition: 'max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-      }}>
+      <div 
+        className="scroll-smooth"
+        style={{
+          overflowY: isExpanded && hasOverflow ? 'auto' : 'hidden',
+          overflowX: 'hidden',
+          maxHeight: isExpanded && hasOverflow ? 240 : Math.round(22 * sizeScale),
+          transition: 'max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}>
         <div style={{
           fontSize: descFs,
-          color: hovered ? '#d4d4d8' : '#71717a',
+          color: isActive ? '#d4d4d8' : '#71717a',
           lineHeight: 1.5,
           marginTop: Math.max(6, Math.round(8 * sizeScale)),
           padding: `0 ${Math.max(2, Math.round(4 * sizeScale))}px`,
+          paddingBottom: isExpanded ? 8 : 0,
           fontFamily: 'sans-serif',
-          textAlign: isList && hovered ? 'left' : 'center',
+          textAlign: isList && isExpanded ? 'left' : 'center',
           transition: 'color 0.3s ease',
         }}>
-          {isList && hovered ? (
+          {isList && isExpanded ? (
             /* Expanded list with staggered bullet points */
             <ul style={{
               listStyle: 'none', margin: 0, padding: 0,
@@ -246,8 +254,8 @@ function MilestoneCard({
                 <li key={li} style={{
                   display: 'flex', alignItems: 'flex-start',
                   gap: Math.max(3, Math.round(5 * sizeScale)),
-                  opacity: hovered ? 1 : 0,
-                  transform: hovered ? 'translateX(0)' : 'translateX(-12px)',
+                  opacity: isExpanded ? 1 : 0,
+                  transform: isExpanded ? 'translateX(0)' : 'translateX(-12px)',
                   transition: `all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) ${0.12 + li * 0.07}s`,
                 }}>
                   <span style={{
@@ -255,8 +263,8 @@ function MilestoneCard({
                     fontSize: Math.max(4, Math.round(5 * sizeScale)),
                     lineHeight: `${Math.round(descFs * 1.5)}px`,
                     flexShrink: 0,
-                    opacity: hovered ? 1 : 0,
-                    transform: hovered ? 'scale(1) rotate(0deg)' : 'scale(0) rotate(-90deg)',
+                    opacity: isExpanded ? 1 : 0,
+                    transform: isExpanded ? 'scale(1) rotate(0deg)' : 'scale(0) rotate(-90deg)',
                     transition: `all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) ${0.18 + li * 0.07}s`,
                   }}>●</span>
                   <span>{line}</span>
@@ -278,7 +286,7 @@ function MilestoneCard({
             <span style={{
               whiteSpace: 'pre-wrap',
               display: '-webkit-box',
-              WebkitLineClamp: hovered ? 99 : 2,
+              WebkitLineClamp: isExpanded ? 99 : 2,
               WebkitBoxOrient: 'vertical' as const,
               overflow: 'hidden',
             }}>
@@ -292,15 +300,16 @@ function MilestoneCard({
       {hasOverflow && (
         <div style={{
           fontSize: Math.max(4, Math.round(5 * sizeScale)),
-          color: col, marginTop: 1,
-          opacity: hovered ? 0 : 0.4,
-          letterSpacing: '0.1em',
-          fontFamily: 'monospace',
+          color: col, marginTop: 4,
+          opacity: isExpanded ? 0 : (hovered ? 0.9 : 0.4),
+          letterSpacing: '0.05em',
+          fontFamily: 'sans-serif',
+          fontWeight: 600,
           transition: 'opacity 0.3s ease',
-          height: hovered ? 0 : 'auto',
+          height: isExpanded ? 0 : 'auto',
           overflow: 'hidden',
         }}>
-          ▼ HOVER
+          ▼ CLICK TO EXPAND
         </div>
       )}
     </div>
