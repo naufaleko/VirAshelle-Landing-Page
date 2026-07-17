@@ -75,9 +75,11 @@ function getDynamicSizes(itemCount: number) {
   // Card width shrinks to fit all items without overlap, with a minimum gap of 6
   const cardW = Math.min(MAX_CARD_W, Math.max(72, Math.floor(usableW / Math.max(itemCount, 1)) - 6));
   const scale = cardW / MAX_CARD_W;
+  
   const compactH = Math.round(BASE_CARD_H * Math.max(0.7, scale));
-  const nodeGap = Math.round(BASE_NODE_GAP * Math.max(0.7, scale));
-  const expandBuffer = Math.round(140 * Math.max(0.6, scale));
+  const nodeGap = cardW * 0.25;
+
+  const expandBuffer = 800; // Extra height given to foreignObject for expansion
   return { cardW, scale, compactH, nodeGap, expandBuffer };
 }
 
@@ -220,7 +222,7 @@ function MilestoneCard({
       {/* Desc area — smooth expand/collapse */}
       <div style={{
         overflow: 'hidden',
-        maxHeight: hovered && hasOverflow ? 240 : Math.round(22 * sizeScale),
+        maxHeight: hovered && hasOverflow ? 800 : Math.round(22 * sizeScale),
         transition: 'max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
       }}>
         <div style={{
