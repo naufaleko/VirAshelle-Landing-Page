@@ -27,7 +27,7 @@ function Counter({ target, color, fontSize = 22 }: { target: string; color: stri
     obs.observe(el); return () => obs.disconnect();
   }, [target]);
   return (
-    <div ref={ref} style={{ fontSize, fontWeight: 800, color, lineHeight: 1, fontFamily: 'inherit' }}>
+    <div ref={ref} style={{ fontSize, fontWeight: 800, color, lineHeight: 1.1, fontFamily: 'inherit' }}>
       {display}
     </div>
   );
@@ -118,9 +118,14 @@ function MilestoneCard({
   const hasOverflow = isList || item.desc.length > 45;
 
   // Dynamic font sizes based on card scale
-  const statusFs = Math.max(6, Math.round(8 * sizeScale * 10) / 10);
-  const countFs = Math.max(24, Math.round(36 * sizeScale));
-  const descFs = Math.max(7, Math.round(9.5 * sizeScale * 10) / 10);
+  const statusFs = Math.max(5, Math.round(7 * sizeScale * 10) / 10);
+  
+  // Adjust central text size if it's long text instead of a number
+  const countLen = item.count ? item.count.length : 0;
+  const countBaseFs = countLen > 12 ? 10 : (countLen > 7 ? 14 : 24);
+  const countFs = Math.max(9, Math.round(countBaseFs * sizeScale));
+  
+  const descFs = Math.max(6, Math.round(8.5 * sizeScale * 10) / 10);
   const pad = Math.max(5, Math.round(10 * sizeScale));
   const borderRad = Math.max(8, Math.round(12 * sizeScale));
 
@@ -207,8 +212,10 @@ function MilestoneCard({
         {item.status}
       </div>
 
-      {/* Counter number */}
-      <Counter target={item.count} color={col} fontSize={countFs} />
+      {/* Counter number or Central Text */}
+      <div style={{ wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'normal', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Counter target={item.count} color={col} fontSize={countFs} />
+      </div>
 
       {/* Desc area — smooth expand/collapse */}
       <div style={{
