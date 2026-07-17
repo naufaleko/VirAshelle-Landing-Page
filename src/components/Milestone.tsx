@@ -225,12 +225,13 @@ function MilestoneCard({
 
       {/* Desc area — smooth expand/collapse */}
       <div 
-        className="scroll-smooth"
+        className="milestone-scroll"
+        onClick={(e) => e.stopPropagation()}
         style={{
           overflowY: isExpanded && hasOverflow ? 'auto' : 'hidden',
           overflowX: 'hidden',
-          maxHeight: isExpanded && hasOverflow ? 240 : Math.round(22 * sizeScale),
-          transition: 'max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+          height: isExpanded && hasOverflow ? 240 : Math.round(22 * sizeScale),
+          transition: 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
         }}>
         <div style={{
           fontSize: descFs,
@@ -337,6 +338,22 @@ export function Milestone() {
 
   return (
     <section id="milestones" className="relative pt-20 pb-0 md:pt-28 md:pb-0 bg-transparent text-white overflow-hidden">
+      <style>{`
+        .milestone-scroll::-webkit-scrollbar {
+          width: 4px;
+        }
+        .milestone-scroll::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.02);
+          border-radius: 4px;
+        }
+        .milestone-scroll::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.15);
+          border-radius: 4px;
+        }
+        .milestone-scroll::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.25);
+        }
+      `}</style>
       <div className="max-w-7xl mx-auto px-6 relative z-10">
 
         {/* Header */}
