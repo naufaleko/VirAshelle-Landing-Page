@@ -2,9 +2,11 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { useAdmin } from '../lib/AdminContext';
 import { Building2 } from 'lucide-react';
+import { useIsMobile } from '../lib/useIsMobile';
 
 export function Clients() {
   const { content } = useAdmin();
+  const isMobile = useIsMobile();
   const clientsData = content.clients;
   const clientList = (clientsData?.items || []).map((item: any) =>
     typeof item === 'string' ? { name: item, logoUrl: '' } : item
@@ -49,30 +51,24 @@ export function Clients() {
         </motion.p>
       </div>
 
-      {/* Marquee Container */}
+      {/* Marquee Container — uses CSS animation instead of Framer Motion for GPU-accelerated performance */}
       <div className="relative">
-        {/* Fade edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-surface-raised to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-surface-raised to-transparent z-10 pointer-events-none" />
 
-        {/* First marquee row */}
+        {/* First marquee row — CSS-based animation */}
         <div className="overflow-hidden py-4">
-          <motion.div 
-            className="flex gap-6 w-max"
-            animate={{ x: ['0%', '-50%'] }}
-            transition={{ duration: 35, repeat: Infinity, ease: 'linear' }}
-          >
+          <div className="marquee-track gap-6">
             {marqueeItems.map((client: { name: string; logoUrl: string }, i: number) => (
               <div 
                 key={`row1-${i}`}
-                className="group flex items-center gap-4 glass rounded-full px-6 py-4 min-w-[200px] hover:border-[#10b981]/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-all duration-300 cursor-default"
+                className="group flex items-center gap-4 glass rounded-full px-6 py-4 min-w-[200px] hover:border-[#10b981]/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-all duration-300 cursor-default shrink-0"
               >
                 <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shrink-0 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] group-hover:ring-2 group-hover:ring-[#10b981] transition-all duration-300 overflow-hidden">
                   {client.logoUrl ? (
                     <img 
                       src={client.logoUrl} 
                       alt={`${client.name} logo`} 
-                      className="w-7 h-7 object-contain transition-transform duration-300 group-hover:scale-110" 
+                      className="w-7 h-7 object-contain transition-transform duration-300 group-hover:scale-110"
+                      loading="lazy"
                     />
                   ) : (
                     <Building2 size={16} className="text-brand-light/50 group-hover:text-brand-light transition-colors duration-300" />
@@ -83,28 +79,25 @@ export function Clients() {
                 </span>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
 
-        {/* Second marquee row (reverse direction) */}
-        {clientList.length > 3 && (
+        {/* Second marquee row (reverse direction) — hidden on mobile for performance */}
+        {clientList.length > 3 && !isMobile && (
           <div className="overflow-hidden py-4">
-            <motion.div 
-              className="flex gap-6 w-max"
-              animate={{ x: ['-50%', '0%'] }}
-              transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
-            >
+            <div className="marquee-track-reverse gap-6">
               {[...marqueeItems].reverse().map((client: { name: string; logoUrl: string }, i: number) => (
                 <div 
                   key={`row2-${i}`}
-                  className="group flex items-center gap-4 glass rounded-full px-6 py-4 min-w-[200px] hover:border-[#10b981]/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-all duration-300 cursor-default"
+                  className="group flex items-center gap-4 glass rounded-full px-6 py-4 min-w-[200px] hover:border-[#10b981]/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-all duration-300 cursor-default shrink-0"
                 >
                   <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shrink-0 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] group-hover:ring-2 group-hover:ring-[#10b981] transition-all duration-300 overflow-hidden">
                     {client.logoUrl ? (
                       <img 
                         src={client.logoUrl} 
                         alt={`${client.name} logo`} 
-                        className="w-7 h-7 object-contain transition-transform duration-300 group-hover:scale-110" 
+                        className="w-7 h-7 object-contain transition-transform duration-300 group-hover:scale-110"
+                        loading="lazy"
                       />
                     ) : (
                       <Building2 size={16} className="text-brand-light/50 group-hover:text-brand-light transition-colors duration-300" />
@@ -115,7 +108,7 @@ export function Clients() {
                   </span>
                 </div>
               ))}
-            </motion.div>
+            </div>
           </div>
         )}
       </div>

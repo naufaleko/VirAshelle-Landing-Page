@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { motion, useInView, useAnimationControls } from 'motion/react';
 import { useAdmin } from '../lib/AdminContext';
 import { Zap, Target, Award, Shield, Puzzle } from 'lucide-react';
+import { useIsMobile } from '../lib/useIsMobile';
 
 const features = [
   {
@@ -64,8 +65,138 @@ function AnimatedBar({ value, delay }: { value: number; delay: number }) {
   );
 }
 
-// ── Glitch boot-up pentagon ────────────────────────────────────────────────
-function PentagonDiagram() {
+// ── Mobile Pentagon — static, no animations ─────────────────────────────────
+function PentagonMobile() {
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <p className="text-[11px] uppercase tracking-[0.3em] font-ui text-zinc-500">Core Values</p>
+
+      <div className="relative" style={{ width: SIZE, height: SIZE, maxWidth: '100%' }}>
+        <svg
+          viewBox={`0 0 ${SIZE} ${SIZE}`}
+          className="w-full h-full"
+          style={{ overflow: 'visible' }}
+        >
+          <defs>
+            <radialGradient id="pentaGlowM" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#7d39eb" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#7d39eb" stopOpacity="0" />
+            </radialGradient>
+            <filter id="nodeGlowM">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+          </defs>
+
+          {/* Ambient glow */}
+          <circle cx={CX} cy={CY} r={OUTER_R + 30} fill="url(#pentaGlowM)" />
+
+          {/* Spoke lines */}
+          {outerPts.map((pt, i) => (
+            <line
+              key={`spoke-${i}`}
+              x1={CX} y1={CY}
+              x2={pt.x} y2={pt.y}
+              stroke="#7d39eb"
+              strokeWidth="1"
+              strokeOpacity="0.22"
+            />
+          ))}
+
+          {/* Outer pentagon */}
+          <polygon
+            points={outerPolyStr}
+            fill="none"
+            stroke="#7d39eb"
+            strokeWidth="1.5"
+            strokeOpacity="0.55"
+          />
+
+          {/* Inner pentagon */}
+          <polygon
+            points={innerPolyStr}
+            fill="rgba(125,57,235,0.07)"
+            stroke="#a472f2"
+            strokeWidth="1"
+            strokeOpacity="0.3"
+          />
+
+          {/* Dashed ring — static */}
+          <circle
+            cx={CX} cy={CY} r={OUTER_R + 18}
+            fill="none"
+            stroke="#7d39eb"
+            strokeWidth="0.7"
+            strokeOpacity="0.18"
+            strokeDasharray="5 9"
+          />
+
+          {/* Center circle */}
+          <circle
+            cx={CX} cy={CY} r={22}
+            fill="rgba(125,57,235,0.15)"
+            stroke="#7d39eb"
+            strokeWidth="1.5"
+          />
+
+          <text
+            x={CX} y={CY + 1}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize="10"
+            fontFamily="monospace"
+            fontWeight="800"
+            fill="#c4a0ff"
+            letterSpacing="0.08em"
+          >
+            VRA
+          </text>
+
+          {/* Value nodes — static */}
+          {coreValues.map((val, i) => {
+            const pt = outerPts[i];
+            const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+            const labelR = OUTER_R + 46;
+            const lx = CX + labelR * Math.cos(angle);
+            const ly = CY + labelR * Math.sin(angle);
+
+            return (
+              <g key={i}>
+                <circle
+                  cx={pt.x} cy={pt.y} r={17}
+                  fill="rgba(125,57,235,0.1)"
+                  stroke="#7d39eb"
+                  strokeWidth="1.2"
+                  strokeOpacity="0.6"
+                />
+                <circle
+                  cx={pt.x} cy={pt.y} r={8}
+                  fill={val.color}
+                  filter="url(#nodeGlowM)"
+                />
+                <text
+                  x={lx} y={ly}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize="10.5"
+                  fontFamily="monospace"
+                  fontWeight="700"
+                  fill="#e4e4e7"
+                  letterSpacing="0.1em"
+                >
+                  {val.label.toUpperCase()}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// ── Desktop Pentagon — full glitch boot-up animation ────────────────────────
+function PentagonDesktop() {
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: true, margin: '-80px' });
 
@@ -386,6 +517,7 @@ function PentagonDiagram() {
 export function WhyUs() {
   const { content } = useAdmin();
   const whyUs = content.whyUs;
+  const isMobile = useIsMobile();
 
   return (
     <section id="why-us" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden">
@@ -447,9 +579,9 @@ export function WhyUs() {
             })}
           </div>
 
-          {/* Pentagon */}
+          {/* Pentagon — static on mobile, animated on desktop */}
           <div className="flex justify-center">
-            <PentagonDiagram />
+            {isMobile ? <PentagonMobile /> : <PentagonDesktop />}
           </div>
         </div>
       </div>

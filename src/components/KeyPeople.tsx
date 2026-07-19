@@ -2,9 +2,11 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { useAdmin } from '../lib/AdminContext';
 import { Supergraphic } from './Supergraphic';
+import { useIsMobile } from '../lib/useIsMobile';
 
 export function KeyPeople() {
   const { content } = useAdmin();
+  const isMobile = useIsMobile();
   const people = content.keyPeople || [];
 
   return (
@@ -42,11 +44,11 @@ export function KeyPeople() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative rounded-2xl overflow-hidden h-[480px] cursor-default"
-              style={{ perspective: '800px' }}
+              className="group relative rounded-2xl overflow-hidden cursor-default h-[480px]"
+              style={isMobile ? {} : { perspective: '800px' }}
             >
               {/* Card with subtle 3D tilt on hover */}
-              <div className="relative w-full h-full transition-transform duration-500 group-hover:[transform:rotateY(-2deg)_rotateX(1deg)]">
+              <div className={`relative w-full h-full transition-transform duration-500 ${isMobile ? '' : 'group-hover:[transform:rotateY(-2deg)_rotateX(1deg)]'}`}>
                 {/* Background gradient */}
                 <div className="absolute inset-0 bg-gradient-to-b from-surface-card via-surface-card to-brand rounded-2xl" />
                 

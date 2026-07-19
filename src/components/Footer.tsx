@@ -54,7 +54,7 @@ export function Footer() {
             <h4 className="text-[10px] uppercase text-zinc-600 font-ui font-bold tracking-[0.25em] mb-8">Contact</h4>
             <ul className="space-y-5 text-sm font-body text-zinc-400">
               {footerData?.phones?.map((phone, i) => (
-                <li key={i} className="hover:text-white transition-colors duration-300 cursor-default">{phone}</li>
+                <li key={i} className="hover:text-white transition-colors duration-300 cursor-default min-h-[44px] flex items-center">{phone}</li>
               )) || (
                 <>
                   <li className="hover:text-white transition-colors">+62 88 1212 8323</li>

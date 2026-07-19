@@ -20,6 +20,15 @@ export default defineConfig(() => {
     },
     build: {
       target: 'es2015',
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-motion': ['motion'],
+            'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+          },
+        },
+      },
     },
   };
 });

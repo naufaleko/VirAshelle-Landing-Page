@@ -3,18 +3,21 @@ import { motion, useScroll, useTransform } from 'motion/react';
 import { Supergraphic } from './Supergraphic';
 import { EditableText } from './EditableText';
 import { ArrowDown } from 'lucide-react';
+import { useIsMobile } from '../lib/useIsMobile';
 
 // FloatingOrb removed as it is handled globally now
 
 export function Hero() {
+  const isMobile = useIsMobile();
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start start', 'end start'],
   });
 
-  const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
-  const textY = useTransform(scrollYProgress, [0, 1], ['0%', '15%']);
+  // Disable parallax on mobile — scroll transforms cause jank on phones
+  const bgY = useTransform(scrollYProgress, [0, 1], isMobile ? ['0%', '0%'] : ['0%', '30%']);
+  const textY = useTransform(scrollYProgress, [0, 1], isMobile ? ['0%', '0%'] : ['0%', '15%']);
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
@@ -23,9 +26,6 @@ export function Hero() {
       ref={sectionRef}
       className="relative min-h-screen flex items-center overflow-hidden bg-transparent text-white"
     >
-      {/* ── Noise overlay ── */}
-      <div className="absolute inset-0 z-[3] noise pointer-events-none" />
-
       {/* ── Content ── */}
       <motion.div 
         className="max-w-7xl mx-auto px-6 relative z-10 w-full pt-32 pb-32 md:pt-40 md:pb-40"

@@ -25,21 +25,27 @@ export function Header() {
     const THRESHOLD = 120; // px from top of viewport (accounts for navbar height)
     const sectionIds = ['services', 'milestones', 'why-us', 'key-people', 'workflow', 'about'];
 
+    let ticking = false;
     const handleScroll = () => {
-      setScrolled(window.scrollY > 80);
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 80);
 
-      // Find the last section whose top edge has passed the threshold
-      let current = '';
-      for (const id of sectionIds) {
-        const el = document.getElementById(id);
-        if (el) {
-          const { top } = el.getBoundingClientRect();
-          if (top <= THRESHOLD) {
-            current = id;
+        // Find the last section whose top edge has passed the threshold
+        let current = '';
+        for (const id of sectionIds) {
+          const el = document.getElementById(id);
+          if (el) {
+            const { top } = el.getBoundingClientRect();
+            if (top <= THRESHOLD) {
+              current = id;
+            }
           }
         }
-      }
-      setActiveSection(current);
+        setActiveSection(current);
+        ticking = false;
+      });
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });

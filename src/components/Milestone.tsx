@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'motion/react';
 import { useAdmin } from '../lib/AdminContext';
+import { useIsMobile } from '../lib/useIsMobile';
 
 // ── Counter ─────────────────────────────────────────────────────────────────
 function Counter({ target, color, fontSize = 22 }: { target: string; color: string; fontSize?: number }) {
@@ -316,9 +317,86 @@ function MilestoneCard({
   );
 }
 
+// ── Mobile Milestone Card ────────────────────────────────────────────────────
+function MobileMilestoneCard({
+  item, col, index,
+}: {
+  item: { status: string; count: string; desc: string };
+  col: string;
+  index: number;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { isList, lines } = parseDescLines(item.desc);
+  const hasOverflow = isList || item.desc.length > 60;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+      onClick={() => { if (hasOverflow) setIsExpanded(!isExpanded); }}
+      className="relative glass rounded-2xl p-6 overflow-hidden cursor-default"
+      style={{ borderLeft: `3px solid ${col}` }}
+    >
+      {/* Status label */}
+      <div className="text-[10px] font-mono font-bold uppercase tracking-[0.15em] mb-2" style={{ color: col }}>
+        {item.status}
+      </div>
+
+      {/* Counter */}
+      <Counter target={item.count} color={col} fontSize={28} />
+
+      {/* Description */}
+      <div className="mt-3">
+        <div
+          className="text-zinc-400 text-xs leading-relaxed"
+          style={{
+            overflow: 'hidden',
+            maxHeight: isExpanded ? '200px' : '2.8em',
+            transition: 'max-height 0.4s ease',
+          }}
+        >
+          {isList ? (
+            isExpanded ? (
+              <ul className="space-y-1.5 list-none">
+                {lines.map((line, li) => (
+                  <li key={li} className="flex items-start gap-2">
+                    <span style={{ color: col }} className="text-[8px] leading-[1.5em] shrink-0">●</span>
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <span>{lines.join(' · ')}</span>
+            )
+          ) : (
+            <span className="whitespace-pre-wrap">{item.desc}</span>
+          )}
+        </div>
+      </div>
+
+      {/* Expand hint */}
+      {hasOverflow && (
+        <button
+          onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+          className="mt-2 text-[10px] font-mono uppercase tracking-wider"
+          style={{ color: col, opacity: 0.7, minHeight: '44px', minWidth: '44px' }}
+        >
+          {isExpanded ? '▲ COLLAPSE' : '▼ EXPAND'}
+        </button>
+      )}
+
+      {/* Bottom accent */}
+      <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, ${col}, transparent)` }} />
+    </motion.div>
+  );
+}
+
 // ── Main Milestone Section ───────────────────────────────────────────────────
 export function Milestone() {
   const { content } = useAdmin();
+  const isMobile = useIsMobile();
   const milestoneData = content.milestone;
   const items = milestoneData?.items || [];
 
@@ -375,158 +453,323 @@ export function Milestone() {
           </motion.h2>
         </div>
 
-        {/* Chart — single proportional SVG */}
-        <div ref={wrapRef} className="w-full" style={{ position: 'relative' }}>
-          <svg
-            viewBox={`0 0 ${VW} ${VH}`}
-            style={{ width: '100%', display: 'block', overflow: 'visible' }}
-          >
-            <defs>
-              <linearGradient id="mgArea2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor="#7d39eb" stopOpacity="0.18" />
-                <stop offset="100%" stopColor="#7d39eb" stopOpacity="0.02" />
-              </linearGradient>
-              <linearGradient id="mgLine2" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%"   stopColor="#7d39eb" />
-                <stop offset="50%"  stopColor="#a472f2" />
-                <stop offset="100%" stopColor="#c4a0ff" />
-              </linearGradient>
-              <filter id="mgGlow2">
-                <feGaussianBlur stdDeviation="2.5" result="b" />
-                <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-              </filter>
-            </defs>
-
-            {/* Grid lines inside chart area */}
-            {[0.3, 0.6, 0.9].map((f, gi) => {
-              const gy = CHART_T + f * CHART_H;
-              return (
-                <motion.line key={gi}
-                  x1={PAD_L} y1={gy} x2={VW - PAD_R} y2={gy}
-                  stroke="#fff" strokeWidth="0.5" strokeOpacity="0.06" strokeDasharray="4 10"
-                  initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}}
-                  transition={{ delay: 0.2 + gi * 0.08, duration: 0.4 }}
-                />
-              );
-            })}
-
-            {/* Baseline */}
-            <motion.line
-              x1={PAD_L} y1={CHART_B + 3} x2={VW - PAD_R} y2={CHART_B + 3}
-              stroke="#7d39eb" strokeWidth="0.8" strokeOpacity="0.25"
-              initial={{ pathLength: 0, opacity: 0 }} animate={isInView ? { pathLength: 1, opacity: 1 } : {}}
-              transition={{ delay: 0.2, duration: 0.8 }}
-            />
-
-            {/* Area fill */}
-            {areaPath && (
-              <motion.path d={areaPath} fill="url(#mgArea2)"
-                initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}}
-                transition={{ delay: 0.85, duration: 0.8 }}
-              />
-            )}
-
-            {/* Chart line */}
-            {linePath && (
-              <motion.path d={linePath} fill="none"
-                stroke="url(#mgLine2)" strokeWidth="2.2"
-                strokeLinecap="round" strokeLinejoin="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={isInView ? { pathLength: 1, opacity: 1 } : {}}
-                transition={{ delay: 0.4, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-              />
-            )}
-
-            {/* Per-node: short connector + dot + card close to node */}
-            {nodes.map((nd, i) => {
-              const col  = PALETTE[i % PALETTE.length];
-              const item = items[i];
-              if (!item) return null;
-
-              const cardX = nd.x - cardW / 2;
-              const nodeR = 11;
-
-              // ── Card position: directly above or below its node ──
-              const foY = nd.isAbove
-                ? nd.y - nodeGap - foH
-                : nd.y + nodeGap;
-
-              // Short connector line between card edge and node ring
-              const connY1 = nd.isAbove
-                ? nd.y - nodeGap
-                : nd.y + nodeR + 2;
-              const connY2 = nd.isAbove
-                ? nd.y - nodeR - 2
-                : nd.y + nodeGap;
-
-              const enterDelay = 1.25 + i * 0.12;
-
-              return (
-                <g key={i}>
-                  {/* Short connector line */}
-                  <motion.line
-                    x1={nd.x} y1={connY1} x2={nd.x} y2={connY2}
-                    stroke={col} strokeWidth="1" strokeOpacity="0.45"
-                    strokeDasharray="2 3"
-                    initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}}
-                    transition={{ delay: enterDelay - 0.05, duration: 0.3 }}
-                  />
-
-                  {/* Node outer ring */}
-                  <motion.circle
-                    cx={nd.x} cy={nd.y} r={nodeR}
-                    fill="none" stroke={col} strokeWidth="1" strokeOpacity="0.45"
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={isInView ? { scale: 1, opacity: 1 } : {}}
-                    transition={{ delay: 1.0 + i * 0.12, duration: 0.4, type: 'spring' }}
-                    style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-                  />
-
-                  {/* Node inner dot — blip */}
-                  <motion.circle
-                    cx={nd.x} cy={nd.y} r={4.5}
-                    fill={col} filter="url(#mgGlow2)"
-                    initial={{ opacity: 0 }}
-                    animate={isInView ? { opacity: [0, 1, 0, 1] } : {}}
-                    transition={{ delay: 1.1 + i * 0.12, duration: 0.4, times: [0, 0.3, 0.6, 1] }}
-                  />
-
-                  {/* Card in foreignObject — close to node */}
-                  <motion.g
-                    initial={{ opacity: 0, y: nd.isAbove ? 6 : -6 }}
-                    animate={isInView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ delay: enterDelay, duration: 0.4, type: 'spring', stiffness: 200 }}
+        {/* Mobile: Horizontally scrollable chart */}
+        {isMobile ? (
+          <div ref={wrapRef} className="relative">
+            {/* Scroll hint */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="flex items-center justify-center gap-2 mb-4 text-zinc-500"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+              <span className="text-[10px] uppercase tracking-[0.2em] font-ui">Swipe to explore</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </motion.div>
+            
+            {/* Scrollable container with aesthetic CSS mask fade (doesn't block background glow) */}
+            <div className="relative">
+              <div 
+                className="overflow-x-auto overflow-y-hidden -mx-6 px-6 pb-6 custom-h-scrollbar"
+                style={{ 
+                  WebkitOverflowScrolling: 'touch',
+                  scrollSnapType: 'x proximity',
+                  // CSS Mask creates a true transparency fade at the edges instead of a dark colored box
+                  maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
+                  WebkitMaskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)'
+                }}
+              >
+                <div style={{ minWidth: '800px', width: '800px' }}>
+                  <svg
+                    viewBox={`0 0 ${VW} ${VH}`}
+                    style={{ width: '100%', display: 'block', overflow: 'visible' }}
                   >
-                    <foreignObject
-                      x={cardX}
-                      y={foY}
-                      width={cardW}
-                      height={foH}
-                      style={{ overflow: 'visible' }}
-                    >
-                      {/* Wrapper: pins card to the edge nearest the node */}
-                      <div style={{
-                        width: cardW,
-                        height: foH,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: nd.isAbove ? 'flex-end' : 'flex-start',
-                      }}>
-                        <MilestoneCard
-                          item={item}
-                          col={col}
-                          isAbove={nd.isAbove}
-                          cardW={cardW}
-                          sizeScale={scale}
+                    <defs>
+                      <linearGradient id="mgArea2m" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%"   stopColor="#7d39eb" stopOpacity="0.18" />
+                        <stop offset="100%" stopColor="#7d39eb" stopOpacity="0.02" />
+                      </linearGradient>
+                      <linearGradient id="mgLine2m" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%"   stopColor="#7d39eb" />
+                        <stop offset="50%"  stopColor="#a472f2" />
+                        <stop offset="100%" stopColor="#c4a0ff" />
+                      </linearGradient>
+                      <filter id="mgGlow2m">
+                        <feGaussianBlur stdDeviation="2.5" result="b" />
+                        <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                      </filter>
+                    </defs>
+
+                    {/* Grid lines */}
+                    {[0.3, 0.6, 0.9].map((f, gi) => {
+                      const gy = CHART_T + f * CHART_H;
+                      return (
+                        <motion.line key={gi}
+                          x1={PAD_L} y1={gy} x2={VW - PAD_R} y2={gy}
+                          stroke="#fff" strokeWidth="0.5" strokeOpacity="0.06" strokeDasharray="4 10"
+                          initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}}
+                          transition={{ delay: 0.2 + gi * 0.08, duration: 0.4 }}
                         />
-                      </div>
-                    </foreignObject>
-                  </motion.g>
-                </g>
-              );
-            })}
-          </svg>
-        </div>
+                      );
+                    })}
+
+                    {/* Baseline */}
+                    <motion.line
+                      x1={PAD_L} y1={CHART_B + 3} x2={VW - PAD_R} y2={CHART_B + 3}
+                      stroke="#7d39eb" strokeWidth="0.8" strokeOpacity="0.25"
+                      initial={{ pathLength: 0, opacity: 0 }} animate={isInView ? { pathLength: 1, opacity: 1 } : {}}
+                      transition={{ delay: 0.2, duration: 0.8 }}
+                    />
+
+                    {/* Area fill */}
+                    {areaPath && (
+                      <motion.path d={areaPath} fill="url(#mgArea2m)"
+                        initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}}
+                        transition={{ delay: 0.85, duration: 0.8 }}
+                      />
+                    )}
+
+                    {/* Chart line */}
+                    {linePath && (
+                      <motion.path d={linePath} fill="none"
+                        stroke="url(#mgLine2m)" strokeWidth="2.2"
+                        strokeLinecap="round" strokeLinejoin="round"
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={isInView ? { pathLength: 1, opacity: 1 } : {}}
+                        transition={{ delay: 0.4, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                      />
+                    )}
+
+                    {/* Per-node */}
+                    {nodes.map((nd, i) => {
+                      const col  = PALETTE[i % PALETTE.length];
+                      const item = items[i];
+                      if (!item) return null;
+
+                      const cardX = nd.x - cardW / 2;
+                      const nodeR = 11;
+                      const foY = nd.isAbove
+                        ? nd.y - nodeGap - foH
+                        : nd.y + nodeGap;
+                      const connY1 = nd.isAbove ? nd.y - nodeGap : nd.y + nodeR + 2;
+                      const connY2 = nd.isAbove ? nd.y - nodeR - 2 : nd.y + nodeGap;
+                      const enterDelay = 1.25 + i * 0.12;
+
+                      return (
+                        <g key={i}>
+                          <motion.line
+                            x1={nd.x} y1={connY1} x2={nd.x} y2={connY2}
+                            stroke={col} strokeWidth="1" strokeOpacity="0.45"
+                            strokeDasharray="2 3"
+                            initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}}
+                            transition={{ delay: enterDelay - 0.05, duration: 0.3 }}
+                          />
+                          <motion.circle
+                            cx={nd.x} cy={nd.y} r={nodeR}
+                            fill="none" stroke={col} strokeWidth="1" strokeOpacity="0.45"
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={isInView ? { scale: 1, opacity: 1 } : {}}
+                            transition={{ delay: 1.0 + i * 0.12, duration: 0.4, type: 'spring' }}
+                            style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                          />
+                          <motion.circle
+                            cx={nd.x} cy={nd.y} r={4.5}
+                            fill={col} filter="url(#mgGlow2m)"
+                            initial={{ opacity: 0 }}
+                            animate={isInView ? { opacity: [0, 1, 0, 1] } : {}}
+                            transition={{ delay: 1.1 + i * 0.12, duration: 0.4, times: [0, 0.3, 0.6, 1] }}
+                          />
+                          <motion.g
+                            initial={{ opacity: 0, y: nd.isAbove ? 6 : -6 }}
+                            animate={isInView ? { opacity: 1, y: 0 } : {}}
+                            transition={{ delay: enterDelay, duration: 0.4, type: 'spring', stiffness: 200 }}
+                          >
+                            <foreignObject
+                              x={cardX} y={foY}
+                              width={cardW} height={foH}
+                              style={{ overflow: 'visible' }}
+                            >
+                              <div style={{
+                                width: cardW, height: foH,
+                                display: 'flex', flexDirection: 'column',
+                                justifyContent: nd.isAbove ? 'flex-end' : 'flex-start',
+                              }}>
+                                <MilestoneCard
+                                  item={item} col={col}
+                                  isAbove={nd.isAbove}
+                                  cardW={cardW} sizeScale={scale}
+                                />
+                              </div>
+                            </foreignObject>
+                          </motion.g>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Desktop: SVG chart — single proportional SVG */
+          <div ref={wrapRef} className="w-full" style={{ position: 'relative' }}>
+            <svg
+              viewBox={`0 0 ${VW} ${VH}`}
+              style={{ width: '100%', display: 'block', overflow: 'visible' }}
+            >
+              <defs>
+                <linearGradient id="mgArea2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"   stopColor="#7d39eb" stopOpacity="0.18" />
+                  <stop offset="100%" stopColor="#7d39eb" stopOpacity="0.02" />
+                </linearGradient>
+                <linearGradient id="mgLine2" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%"   stopColor="#7d39eb" />
+                  <stop offset="50%"  stopColor="#a472f2" />
+                  <stop offset="100%" stopColor="#c4a0ff" />
+                </linearGradient>
+                <filter id="mgGlow2">
+                  <feGaussianBlur stdDeviation="2.5" result="b" />
+                  <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                </filter>
+              </defs>
+
+              {/* Grid lines inside chart area */}
+              {[0.3, 0.6, 0.9].map((f, gi) => {
+                const gy = CHART_T + f * CHART_H;
+                return (
+                  <motion.line key={gi}
+                    x1={PAD_L} y1={gy} x2={VW - PAD_R} y2={gy}
+                    stroke="#fff" strokeWidth="0.5" strokeOpacity="0.06" strokeDasharray="4 10"
+                    initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}}
+                    transition={{ delay: 0.2 + gi * 0.08, duration: 0.4 }}
+                  />
+                );
+              })}
+
+              {/* Baseline */}
+              <motion.line
+                x1={PAD_L} y1={CHART_B + 3} x2={VW - PAD_R} y2={CHART_B + 3}
+                stroke="#7d39eb" strokeWidth="0.8" strokeOpacity="0.25"
+                initial={{ pathLength: 0, opacity: 0 }} animate={isInView ? { pathLength: 1, opacity: 1 } : {}}
+                transition={{ delay: 0.2, duration: 0.8 }}
+              />
+
+              {/* Area fill */}
+              {areaPath && (
+                <motion.path d={areaPath} fill="url(#mgArea2)"
+                  initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}}
+                  transition={{ delay: 0.85, duration: 0.8 }}
+                />
+              )}
+
+              {/* Chart line */}
+              {linePath && (
+                <motion.path d={linePath} fill="none"
+                  stroke="url(#mgLine2)" strokeWidth="2.2"
+                  strokeLinecap="round" strokeLinejoin="round"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={isInView ? { pathLength: 1, opacity: 1 } : {}}
+                  transition={{ delay: 0.4, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                />
+              )}
+
+              {/* Per-node: short connector + dot + card close to node */}
+              {nodes.map((nd, i) => {
+                const col  = PALETTE[i % PALETTE.length];
+                const item = items[i];
+                if (!item) return null;
+
+                const cardX = nd.x - cardW / 2;
+                const nodeR = 11;
+
+                // ── Card position: directly above or below its node ──
+                const foY = nd.isAbove
+                  ? nd.y - nodeGap - foH
+                  : nd.y + nodeGap;
+
+                // Short connector line between card edge and node ring
+                const connY1 = nd.isAbove
+                  ? nd.y - nodeGap
+                  : nd.y + nodeR + 2;
+                const connY2 = nd.isAbove
+                  ? nd.y - nodeR - 2
+                  : nd.y + nodeGap;
+
+                const enterDelay = 1.25 + i * 0.12;
+
+                return (
+                  <g key={i}>
+                    {/* Short connector line */}
+                    <motion.line
+                      x1={nd.x} y1={connY1} x2={nd.x} y2={connY2}
+                      stroke={col} strokeWidth="1" strokeOpacity="0.45"
+                      strokeDasharray="2 3"
+                      initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}}
+                      transition={{ delay: enterDelay - 0.05, duration: 0.3 }}
+                    />
+
+                    {/* Node outer ring */}
+                    <motion.circle
+                      cx={nd.x} cy={nd.y} r={nodeR}
+                      fill="none" stroke={col} strokeWidth="1" strokeOpacity="0.45"
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={isInView ? { scale: 1, opacity: 1 } : {}}
+                      transition={{ delay: 1.0 + i * 0.12, duration: 0.4, type: 'spring' }}
+                      style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                    />
+
+                    {/* Node inner dot — blip */}
+                    <motion.circle
+                      cx={nd.x} cy={nd.y} r={4.5}
+                      fill={col} filter="url(#mgGlow2)"
+                      initial={{ opacity: 0 }}
+                      animate={isInView ? { opacity: [0, 1, 0, 1] } : {}}
+                      transition={{ delay: 1.1 + i * 0.12, duration: 0.4, times: [0, 0.3, 0.6, 1] }}
+                    />
+
+                    {/* Card in foreignObject — close to node */}
+                    <motion.g
+                      initial={{ opacity: 0, y: nd.isAbove ? 6 : -6 }}
+                      animate={isInView ? { opacity: 1, y: 0 } : {}}
+                      transition={{ delay: enterDelay, duration: 0.4, type: 'spring', stiffness: 200 }}
+                    >
+                      <foreignObject
+                        x={cardX}
+                        y={foY}
+                        width={cardW}
+                        height={foH}
+                        style={{ overflow: 'visible' }}
+                      >
+                        {/* Wrapper: pins card to the edge nearest the node */}
+                        <div style={{
+                          width: cardW,
+                          height: foH,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: nd.isAbove ? 'flex-end' : 'flex-start',
+                        }}>
+                          <MilestoneCard
+                            item={item}
+                            col={col}
+                            isAbove={nd.isAbove}
+                            cardW={cardW}
+                            sizeScale={scale}
+                          />
+                        </div>
+                      </foreignObject>
+                    </motion.g>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        )}
 
       </div>
     </section>
