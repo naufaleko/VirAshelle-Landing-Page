@@ -161,6 +161,7 @@ function MilestoneCard({
           ? `0 14px 44px rgba(0,0,0,0.65), 0 0 50px ${col}20, 0 0 100px ${col}08, inset 0 1px 0 rgba(255,255,255,0.06)`
           : '0 2px 6px rgba(0,0,0,0.15)',
         backdropFilter: isActive ? 'blur(24px)' : 'none',
+        WebkitBackdropFilter: isActive ? 'blur(24px)' : 'none',
         zIndex: isActive ? 20 : 1,
       }}
     >
