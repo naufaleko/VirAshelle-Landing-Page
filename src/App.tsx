@@ -29,6 +29,15 @@ export default function App() {
               <AdminDashboard />
             </Suspense>
           } />
+          <Route path="/login" element={
+            <Suspense fallback={
+              <div className="fixed inset-0 bg-black flex items-center justify-center">
+                <div className="text-brand-light text-sm font-ui uppercase tracking-widest animate-pulse">Loading Login...</div>
+              </div>
+            }>
+              <AdminDashboard />
+            </Suspense>
+          } />
           <Route path="/UIComponents" element={
             <Suspense fallback={
               <div className="fixed inset-0 bg-black flex items-center justify-center">
