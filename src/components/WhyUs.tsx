@@ -352,41 +352,50 @@ function PentagonDesktop() {
             </motion.g>
 
             {/* Rotating dashed ring — starts after boot */}
-            <motion.circle
-              cx={CX} cy={CY} r={OUTER_R + 18}
-              fill="none"
-              stroke="#7d39eb"
-              strokeWidth="0.7"
-              strokeOpacity="0.18"
-              strokeDasharray="5 9"
-              initial={{ opacity: 0, rotate: 0 }}
-              animate={isInView ? { opacity: 1, rotate: 360 } : {}}
-              transition={{
-                opacity: { delay: 1.2, duration: 0.4 },
-                rotate: { delay: 1.2, duration: 28, repeat: Infinity, ease: 'linear' },
-              }}
-              style={{ originX: `${CX}px`, originY: `${CY}px` }}
-            />
+            <g transform={`translate(${CX}, ${CY})`}>
+              <motion.g
+                initial={{ opacity: 0, rotate: 0 }}
+                animate={isInView ? { opacity: 1, rotate: 360 } : {}}
+                transition={{
+                  opacity: { delay: 1.2, duration: 0.4 },
+                  rotate: { delay: 1.2, duration: 28, repeat: Infinity, ease: 'linear' },
+                }}
+              >
+                <circle
+                  cx={0}
+                  cy={0}
+                  r={OUTER_R + 18}
+                  fill="none"
+                  stroke="#7d39eb"
+                  strokeWidth="0.7"
+                  strokeOpacity="0.25"
+                  strokeDasharray="5 9"
+                />
+              </motion.g>
+            </g>
 
             {/* Center pulse circle */}
-            <motion.circle
-              cx={CX} cy={CY} r={22}
-              fill="rgba(125,57,235,0.15)"
-              stroke="#7d39eb"
-              strokeWidth="1.5"
-              initial={{ opacity: 0, scale: 0 }}
-              animate={isInView ? {
-                opacity: 1,
-                scale: 1,
-                r: [22, 25, 22],
-              } : {}}
-              transition={{
-                opacity: { delay: 1.1, duration: 0.3 },
-                scale:   { delay: 1.1, duration: 0.4, type: 'spring' },
-                r:       { delay: 1.4, duration: 2.5, repeat: Infinity, ease: 'easeInOut' },
-              }}
-              style={{ originX: `${CX}px`, originY: `${CY}px` }}
-            />
+            <g transform={`translate(${CX}, ${CY})`}>
+              <motion.circle
+                cx={0}
+                cy={0}
+                r={22}
+                fill="rgba(125,57,235,0.15)"
+                stroke="#7d39eb"
+                strokeWidth="1.5"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={isInView ? {
+                  opacity: 1,
+                  scale: 1,
+                  r: [22, 25, 22],
+                } : {}}
+                transition={{
+                  opacity: { delay: 1.1, duration: 0.3 },
+                  scale:   { delay: 1.1, duration: 0.4, type: 'spring' },
+                  r:       { delay: 1.4, duration: 2.5, repeat: Infinity, ease: 'easeInOut' },
+                }}
+              />
+            </g>
 
             <motion.text
               x={CX} y={CY + 1}
