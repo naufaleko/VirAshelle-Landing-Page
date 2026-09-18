@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../lib/AdminContext';
 import { SiteContent } from '../lib/useCms';
+import { formatBrandText } from '../lib/textFormat';
 
 type EditableTextProps = {
   contentKey: keyof SiteContent;
@@ -66,8 +67,8 @@ export function EditableText({ contentKey, field, className = '', as: Component 
     );
   }
 
-  // Convert \n to <br> so line breaks from Firebase are rendered properly
-  const processedValue = initialValue.replace(/\n/g, '<br/>');
+  // Convert formatting (*word* -> brand green span, \n -> <br/>)
+  const processedValue = formatBrandText(initialValue);
 
   return (
     <Component 

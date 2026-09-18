@@ -3,34 +3,27 @@ import { motion } from 'motion/react';
 import { Supergraphic } from './Supergraphic';
 import { useIsMobile } from '../lib/useIsMobile';
 
+// Offloaded to pure CSS keyframe (glitch-subtle) to save JavaScript main thread cycles
 function Glitch({ children, delay = 0, duration = 4 }: { children: React.ReactNode, delay?: number, duration?: number }) {
   return (
-    <motion.div
-      animate={{
-        opacity: [1, 1, 0, 1, 0.5, 1, 1, 0.2, 1],
-      }}
-      transition={{
-        duration,
-        repeat: Infinity,
-        repeatType: "loop",
-        times: [0, 0.8, 0.82, 0.85, 0.87, 0.9, 0.95, 0.97, 1],
-        delay,
-        ease: "linear"
+    <div
+      style={{
+        animation: `glitch-subtle ${duration}s linear ${delay}s infinite`,
+        willChange: 'opacity'
       }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
 function DataNode({ top, delay, duration }: { top: string, delay: number, duration: number }) {
-  // Faster speed (lower duration) = longer trail
   const trailLength = Math.max(80, 450 - (duration * 50));
 
   return (
     <motion.div
-      className="absolute left-0 z-0 flex items-center pointer-events-none"
-      style={{ top }}
+      className="absolute left-0 z-0 flex items-center pointer-events-none will-change-transform"
+      style={{ top, transform: 'translate3d(0,0,0)' }}
       animate={{
         x: ['-20vw', '120vw'],
         opacity: [0, 1, 1, 0],
@@ -45,7 +38,7 @@ function DataNode({ top, delay, duration }: { top: string, delay: number, durati
     >
       {/* Pixelated Trail */}
       <div 
-        className="h-[2px] opacity-70"
+        className="h-[2px] opacity-60"
         style={{
           width: `${trailLength}px`,
           backgroundImage: 'repeating-linear-gradient(to right, transparent, transparent 4px, var(--color-brand) 4px, var(--color-brand) 10px)',
@@ -53,7 +46,7 @@ function DataNode({ top, delay, duration }: { top: string, delay: number, durati
         }}
       />
       {/* Head Square */}
-      <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-brand-light shadow-[0_0_15px_2px_rgba(181,136,243,0.8)]" />
+      <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-brand-light shadow-[0_0_12px_2px_rgba(75,210,0,0.6)]" />
     </motion.div>
   );
 }
@@ -62,49 +55,48 @@ export function GlobalBackground() {
   const isMobile = useIsMobile();
 
   return (
-    <div className="fixed inset-0 z-[-50] bg-surface overflow-hidden pointer-events-none selection:bg-brand selection:text-white">
-      {/* ── Giant Infinite Scrolling Supergraphic — desktop only ── */}
-      {!isMobile && (
-        <motion.div 
-          className="absolute top-1/2 -translate-y-1/2 flex opacity-[0.03] pointer-events-none"
-          animate={{ x: ['-50%', '0%'] }}
-          transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
-        >
-          <div className="w-[150vw] shrink-0 h-[150vw] flex items-center justify-center">
-            <Supergraphic className="w-full h-full text-brand" />
-          </div>
-          <div className="w-[150vw] shrink-0 h-[150vw] flex items-center justify-center">
-            <Supergraphic className="w-full h-full text-brand" />
-          </div>
-        </motion.div>
-      )}
-
-      {/* ── Static supergraphic for mobile (no animation) ── */}
-      {isMobile && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.02] pointer-events-none">
-          <div className="w-[120vw] h-[120vw] flex items-center justify-center">
-            <Supergraphic className="w-full h-full text-brand" />
-          </div>
+    <div 
+      className="fixed inset-0 z-[-50] bg-surface overflow-hidden pointer-events-none selection:bg-brand selection:text-white"
+      style={{ transform: 'translate3d(0, 0, 0)', contain: 'strict' }}
+    >
+      {/* ── Giant Infinite Scrolling Supergraphic (Desktop & Mobile) ── */}
+      <motion.div 
+        className="absolute top-1/2 -translate-y-1/2 flex opacity-[0.035] md:opacity-[0.03] pointer-events-none will-change-transform"
+        style={{ transform: 'translate3d(0, 0, 0)' }}
+        animate={{ x: ['-50%', '0%'] }}
+        transition={{ 
+          duration: isMobile ? 45 : 60, 
+          repeat: Infinity, 
+          ease: 'linear' 
+        }}
+      >
+        <div className="w-[280vw] md:w-[150vw] shrink-0 flex items-center justify-center">
+          <Supergraphic className="w-full h-auto text-brand" />
         </div>
-      )}
+        <div className="w-[280vw] md:w-[150vw] shrink-0 flex items-center justify-center">
+          <Supergraphic className="w-full h-auto text-brand" />
+        </div>
+      </motion.div>
 
-      {/* ── Ambient Lighting / Gradient Blobs ── */}
-      {/* Primary gradient blob — smaller on mobile */}
+      {/* ── Ambient Lighting / Gradient Blobs — Natural Radial Gradient without GPU Blur ── */}
+      {/* Primary gradient blob */}
       <div 
-        className={`absolute rounded-full blur-[120px] opacity-60 ${
-          isMobile ? 'w-[400px] h-[400px] -top-20 -right-20' : 'w-[800px] h-[800px] -top-40 -right-40'
+        className={`absolute rounded-full pointer-events-none ${
+          isMobile ? 'w-[360px] h-[360px] -top-16 -right-16 opacity-50' : 'w-[750px] h-[750px] -top-32 -right-32 opacity-40'
         }`}
         style={{
-          background: 'radial-gradient(circle, rgba(125,57,235,0.25) 0%, rgba(125,57,235,0.05) 50%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(75, 210, 0, 0.14) 0%, rgba(75, 210, 0, 0.03) 40%, transparent 70%)',
+          transform: 'translate3d(0, 0, 0)',
         }}
       />
-      {/* Secondary gradient blob — smaller on mobile */}
+      {/* Secondary gradient blob */}
       <div 
-        className={`absolute rounded-full blur-[100px] opacity-60 ${
-          isMobile ? 'w-[300px] h-[300px] bottom-0 left-1/4' : 'w-[600px] h-[600px] bottom-0 left-1/4'
+        className={`absolute rounded-full pointer-events-none ${
+          isMobile ? 'w-[280px] h-[280px] bottom-0 left-1/4 opacity-40' : 'w-[550px] h-[550px] bottom-0 left-1/4 opacity-35'
         }`}
         style={{
-          background: 'radial-gradient(circle, rgba(49,17,102,0.3) 0%, rgba(49,17,102,0.05) 50%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(50, 140, 0, 0.10) 0%, rgba(25, 70, 0, 0.02) 40%, transparent 70%)',
+          transform: 'translate3d(0, 0, 0)',
         }}
       />
 

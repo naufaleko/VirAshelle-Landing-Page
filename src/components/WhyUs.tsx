@@ -529,7 +529,7 @@ export function WhyUs() {
   const isMobile = useIsMobile();
 
   return (
-    <section id="why-us" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden">
+    <section id="why-us" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden section-deferred">
       <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col items-center text-center">
         {/* Section header */}
         <motion.span

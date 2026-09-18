@@ -10,5 +10,10 @@ firebase-debug.log
 !firebase.json
 !firestore.rules
 !metadata.json
-!firebase-applet-config.json
-!firebase-blueprint.json
+!vercel.json
+
+.vercel
+.env*
+dist/
+qa-results/
+supabase/.temp/

@@ -10,7 +10,7 @@ export function KeyPeople() {
   const people = content.keyPeople || [];
 
   return (
-    <section id="key-people" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden">
+    <section id="key-people" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden section-deferred">
       <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col items-center">
         {/* Section header */}
         <motion.span
@@ -35,8 +35,8 @@ export function KeyPeople() {
           Key People
         </motion.h2>
         
-        {/* People Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full text-left">
+        {/* People Cards (Automatically Centered) */}
+        <div className="flex flex-wrap justify-center items-center gap-6 w-full max-w-7xl mx-auto">
           {people.map((person, i) => (
             <motion.div
               key={i}
@@ -44,7 +44,7 @@ export function KeyPeople() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative rounded-2xl overflow-hidden cursor-default h-[480px]"
+              className="group relative rounded-2xl overflow-hidden cursor-default h-[480px] w-full sm:w-[calc(50%-16px)] md:w-[280px] max-w-[320px]"
               style={isMobile ? {} : { perspective: '800px' }}
             >
               {/* Card with subtle 3D tilt on hover */}
@@ -72,11 +72,11 @@ export function KeyPeople() {
                 {/* Gradient overlay at bottom */}
                 <div className="absolute inset-0 bg-gradient-to-t from-brand via-brand/80 to-transparent opacity-90 translate-y-[60%] group-hover:translate-y-[50%] transition-transform duration-500 rounded-2xl" />
                 
-                {/* Text Area */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 relative z-20">
+                {/* Text Area (Centered) */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 relative z-20 text-center flex flex-col items-center">
                   <h3 className="text-xl font-display font-bold mb-1 text-white">{person.name}</h3>
                   <p className="text-white/80 tracking-[0.15em] uppercase text-[10px] mb-3 font-ui font-bold">{person.role}</p>
-                  <p className="text-white/70 text-xs leading-relaxed font-body opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                  <p className="text-white/70 text-xs leading-relaxed font-body opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 max-w-xs">
                     {person.desc}
                   </p>
                 </div>

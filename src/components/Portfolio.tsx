@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X } from 'lucide-react';
+import { X, Play } from 'lucide-react';
 import { Supergraphic } from './Supergraphic';
 import { useAdmin } from '../lib/AdminContext';
+import { VideoPlayer, getVideoThumbnail, isVideoMedia } from './VideoPlayer';
 
 export function Portfolio() {
   const { content } = useAdmin();
@@ -50,46 +51,73 @@ export function Portfolio() {
 
         {/* Portfolio Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {portfolioItems.map((item, index) => (
-            <motion.div
-              key={item.id}
-              layoutId={`portfolio-container-${item.id}`}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="group glass rounded-2xl overflow-hidden cursor-pointer hover:border-brand/30 transition-all duration-500"
-              onClick={() => setSelectedId(item.id)}
-            >
-              {/* Category tag */}
-              <div className="flex justify-between items-center p-5 pb-0 relative z-10">
-                <span className="text-[10px] text-brand-light uppercase font-ui font-bold tracking-[0.2em]">
-                  {item.category} / 0{index + 1}
-                </span>
-                <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] uppercase tracking-wider font-ui text-zinc-400 group-hover:border-brand/30 group-hover:text-brand-light transition-all duration-300">
-                  View
-                </div>
-              </div>
+          {portfolioItems.map((item, index) => {
+            const isVideo = item.type === 'video' || isVideoMedia(item.src);
 
-              {/* Image */}
-              <div className="p-4">
-                <div className="aspect-[4/3] w-full overflow-hidden rounded-xl relative">
-                  {item.type === 'image' ? (
-                    <motion.img
-                      layoutId={`portfolio-media-${item.id}`}
-                      src={item.src}
-                      alt={item.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-surface-card">
-                      <span className="text-zinc-500 uppercase tracking-widest text-xs font-ui">Video Content</span>
+            return (
+              <motion.div
+                key={item.id}
+                layoutId={`portfolio-container-${item.id}`}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-80px' }}
+                transition={{ duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="group glass rounded-2xl overflow-hidden cursor-pointer hover:border-brand/30 transition-all duration-500"
+                onClick={() => setSelectedId(item.id)}
+              >
+                {/* Category tag */}
+                <div className="flex justify-between items-center p-5 pb-0 relative z-10">
+                  <span className="text-[10px] text-brand-light uppercase font-ui font-bold tracking-[0.2em]">
+                    {item.category} / 0{index + 1}
+                  </span>
+                  <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] uppercase tracking-wider font-ui text-zinc-400 group-hover:border-brand/30 group-hover:text-brand-light transition-all duration-300">
+                    View
+                  </div>
+                </div>
+
+                {/* Image / Video Card */}
+                <div className="p-4">
+                  <div className="aspect-[4/3] w-full overflow-hidden rounded-xl relative bg-zinc-950">
+                    {!isVideo ? (
+                      <motion.img
+                        layoutId={`portfolio-media-${item.id}`}
+                        src={item.src}
+                        alt={item.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                    ) : (
+                    <div className="w-full h-full relative group/vid">
+                      {getVideoThumbnail(item.src) ? (
+                        <img
+                          src={getVideoThumbnail(item.src)!}
+                          alt={item.title}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <video
+                          src={item.src}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80"
+                          muted
+                          playsInline
+                          preload="metadata"
+                        />
+                      )}
+                      {/* Play badge overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-black/60 border border-white/20 backdrop-blur-md flex items-center justify-center text-[#4BD200] group-hover:scale-110 group-hover:bg-[#4BD200] group-hover:text-black transition-all duration-300 shadow-2xl">
+                          <Play size={18} className="fill-current translate-x-0.5" />
+                        </div>
+                      </div>
+                      <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[9px] font-mono text-white/80 font-bold uppercase tracking-wider">
+                        VIDEO
+                      </div>
                     </div>
                   )}
                   
                   {/* Hover overlay with gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
                     <span className="text-white font-display font-bold text-lg tracking-tight">{item.title}</span>
                   </div>
                 </div>
@@ -102,7 +130,8 @@ export function Portfolio() {
                 </h3>
               </div>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -128,8 +157,8 @@ export function Portfolio() {
                 <X size={20} />
               </button>
               
-              <div className="flex-1 overflow-hidden relative bg-black flex items-center justify-center">
-                {selectedItem.type === 'image' ? (
+              <div className="flex-1 overflow-hidden relative bg-black flex items-center justify-center" style={{ minHeight: '50vh' }}>
+                {!(selectedItem.type === 'video' || isVideoMedia(selectedItem.src)) ? (
                   <motion.img
                     layoutId={`portfolio-media-${selectedItem.id}`}
                     src={selectedItem.src}
@@ -137,12 +166,9 @@ export function Portfolio() {
                     className="w-full h-full object-contain"
                   />
                 ) : (
-                  <iframe
-                    src={selectedItem.src}
-                    className="w-full h-full"
-                    allow="autoplay"
-                    allowFullScreen
-                  />
+                  <div className="w-full h-full aspect-video flex-shrink-0">
+                    <VideoPlayer src={selectedItem.src} />
+                  </div>
                 )}
               </div>
               
@@ -154,6 +180,11 @@ export function Portfolio() {
               >
                 <h3 className="text-2xl font-display font-bold tracking-tight">{selectedItem.title}</h3>
                 <p className="text-brand-light mt-2 text-sm font-ui uppercase tracking-widest">{selectedItem.category}</p>
+                {selectedItem.desc && (
+                  <p className="text-zinc-400 mt-4 text-sm font-body leading-relaxed whitespace-pre-wrap">
+                    {selectedItem.desc}
+                  </p>
+                )}
               </motion.div>
             </motion.div>
           </div>

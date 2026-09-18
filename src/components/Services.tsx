@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { useAdmin } from '../lib/AdminContext';
+import { VideoPlayer, getVideoThumbnail, isVideoMedia } from './VideoPlayer';
 
 const SERVICE_ICONS = [];
 
-function matchesService(category: string, serviceIndex: number): boolean {
+function matchesService(category: string, serviceIndex: number, serviceTitle?: string): boolean {
   if (!category) return false;
   const lc = category.toLowerCase().trim();
   
+  if (serviceTitle && lc === serviceTitle.toLowerCase().trim()) return true;
+
   const defaults = ['video', 'motion', '3d', 'graphic'];
   if (defaults.includes(lc)) return lc === defaults[serviceIndex];
 
@@ -20,80 +23,15 @@ function matchesService(category: string, serviceIndex: number): boolean {
   return false;
 }
 
-function VideoPlayer({ src }: { src: string }) {
-  if (!src) return null;
-  
-  let embedUrl = src;
-  const isDirectVideo = src.endsWith('.mp4') || src.endsWith('.webm') || src.endsWith('.mov') || src.includes('cloudinary.com/video/upload');
-
-  if (isDirectVideo) {
-    return (
-      <video controls className="w-full h-full object-contain bg-black">
-        <source src={src} type={src.endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
-        Your browser does not support the video tag.
-      </video>
-    );
-  }
-
-  // Handle YouTube
-  if (src.includes('youtube.com/watch')) {
-    try {
-      const urlObj = new URL(src);
-      const videoId = urlObj.searchParams.get('v');
-      if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}`;
-    } catch (e) {}
-  } else if (src.includes('youtu.be/')) {
-    const videoId = src.split('youtu.be/')[1]?.split('?')[0];
-    if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}`;
-  } 
-  // Handle Vimeo
-  else if (src.includes('vimeo.com/') && !src.includes('player.vimeo.com')) {
-    const videoId = src.split('vimeo.com/')[1]?.split('?')[0];
-    if (videoId) embedUrl = `https://player.vimeo.com/video/${videoId}`;
-  }
-  // Handle Google Drive
-  else if (src.includes('drive.google.com/file/d/')) {
-    const videoId = src.split('file/d/')[1]?.split('/')[0];
-    if (videoId) embedUrl = `https://drive.google.com/file/d/${videoId}/preview`;
-  }
-
-  return (
-    <iframe
-      src={embedUrl}
-      className="w-full h-full border-none"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      allowFullScreen
-    />
-  );
-}
-
-function getVideoThumbnail(url: string) {
-  if (!url) return null;
-  if (url.includes('youtube.com/watch')) {
-    try {
-      const urlObj = new URL(url);
-      const videoId = urlObj.searchParams.get('v');
-      if (videoId) return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-    } catch (e) {}
-  } else if (url.includes('youtu.be/')) {
-    const videoId = url.split('youtu.be/')[1]?.split('?')[0];
-    if (videoId) return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-  } else if (url.includes('drive.google.com/file/d/')) {
-    const videoId = url.split('file/d/')[1]?.split('/')[0];
-    if (videoId) return `https://drive.google.com/thumbnail?id=${videoId}&sz=w1280-h720`;
-  }
-  return null;
-}
-
 export function Services() {
   const { content } = useAdmin();
-  const servicesData = content.services;
+  const servicesData = content.services || { title: '', description: '', items: [] };
   const portfolioItems = content.portfolio?.items || [];
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selectedItem = portfolioItems.find((item) => item.id === selectedId);
 
   return (
-    <section id="services" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden">
+    <section id="services" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden section-deferred">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
 
         {/* ── Section Header ── */}
@@ -124,8 +62,8 @@ export function Services() {
 
         {/* ── Service Rows ── */}
         <div className="flex flex-col gap-0">
-          {servicesData.items.map((service, index) => {
-            const works = portfolioItems.filter((item) => matchesService(item.category, index));
+          {(servicesData.items || []).map((service, index) => {
+            const works = portfolioItems.filter((item) => matchesService(item.category, index, service.title));
 
             return (
               <motion.div
@@ -179,7 +117,7 @@ export function Services() {
                         >
                           {/* Thumbnail */}
                           <div className="aspect-[4/3] w-full overflow-hidden relative bg-surface-card">
-                            {item.type === 'image' ? (
+                            {!(item.type === 'video' || isVideoMedia(item.src)) ? (
                               <img
                                 src={item.src}
                                 alt={item.title}
@@ -270,7 +208,7 @@ export function Services() {
               >
                 <X size={20} />
               </button>
-              {selectedItem.type === 'image' ? (
+              {!(selectedItem.type === 'video' || isVideoMedia(selectedItem.src)) ? (
                 <div
                   className="flex-1 overflow-hidden relative bg-black flex items-center justify-center"
                   style={{ minHeight: '55vh' }}

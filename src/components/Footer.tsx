@@ -4,6 +4,7 @@ import { Supergraphic } from './Supergraphic';
 import { useAdmin } from '../lib/AdminContext';
 import { motion } from 'motion/react';
 import { ArrowUp } from 'lucide-react';
+import { formatBrandText } from '../lib/textFormat';
 
 export function Footer() {
   const { content } = useAdmin();
@@ -14,7 +15,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative bg-transparent text-white pt-32 pb-12 overflow-hidden border-t border-white/5">
+    <footer className="relative bg-transparent text-white pt-32 pb-12 overflow-hidden border-t border-white/5 section-deferred">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-32">
           {/* CTA Column */}
@@ -28,7 +29,7 @@ export function Footer() {
             <Logo className="h-12 text-brand mb-12" />
             <h3 
               className="text-5xl md:text-7xl font-display font-bold tracking-[-0.04em] leading-[0.9] max-w-md uppercase"
-              dangerouslySetInnerHTML={{ __html: (footerData?.title || "LET'S <span class=\"text-brand\">BUILD</span><br/>THE FUTURE").replace(/\n/g, '<br/>') }}
+              dangerouslySetInnerHTML={{ __html: formatBrandText(footerData?.title || "LET'S *BUILD*\nTHE FUTURE") }}
             />
             <div className="mt-12 flex flex-col items-start gap-4">
               <p className="text-zinc-500 text-sm font-ui uppercase tracking-[0.15em]">Ready to start your next project?</p>
@@ -101,12 +102,12 @@ export function Footer() {
           {/* Back to top */}
           <motion.button
             onClick={scrollToTop}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="group flex items-center gap-3 text-zinc-500 hover:text-brand-light transition-colors duration-300"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="group flex items-center gap-3 text-zinc-500 hover:text-brand-light transition-colors duration-300 mr-12 sm:mr-14 cursor-pointer"
           >
             <span className="text-[10px] uppercase tracking-[0.2em] font-ui">Back to top</span>
-            <div className="w-10 h-10 rounded-full border border-white/10 group-hover:border-brand/40 flex items-center justify-center transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(125,57,235,0.15)]">
+            <div className="w-10 h-10 rounded-full border border-white/10 group-hover:border-brand/40 flex items-center justify-center transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(75,210,0,0.15)]">
               <ArrowUp size={14} />
             </div>
           </motion.button>

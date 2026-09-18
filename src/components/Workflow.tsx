@@ -8,7 +8,7 @@ export function Workflow() {
   const steps = workflowData?.items || [];
 
   return (
-    <section id="workflow" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden">
+    <section id="workflow" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden section-deferred">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
 
         {/* ── Section Header ── */}

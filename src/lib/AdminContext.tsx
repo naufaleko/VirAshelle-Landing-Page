@@ -1,10 +1,11 @@
 import React, { createContext, useContext } from 'react';
 import { useAuth } from './useAuth';
 import { useCms, SiteContent } from './useCms';
-import { User } from 'firebase/auth';
+import { User } from '@supabase/supabase-js';
 
 type AdminContextType = {
   user: User | null;
+  loading: boolean;
   error: string | null;
   loginWithId: (id: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -17,12 +18,12 @@ type AdminContextType = {
 const AdminContext = createContext<AdminContextType | null>(null);
 
 export function AdminProvider({ children }: { children: React.ReactNode }) {
-  const { user, error, loginWithId, logout } = useAuth();
+  const { user, loading, error, loginWithId, logout } = useAuth();
   const { content, updateContent } = useCms();
   const [isAdminMode, setIsAdminMode] = React.useState(false);
 
   return (
-    <AdminContext.Provider value={{ user, error, loginWithId, logout, content, updateContent, isAdminMode, setIsAdminMode }}>
+    <AdminContext.Provider value={{ user, loading, error, loginWithId, logout, content, updateContent, isAdminMode, setIsAdminMode }}>
       {children}
     </AdminContext.Provider>
   );

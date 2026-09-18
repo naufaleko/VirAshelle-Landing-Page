@@ -415,7 +415,7 @@ export function Milestone() {
   const foH = compactH + expandBuffer;
 
   return (
-    <section id="milestones" className="relative pt-20 pb-0 md:pt-28 md:pb-0 bg-transparent text-white overflow-hidden">
+    <section id="milestones" className="relative pt-20 pb-0 md:pt-28 md:pb-0 bg-transparent text-white overflow-hidden section-deferred">
       <style>{`
         .milestone-scroll::-webkit-scrollbar {
           width: 4px;

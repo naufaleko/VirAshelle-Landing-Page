@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { db } from './firebase';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { supabase } from './supabase';
 
 export type SiteContent = {
   hero: {
@@ -152,7 +151,7 @@ const defaultContent: SiteContent = {
       imageUrl: ""
     },
     {
-      name: "Iqbaal Fadilla",
+      name: "Dixon",
       role: "Production",
       desc: "The builder. Takes the concept and turns it into a high-quality visual reality.",
       imageUrl: ""
@@ -211,29 +210,102 @@ const sanitizeData = (obj: any): any => {
   return obj;
 };
 
+const isNonEmptyObject = (val: any) =>
+  val && typeof val === 'object' && !Array.isArray(val) && Object.keys(val).length > 0;
+
+const mergeContent = (base: SiteContent, incoming: any): SiteContent => {
+  if (!incoming || typeof incoming !== 'object') return base;
+
+  return {
+    hero: isNonEmptyObject(incoming.hero) ? { ...base.hero, ...incoming.hero } : base.hero,
+    about: isNonEmptyObject(incoming.about) ? { ...base.about, ...incoming.about } : base.about,
+    services: isNonEmptyObject(incoming.services) && Array.isArray(incoming.services.items) && incoming.services.items.length > 0
+      ? { ...base.services, ...incoming.services }
+      : base.services,
+    whyUs: isNonEmptyObject(incoming.whyUs) && Array.isArray(incoming.whyUs.items) && incoming.whyUs.items.length > 0
+      ? { ...base.whyUs, ...incoming.whyUs }
+      : base.whyUs,
+    workflow: isNonEmptyObject(incoming.workflow) && Array.isArray(incoming.workflow.items) && incoming.workflow.items.length > 0
+      ? { ...base.workflow, ...incoming.workflow }
+      : base.workflow,
+    portfolio: isNonEmptyObject(incoming.portfolio) && Array.isArray(incoming.portfolio.items) && incoming.portfolio.items.length > 0
+      ? { ...base.portfolio, ...incoming.portfolio }
+      : base.portfolio,
+    milestone: isNonEmptyObject(incoming.milestone) && Array.isArray(incoming.milestone.items) && incoming.milestone.items.length > 0
+      ? { ...base.milestone, ...incoming.milestone }
+      : base.milestone,
+    keyPeople: Array.isArray(incoming.keyPeople) && incoming.keyPeople.length > 0
+      ? incoming.keyPeople
+      : base.keyPeople,
+    clients: isNonEmptyObject(incoming.clients) && Array.isArray(incoming.clients.items) && incoming.clients.items.length > 0
+      ? { ...base.clients, ...incoming.clients }
+      : base.clients,
+    header: isNonEmptyObject(incoming.header) ? { ...base.header, ...incoming.header } : base.header,
+    footer: isNonEmptyObject(incoming.footer) ? { ...base.footer, ...incoming.footer } : base.footer,
+  };
+};
+
 export function useCms() {
   const [content, setContent] = useState<SiteContent>(defaultContent);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const docRef = doc(db, 'siteContent', 'main');
-    
-    const unsubscribe = onSnapshot(docRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setContent({ ...defaultContent, ...sanitizeData(data) });
+    const fetchContent = async () => {
+      const { data } = await supabase
+        .from('site_content')
+        .select('*')
+        .eq('id', 'main')
+        .single();
+
+      if (data) {
+        const mappedData = {
+          ...data,
+          whyUs: data.why_us ?? data.whyUs,
+          keyPeople: data.key_people ?? data.keyPeople
+        };
+        setContent(mergeContent(defaultContent, sanitizeData(mappedData)));
       } else {
         setContent(defaultContent);
       }
       setLoading(false);
-    });
+    };
 
-    return () => unsubscribe();
+    fetchContent();
+
+    const channel = supabase
+      .channel('cms')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_content', filter: 'id=eq.main' }, (payload) => {
+        const newData = payload.new as any;
+        if (newData) {
+          const mappedData = {
+            ...newData,
+            whyUs: newData.why_us ?? newData.whyUs,
+            keyPeople: newData.key_people ?? newData.keyPeople
+          };
+          setContent((prev) => mergeContent(prev, sanitizeData(mappedData)));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const updateContent = async (newContent: SiteContent) => {
     try {
-      await setDoc(doc(db, 'siteContent', 'main'), newContent);
+      const { whyUs, keyPeople, ...rest } = newContent;
+      const contentFields = {
+        ...rest,
+        why_us: whyUs,
+        key_people: keyPeople
+      };
+      
+      const { error } = await supabase
+        .from('site_content')
+        .upsert({ id: 'main', ...contentFields, updated_at: new Date().toISOString() });
+        
+      if (error) throw error;
     } catch (error) {
       console.error("Failed to update content", error);
       alert("Failed to update content. Are you logged in as admin?");

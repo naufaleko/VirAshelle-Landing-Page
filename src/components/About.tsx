@@ -4,7 +4,7 @@ import { EditableText } from './EditableText';
 
 export function About() {
   return (
-    <section id="about" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden">
+    <section id="about" className="relative py-20 md:py-28 bg-transparent text-white overflow-hidden section-deferred">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="flex flex-col items-center text-center w-full">
           {/* Section label */}

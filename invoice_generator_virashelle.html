@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Generator - VirAshelle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Library untuk download PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        #invoice-card {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: auto;
+            background: white;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            background-color: #ffffff;
+        }
+        #watermark-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            width: 80%;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            background: transparent;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0; /* Menghilangkan margin default browser */
+            }
+            
+            /* 1. PAKSA SEMUA WARNA BACKGROUND TERCETAK */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            
+            body, html {
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            .no-print { display: none !important; }
+            
+            main {
+                display: block !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: none !important;
+            }
+            
+            .lg\:col-span-2 {
+                background: transparent !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important;
+            }
+            
+            /* 2. PAKSA UKURAN PAS 1 LEMBAR A4 (Mencegah Halaman 2 Kosong) */
+            #invoice-card {
+                box-shadow: none !important; /* Hilangkan bayangan saat diprint */
+                margin: 0 !important;
+                width: 210mm !important;
+                height: 297mm !important; 
+                max-height: 297mm !important;
+                overflow: hidden !important;
+            }
+            
+            /* 3. PAKSA KOTAK LOGO TETAP HITAM */
+            #preview-logo-container {
+                background-color: #000000 !important;
+            }
+            
+            /* 4. PASTIKAN WATERMARK TETAP MUNCUL */
+            #watermark-container {
+                opacity: 0.1 !important;
+                z-index: 0 !important;
+                display: flex !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen pb-10">
+
+    <!-- Header / Nav -->
+    <nav class="bg-white shadow-sm p-4 mb-6 no-print sticky top-0 z-50 border-b">
+        <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <h1 class="text-xl font-bold text-blue-600">VirAshelle Invoice Maker</h1>
+            <div class="flex gap-2">
+                <button onclick="saveProject()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 border border-gray-300 text-sm">
+                    💾 Simpan Proyek
+                </button>
+                <label class="bg-bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 border border-gray-300 cursor-pointer text-sm">
+                    📂 Buka Proyek
+                    <input type="file" id="load-project" accept=".json" class="hidden" onchange="loadProject(event)">
+                </label>
+                <button onclick="downloadPDF()" id="download-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition flex items-center gap-2 shadow-lg text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download PDF (A4)
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Form Editor (Kiri) -->
+        <div class="lg:col-span-1 space-y-6 no-print h-fit">
+            <!-- Asset & Branding -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-lg font-semibold mb-4 border-b pb-2">Branding Assets</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 text-xs">Logo Utama</label>
+                        <input type="file" id="input-logo" accept="image/*" onchange="handleImageUpload(event, 'preview-logo')" class="w-full mt-1 text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 text-xs">Watermark</label>
+                        <input type="file" id="input-watermark" accept="image/*" onchange="handleImageUpload(event, 'preview-watermark')" class="w-full mt-1 text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 text-xs">Nama Bisnis</label>
+                        <input type="text" id="input-biz-name" value="VirAshelle" oninput="updatePreview()" class="w-full mt-1 p-2 border rounded-md text-sm outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 text-xs">Tagline</label>
+                        <input type="text" id="input-biz-tag" value="PRODUCTION HOUSE" oninput="updatePreview()" class="w-full mt-1 p-2 border rounded-md text-sm outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 text-xs">No. HP</label>
+                        <input type="text" id="input-biz-phone" value="085173339084" oninput="updatePreview()" class="w-full mt-1 p-2 border rounded-md text-sm outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 text-xs">Email</label>
+                        <input type="email" id="input-biz-email" value="naufaleko7271@gmail.com" oninput="updatePreview()" class="w-full mt-1 p-2 border rounded-md text-sm outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Transaksi -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-lg font-semibold mb-4 border-b pb-2 text-sm">Detail Transaksi</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 text-xs">Tipe Pembayaran</label>
+                        <select id="input-payment-type" onchange="togglePaymentType()" class="w-full mt-1 p-2 border rounded-md text-sm outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="dp">Down Payment (DP)</option>
+                            <option value="full">Lunas (Full Payment)</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 text-xs">No. Invoice</label>
+                            <input type="text" id="input-no-inv" value="#0028" oninput="updatePreview()" class="w-full mt-1 p-2 border rounded-md text-sm outline-none">
+                        </div>
+                        <div id="dp-input-container">
+                            <label class="block text-sm font-medium text-gray-700 text-xs">DP (%)</label>
+                            <input type="number" id="input-dp-percent" value="30" oninput="updatePreview()" class="w-full mt-1 p-2 border rounded-md text-sm outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 text-xs">Nama Klien</label>
+                        <input type="text" id="input-client-name" value="Stupa Studio" oninput="updatePreview()" class="w-full mt-1 p-2 border rounded-md text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 text-xs">Alamat Klien</label>
+                        <textarea id="input-client-address" oninput="updatePreview()" class="w-full mt-1 p-2 border rounded-md text-sm h-16 outline-none">Cipete Sel, Kec. Cilandak, Jakarta Selatan</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Item Pekerjaan Dinamis -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 class="text-lg font-semibold text-sm">Daftar Item</h2>
+                    <button onclick="addItem()" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1 rounded text-xs font-bold border border-blue-200 transition">
+                        + Tambah Item
+                    </button>
+                </div>
+                <div id="items-container" class="space-y-6">
+                    <!-- Item baris akan muncul di sini via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview (Kanan) -->
+        <div class="lg:col-span-2 overflow-x-auto bg-gray-300 p-4 rounded-xl flex justify-center">
+            <!-- Ini adalah area A4 yang akan di-download -->
+            <div id="invoice-card" class="shadow-2xl">
+                <!-- Watermark -->
+                <div id="watermark-container">
+                    <!-- SVG ini disembunyikan dan akan otomatis di-render ke PNG via JS -->
+                    <svg id="default-watermark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2672.53 1392.62" width="2672" height="1392" class="w-full h-full hidden" fill="#000000">
+                        <path d="M1656.26,0l-2.52,11.95-845.44,1376.85c-33.06-2.1-73.73,4.63-105.8,.73-3.55-.43-6.99-.11-9.42-3.45-151.46-252.9-307.97-502.75-460.98-754.68-25.57-42.1-77.19-115.29-94.51-156.34-1.71-4.06-3.35-7.26-2.53-11.95h233.16l380.26,619.87,5.64,4.02L1423.1,0h233.16Z"/>
+                        <path d="M2672.53,1389.33h-876.37l-7.09-4.24-422.57-698.46L1786.51,0h231.56l-411.71,691.24,300.78,516.36,608.74,2.31,8.55,4.32c41.68,52.32,88.71,100.12,131.95,151.07,5.44,6.41,14.07,16,16.17,24.04Z"/>
+                        <polygon points="2257.66 221.91 1975.78 693.08 2180.48 1035.57 1939.28 1035.57 1737.34 698.72 1736.71 686.9 2016.46 221.91 2257.66 221.91"/>
+                        <path d="M233.16,845.82l323.18,529.12c-2.74,11.65-13.47,13.59-23.93,14.55-50.23,4.6-142.37,3.74-193.25-.02-4.96-.37-13.32-.53-16.7-4.25L2.52,857.77l-2.52-11.95h233.16Z"/>
+                        <path d="M1424.71,1389.33c-85.13-148.69-177.89-293.08-266.47-439.8l116.88-196.96,390.79,636.75h-241.2Z"/>
+                        <path d="M815.27,0c2.9,.49,7.61,4.35,9.16,7.26l256.27,422.32-117.53,194.34L582.1,0h233.16Z"/>
+                    </svg>
+                    <!-- Ini yang akan terlihat dan terbaca saat di Print PDF (karena formatnya IMG/PNG) -->
+                    <img id="preview-watermark" src="" class="w-full h-full object-contain block" alt="Watermark">
+                </div>
+
+                <div class="content-wrapper">
+                    <!-- Header Branding -->
+                    <div class="flex flex-col items-start mb-10">
+                        <div id="preview-logo-container" class="bg-black w-24 h-24 flex items-center justify-center mb-4 overflow-hidden p-2">
+                            <!-- SVG ini disembunyikan dan akan otomatis di-render ke PNG via JS -->
+                            <svg id="default-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2672.53 1392.62" width="2672" height="1392" class="w-full h-full hidden" fill="#ffffff">
+                                <path d="M1656.26,0l-2.52,11.95-845.44,1376.85c-33.06-2.1-73.73,4.63-105.8,.73-3.55-.43-6.99-.11-9.42-3.45-151.46-252.9-307.97-502.75-460.98-754.68-25.57-42.1-77.19-115.29-94.51-156.34-1.71-4.06-3.35-7.26-2.53-11.95h233.16l380.26,619.87,5.64,4.02L1423.1,0h233.16Z"/>
+                                <path d="M2672.53,1389.33h-876.37l-7.09-4.24-422.57-698.46L1786.51,0h231.56l-411.71,691.24,300.78,516.36,608.74,2.31,8.55,4.32c41.68,52.32,88.71,100.12,131.95,151.07,5.44,6.41,14.07,16,16.17,24.04Z"/>
+                                <polygon points="2257.66 221.91 1975.78 693.08 2180.48 1035.57 1939.28 1035.57 1737.34 698.72 1736.71 686.9 2016.46 221.91 2257.66 221.91"/>
+                                <path d="M233.16,845.82l323.18,529.12c-2.74,11.65-13.47,13.59-23.93,14.55-50.23,4.6-142.37,3.74-193.25-.02-4.96-.37-13.32-.53-16.7-4.25L2.52,857.77l-2.52-11.95h233.16Z"/>
+                                <path d="M1424.71,1389.33c-85.13-148.69-177.89-293.08-266.47-439.8l116.88-196.96,390.79,636.75h-241.2Z"/>
+                                <path d="M815.27,0c2.9,.49,7.61,4.35,9.16,7.26l256.27,422.32-117.53,194.34L582.1,0h233.16Z"/>
+                            </svg>
+                            <img id="preview-logo" src="" class="w-full h-full object-contain block" alt="Logo">
+                        </div>
+                        <h1 id="preview-biz-name" class="text-3xl font-black text-blue-600 tracking-tighter leading-tight uppercase">VirAshelle</h1>
+                        <p id="preview-biz-tag" class="text-sm font-medium tracking-[0.2em] text-gray-600 -mt-1 uppercase">PRODUCTION HOUSE</p>
+                        
+                        <div class="mt-6 text-[10pt] text-gray-700 leading-relaxed max-w-xs">
+                            <p class="flex items-center gap-2"><span>📞</span> <span id="preview-biz-phone">085173339084</span></p>
+                            <p class="flex items-center gap-2"><span>✉️</span> <span id="preview-biz-email">naufaleko7271@gmail.com</span></p>
+                            <p class="flex items-start gap-2 mt-1"><span>📍</span> Jakarta</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-8">
+                        <h2 class="text-4xl font-light text-gray-300 mb-6 uppercase tracking-widest">Invoice</h2>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 uppercase">Ditagihkan kepada:</p>
+                                <p id="preview-client-name" class="font-bold text-gray-800 text-lg mt-1">Stupa Studio</p>
+                                <p id="preview-client-address" class="text-xs text-gray-600 leading-relaxed mt-1 pr-10">Cipete Sel, Kec. Cilandak, Jakarta Selatan</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs font-bold text-gray-500 uppercase">No. Invoice</p>
+                                <p id="preview-no-inv" class="font-bold text-gray-800 text-lg mt-1">#0028</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <table class="w-full mb-8 border-collapse">
+                        <thead>
+                            <tr class="border-b-2 border-gray-100">
+                                <th class="text-left py-3 text-xs font-bold text-gray-500 uppercase tracking-wider w-1/2">Produk/Jasa</th>
+                                <th class="text-center py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Qty</th>
+                                <th class="text-right py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Harga Satuan</th>
+                                <th class="text-right py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Jumlah</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preview-items-body">
+                            <!-- Items row via JS -->
+                        </tbody>
+                    </table>
+
+                    <div class="flex justify-end mb-10">
+                        <div class="w-1/2 space-y-2">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-500">Sub-total</span>
+                                <span id="preview-subtotal" class="font-semibold text-gray-800">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm" id="preview-dp-row">
+                                <span id="preview-dp-label" class="text-gray-500">DP 30%</span>
+                                <span id="preview-dp-value" class="font-semibold text-gray-800">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-blue-50 p-3 rounded-md mt-2">
+                                <span id="preview-grand-total-label" class="text-xs font-bold text-blue-900 leading-tight uppercase">Tagihan Down Payment</span>
+                                <span id="preview-grand-total" class="text-lg font-black text-blue-600">Rp 0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-10 text-[9pt] text-gray-600 leading-relaxed border-l-2 border-blue-600 pl-4 bg-gray-50 p-3">
+                        <p class="font-bold text-gray-800 mb-1">Keterangan:</p>
+                        <ul class="space-y-1">
+                            <li id="note-1">• Invoice ini berlaku sebagai pengajuan pembayaran uang muka (DP) sebesar 30% untuk pengerjaan.</li>
+                            <li id="note-2">• Sisa pembayaran sebesar 70% (Rp 0) akan ditagihkan setelah proyek selesai.</li>
+                        </ul>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 items-end mt-auto">
+                        <div>
+                            <p class="text-[9pt] font-bold text-gray-800 mb-1">Informasi Pembayaran</p>
+                            <div class="bg-gray-50 p-3 rounded-md border border-gray-100 text-[9pt]">
+                                <p class="font-black text-blue-800">BANK BCA</p>
+                                <p class="text-gray-700">No. Rekening <span class="font-bold">7550429335</span></p>
+                                <p class="text-gray-700 italic">Atas nama Naufal Eko Fahrizi</p>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-[9pt] text-gray-600 mb-12">Hormat kami,</p>
+                            <p id="preview-signature" class="font-bold text-gray-800 underline uppercase tracking-tighter">VirAshelle</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // State Management
+        let items = [
+            { name: 'Animasi 3D', qty: 1, price: 7000000 }
+        ];
+
+        function formatRupiah(number) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(number).replace('IDR', 'Rp');
+        }
+
+        // FUNGSI BARU: Mengubah SVG menjadi File PNG on-the-fly di Browser
+        function convertSvgToPng(svgId, imgId) {
+            const svg = document.getElementById(svgId);
+            const img = document.getElementById(imgId);
+            if (!svg || !img) return;
+
+            const xml = new XMLSerializer().serializeToString(svg);
+            const svg64 = btoa(unescape(encodeURIComponent(xml)));
+            const image64 = 'data:image/svg+xml;base64,' + svg64;
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const tempImg = new Image();
+            
+            tempImg.onload = function() {
+                // Skala /2 agar resolusi besar tapi tidak crash memorinya
+                canvas.width = tempImg.width / 2;
+                canvas.height = tempImg.height / 2;
+                ctx.drawImage(tempImg, 0, 0, canvas.width, canvas.height);
+                
+                img.src = canvas.toDataURL('image/png');
+            };
+            tempImg.src = image64;
+        }
+
+        function togglePaymentType() {
+            const type = document.getElementById('input-payment-type').value;
+            const dpContainer = document.getElementById('dp-input-container');
+            if (type === 'full') {
+                dpContainer.style.display = 'none';
+            } else {
+                dpContainer.style.display = 'block';
+            }
+            updatePreview();
+        }
+
+        function handleImageUpload(event, previewId) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById(previewId);
+                    img.src = e.target.result;
+                    updatePreview();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderItemInputs() {
+            const container = document.getElementById('items-container');
+            container.innerHTML = '';
+            
+            items.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'p-3 bg-gray-50 rounded-lg border border-gray-100 relative pt-8';
+                itemDiv.innerHTML = `
+                    <button onclick="removeItem(${index})" class="absolute top-2 right-2 text-red-400 hover:text-red-600 text-xs font-bold bg-white border px-2 py-1 rounded shadow-sm">Hapus</button>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-gray-400">Deskripsi Pekerjaan</label>
+                            <input type="text" value="${item.name}" oninput="updateItem(${index}, 'name', this.value)" class="w-full mt-1 p-2 border rounded text-xs outline-none focus:ring-1 focus:ring-blue-400">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] uppercase font-bold text-gray-400">Qty</label>
+                                <input type="number" value="${item.qty}" oninput="updateItem(${index}, 'qty', this.value)" class="w-full mt-1 p-2 border rounded text-xs outline-none focus:ring-1 focus:ring-blue-400">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase font-bold text-gray-400">Harga (Rp)</label>
+                                <input type="number" value="${item.price}" oninput="updateItem(${index}, 'price', this.value)" class="w-full mt-1 p-2 border rounded text-xs outline-none focus:ring-1 focus:ring-blue-400">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        function addItem() {
+            items.push({ name: '', qty: 1, price: 0 });
+            renderItemInputs();
+            updatePreview();
+        }
+
+        function removeItem(index) {
+            if (items.length > 1) {
+                items.splice(index, 1);
+                renderItemInputs();
+                updatePreview();
+            }
+        }
+
+        function updateItem(index, field, value) {
+            if (field === 'qty' || field === 'price') {
+                items[index][field] = parseInt(value) || 0;
+            } else {
+                items[index][field] = value;
+            }
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const bizName = document.getElementById('input-biz-name').value;
+            const bizTag = document.getElementById('input-biz-tag').value;
+            const bizPhone = document.getElementById('input-biz-phone').value;
+            const bizEmail = document.getElementById('input-biz-email').value;
+            const noInv = document.getElementById('input-no-inv').value;
+            const clientName = document.getElementById('input-client-name').value;
+            const clientAddress = document.getElementById('input-client-address').value;
+            
+            const paymentType = document.getElementById('input-payment-type').value;
+            const dpPercent = paymentType === 'dp' ? (parseInt(document.getElementById('input-dp-percent').value) || 0) : 100;
+
+            const tbody = document.getElementById('preview-items-body');
+            tbody.innerHTML = '';
+            
+            let subtotal = 0;
+            items.forEach(item => {
+                const totalRow = item.qty * item.price;
+                subtotal += totalRow;
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-50';
+                tr.innerHTML = `
+                    <td class="py-3 font-semibold text-gray-800 text-sm">${item.name || '-'}</td>
+                    <td class="py-3 text-center text-gray-700 text-sm">${item.qty}</td>
+                    <td class="py-3 text-right text-gray-700 text-sm">${formatRupiah(item.price)}</td>
+                    <td class="py-3 text-right font-bold text-gray-800 text-sm">${formatRupiah(totalRow)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('preview-biz-name').innerText = bizName;
+            document.getElementById('preview-biz-tag').innerText = bizTag;
+            document.getElementById('preview-biz-phone').innerText = bizPhone;
+            document.getElementById('preview-biz-email').innerText = bizEmail;
+            document.getElementById('preview-signature').innerText = bizName;
+            document.getElementById('preview-no-inv').innerText = noInv;
+            document.getElementById('preview-client-name').innerText = clientName;
+            document.getElementById('preview-client-address').innerText = clientAddress;
+            document.getElementById('preview-subtotal').innerText = formatRupiah(subtotal);
+            
+            if (paymentType === 'dp') {
+                const dpValue = (subtotal * dpPercent) / 100;
+                const remaining = subtotal - dpValue;
+                
+                document.getElementById('preview-dp-row').style.display = 'flex';
+                document.getElementById('preview-dp-label').innerText = `DP ${dpPercent}%`;
+                document.getElementById('preview-dp-value').innerText = formatRupiah(dpValue);
+                
+                document.getElementById('preview-grand-total-label').innerText = 'Tagihan Down Payment';
+                document.getElementById('preview-grand-total').innerText = formatRupiah(dpValue);
+                
+                document.getElementById('note-1').innerText = `• Invoice ini berlaku sebagai pengajuan pembayaran uang muka (DP) sebesar ${dpPercent}% untuk pengerjaan.`;
+                document.getElementById('note-2').style.display = 'block';
+                document.getElementById('note-2').innerText = `• Sisa pembayaran sebesar ${100 - dpPercent}% (${formatRupiah(remaining)}) akan ditagihkan setelah proyek selesai.`;
+            } else {
+                document.getElementById('preview-dp-row').style.display = 'none';
+                
+                document.getElementById('preview-grand-total-label').innerText = 'Total Tagihan (Lunas)';
+                document.getElementById('preview-grand-total').innerText = formatRupiah(subtotal);
+                
+                document.getElementById('note-1').innerText = `• Invoice ini merupakan pengajuan pembayaran penuh (Full Payment) untuk pengerjaan proyek.`;
+                document.getElementById('note-2').style.display = 'none';
+            }
+        }
+
+        function saveProject() {
+            try {
+                const data = {
+                    bizName: document.getElementById('input-biz-name').value,
+                    bizTag: document.getElementById('input-biz-tag').value,
+                    bizPhone: document.getElementById('input-biz-phone').value,
+                    bizEmail: document.getElementById('input-biz-email').value,
+                    noInv: document.getElementById('input-no-inv').value,
+                    clientName: document.getElementById('input-client-name').value,
+                    clientAddress: document.getElementById('input-client-address').value,
+                    paymentType: document.getElementById('input-payment-type').value,
+                    dpPercent: document.getElementById('input-dp-percent').value,
+                    items: items,
+                    logoSrc: document.getElementById('preview-logo').src,
+                    watermarkSrc: document.getElementById('preview-watermark').src
+                };
+                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Invoice_VirAshelle_${data.noInv}.json`;
+                a.click();
+            } catch (err) { console.error(err); }
+        }
+
+        function loadProject(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    document.getElementById('input-biz-name').value = data.bizName || 'VirAshelle';
+                    document.getElementById('input-biz-tag').value = data.bizTag || 'PRODUCTION HOUSE';
+                    document.getElementById('input-biz-phone').value = data.bizPhone || '085173339084';
+                    document.getElementById('input-biz-email').value = data.bizEmail || 'naufaleko7271@gmail.com';
+                    document.getElementById('input-no-inv').value = data.noInv || '';
+                    document.getElementById('input-client-name').value = data.clientName || '';
+                    document.getElementById('input-client-address').value = data.clientAddress || '';
+                    
+                    if (data.paymentType) {
+                        document.getElementById('input-payment-type').value = data.paymentType;
+                        togglePaymentType();
+                    }
+                    
+                    document.getElementById('input-dp-percent').value = data.dpPercent || 30;
+                    items = data.items || [];
+                    
+                    const img = document.getElementById('preview-logo');
+                    if (data.logoSrc && data.logoSrc.startsWith('data:image')) {
+                        img.src = data.logoSrc; 
+                    }
+                    
+                    const wtm = document.getElementById('preview-watermark');
+                    if (data.watermarkSrc && data.watermarkSrc.startsWith('data:image')) {
+                        wtm.src = data.watermarkSrc; 
+                    }
+                    
+                    renderItemInputs();
+                    updatePreview();
+                } catch (err) { console.error(err); }
+            };
+            reader.readAsText(file);
+        }
+
+        // Direct PDF Download (Memanfaatkan Browser Native System)
+        function downloadPDF() {
+            const noInv = document.getElementById('input-no-inv').value;
+            const clientName = document.getElementById('input-client-name').value;
+            const originalTitle = document.title;
+            
+            const fileName = `Invoice_${noInv}_${clientName}`.replace(/\s+/g, '_');
+            document.title = fileName;
+
+            // Panggil browser print window
+            window.print();
+
+            setTimeout(() => {
+                document.title = originalTitle;
+            }, 500);
+        }
+
+        window.onload = () => {
+            // Render SVG ke PNG Canvas secara dinamis saat web baru dibuka
+            convertSvgToPng('default-logo', 'preview-logo');
+            convertSvgToPng('default-watermark', 'preview-watermark');
+            
+            renderItemInputs();
+            updatePreview();
+        };
+    </script>
+</body>
+</html>
