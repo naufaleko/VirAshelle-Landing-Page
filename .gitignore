@@ -17,3 +17,6 @@ firebase-debug.log
 dist/
 qa-results/
 supabase/.temp/
+
+# Local brand asset exports (logo PNG/SVG/PDF), not part of the app
+exports/
