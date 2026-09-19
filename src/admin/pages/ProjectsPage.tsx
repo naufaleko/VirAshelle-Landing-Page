@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Plus, Filter, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { Search, Plus, FolderOpen } from 'lucide-react';
+import { AnimatePresence } from 'motion/react';
 import { useProjects } from '../hooks/useProjects';
 import { ProjectCard } from '../components/ProjectCard';
-import type { ProjectStatus } from '../types';
+import { NewProjectModal } from '../components/NewProjectModal';
+import type { Project, ProjectStatus } from '../types';
 
 export function ProjectsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,22 +21,14 @@ export function ProjectsPage() {
 
   const isNewModalOpen = searchParams.get('new') === 'true';
 
-  const closeNewModal = () => {
+  const closeNewModal = useCallback(() => {
     setSearchParams({});
-  };
+  }, [setSearchParams]);
 
-  const handleCreateDummy = async () => {
-    await createProject({
-      title: 'New Project ' + Math.floor(Math.random() * 1000),
-      client: 'Acme Corp',
-      category: 'Web Development',
-      status: 'briefing',
-      priority: 'medium',
-      description: 'A new project created from dashboard.',
-      progress: 0,
-      tags: ['react', 'web']
-    });
+  const handleCreateProject = async (project: Partial<Project>) => {
+    const created = await createProject(project);
     closeNewModal();
+    if (created?.id) navigate(`/admin/projects/${created.id}`);
   };
 
   return (
@@ -104,26 +97,11 @@ export function ProjectsPage() {
         </div>
       )}
 
-      {/* Basic Modal implementation for New Project */}
-      {isNewModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-white/10 rounded-2xl p-6 w-full max-w-md relative">
-            <button onClick={closeNewModal} className="absolute top-4 right-4 text-zinc-500 hover:text-white">
-              <X size={20} />
-            </button>
-            <h2 className="text-xl font-bold text-white mb-4">Create New Project</h2>
-            <p className="text-zinc-400 text-sm mb-6">This is a placeholder form. In a real app, this would have fields for all project properties.</p>
-            
-            <div className="flex justify-end gap-3">
-              <button onClick={closeNewModal} className="px-4 py-2 text-sm text-zinc-400 hover:text-white">Cancel</button>
-              <button onClick={handleCreateDummy} className="px-4 py-2 bg-[#4BD200] text-black rounded-lg text-sm font-medium">Create Dummy Project</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <NewProjectModal
+        open={isNewModalOpen}
+        onClose={closeNewModal}
+        onSubmit={handleCreateProject}
+      />
     </div>
   );
 }
-
-// Need FolderOpen for empty state
-import { FolderOpen } from 'lucide-react';
