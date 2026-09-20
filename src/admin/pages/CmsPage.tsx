@@ -40,9 +40,9 @@ export function CmsPage() {
 
   if (!formData) {
     return (
-      <div className="flex items-center justify-center p-12 text-zinc-400">
-        <Loader2 className="w-6 h-6 animate-spin text-[#4BD200] mr-2" />
-        Loading CMS Content...
+      <div className="flex items-center justify-center p-12 text-zinc-400 text-sm font-ui" role="status">
+        <Loader2 className="w-6 h-6 animate-spin text-[#4BD200] mr-2" aria-hidden="true" />
+        Memuat konten landing page...
       </div>
     );
   }
@@ -85,7 +85,7 @@ export function CmsPage() {
         <p className="text-xs text-zinc-400">Heading utama dan tombol call-to-action di bagian paling atas.</p>
       </div>
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
+        <label className="block text-xs font-semibold text-zinc-400 mb-1.5">
           Title
         </label>
         <textarea
@@ -95,12 +95,12 @@ export function CmsPage() {
           rows={3}
           placeholder="WE\n*ARCHITECT*\nIDENTITY."
         />
-        <p className="text-[11px] text-zinc-500 mt-1.5 flex items-center gap-1">
+        <p className="text-[11px] text-dim mt-1.5 flex items-center gap-1">
           💡 <span>Tips: Gunakan tanda bintang <code className="text-[#4BD200]">*kata*</code> untuk memberi warna hijau brand VirAshelle pada kata tersebut.</span>
         </p>
       </div>
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Subtitle</label>
+        <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Subtitle</label>
         <textarea
           value={formData.hero?.subtitle || ''}
           onChange={(e) => updateSectionField('hero', 'subtitle', e.target.value)}
@@ -109,7 +109,7 @@ export function CmsPage() {
         />
       </div>
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Button Text</label>
+        <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Button Text</label>
         <input
           type="text"
           value={formData.hero?.buttonText || ''}
@@ -128,7 +128,7 @@ export function CmsPage() {
         <p className="text-xs text-zinc-400">Deskripsi narasi dan cerita studio VirAshelle.</p>
       </div>
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Section Title</label>
+        <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Section Title</label>
         <input
           type="text"
           value={formData.about?.title || ''}
@@ -137,7 +137,7 @@ export function CmsPage() {
         />
       </div>
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Content</label>
+        <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Content</label>
         <textarea
           value={formData.about?.content || ''}
           onChange={(e) => updateSectionField('about', 'content', e.target.value)}
@@ -145,7 +145,7 @@ export function CmsPage() {
           rows={7}
           placeholder="*VirAshelle* is a modern multimedia creative studio..."
         />
-        <p className="text-[11px] text-zinc-500 mt-1.5 flex items-center gap-1">
+        <p className="text-[11px] text-dim mt-1.5 flex items-center gap-1">
           💡 <span>Tips: Gunakan <code className="text-[#4BD200]">*kata*</code> untuk memberi warna hijau brand pada kata atau kalimat tertentu.</span>
         </p>
       </div>
@@ -176,7 +176,7 @@ export function CmsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Header Title</label>
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Header Title</label>
             <input
               type="text"
               value={formData.services?.title || ''}
@@ -185,7 +185,7 @@ export function CmsPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Sub Header</label>
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Sub Header</label>
             <input
               type="text"
               value={formData.services?.description || ''}
@@ -196,7 +196,7 @@ export function CmsPage() {
         </div>
 
         <div className="space-y-4">
-          <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Daftar Layanan ({items.length})</label>
+          <label className="block text-xs font-bold text-zinc-400">Daftar Layanan ({items.length})</label>
           {items.map((srv: any, idx: number) => (
             <div key={idx} className="p-4 bg-zinc-950 border border-white/10 rounded-xl relative space-y-3">
               <div className="flex items-center justify-between">
@@ -207,7 +207,7 @@ export function CmsPage() {
                     const next = items.filter((_: any, i: number) => i !== idx);
                     updateSectionField('services', 'items', next);
                   }}
-                  className="text-zinc-500 hover:text-red-400 transition-colors p-1"
+                  className="text-dim hover:text-red-400 transition-colors p-1"
                 >
                   <Trash2 size={15} />
                 </button>
@@ -265,7 +265,7 @@ export function CmsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Title</label>
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Title</label>
             <input
               type="text"
               value={formData.whyUs?.title || ''}
@@ -274,7 +274,7 @@ export function CmsPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Subtitle / Deskripsi Singkat</label>
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Subtitle / Deskripsi Singkat</label>
             <input
               type="text"
               value={formData.whyUs?.description || ''}
@@ -285,7 +285,7 @@ export function CmsPage() {
         </div>
 
         <div className="space-y-4">
-          <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Poin Keunggulan ({items.length})</label>
+          <label className="block text-xs font-bold text-zinc-400">Poin Keunggulan ({items.length})</label>
           {items.map((item: any, idx: number) => (
             <div key={idx} className="p-4 bg-zinc-950 border border-white/10 rounded-xl relative space-y-3">
               <div className="flex items-center justify-between">
@@ -296,7 +296,7 @@ export function CmsPage() {
                     const next = items.filter((_: any, i: number) => i !== idx);
                     updateSectionField('whyUs', 'items', next);
                   }}
-                  className="text-zinc-500 hover:text-red-400 transition-colors p-1"
+                  className="text-dim hover:text-red-400 transition-colors p-1"
                 >
                   <Trash2 size={15} />
                 </button>
@@ -354,7 +354,7 @@ export function CmsPage() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Section Title</label>
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Section Title</label>
           <input
             type="text"
             value={formData.workflow?.title || ''}
@@ -364,7 +364,7 @@ export function CmsPage() {
         </div>
 
         <div className="space-y-4">
-          <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Daftar Langkah ({items.length})</label>
+          <label className="block text-xs font-bold text-zinc-400">Daftar Langkah ({items.length})</label>
           {items.map((step: any, idx: number) => (
             <div key={idx} className="p-4 bg-zinc-950 border border-white/10 rounded-xl relative space-y-3">
               <div className="flex items-center justify-between">
@@ -375,12 +375,12 @@ export function CmsPage() {
                     const next = items.filter((_: any, i: number) => i !== idx);
                     updateSectionField('workflow', 'items', next);
                   }}
-                  className="text-zinc-500 hover:text-red-400 transition-colors p-1"
+                  className="text-dim hover:text-red-400 transition-colors p-1"
                 >
                   <Trash2 size={15} />
                 </button>
               </div>
-              <div className="grid grid-cols-[80px_1fr] gap-3">
+              <div className="grid grid-cols-[80px_minmax(0,1fr)] gap-3">
                 <input
                   type="text"
                   value={step.number || ''}
@@ -390,7 +390,7 @@ export function CmsPage() {
                     next[idx] = { ...next[idx], number: e.target.value };
                     updateSectionField('workflow', 'items', next);
                   }}
-                  className="bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white font-mono text-center text-sm focus:outline-none focus:border-[#4BD200]"
+                  className="w-full bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white font-mono text-center text-sm focus:outline-none focus:border-[#4BD200]"
                 />
                 <input
                   type="text"
@@ -401,7 +401,7 @@ export function CmsPage() {
                     next[idx] = { ...next[idx], title: e.target.value };
                     updateSectionField('workflow', 'items', next);
                   }}
-                  className="bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-[#4BD200]"
+                  className="w-full min-w-0 bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-[#4BD200]"
                 />
               </div>
               <textarea
@@ -463,7 +463,7 @@ export function CmsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Title</label>
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Title</label>
             <input
               type="text"
               value={formData.portfolio?.title || ''}
@@ -472,7 +472,7 @@ export function CmsPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Subtitle / Deskripsi</label>
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Subtitle / Deskripsi</label>
             <input
               type="text"
               value={formData.portfolio?.description || ''}
@@ -483,7 +483,7 @@ export function CmsPage() {
         </div>
 
         <div className="space-y-4">
-          <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Item Portfolio ({items.length})</label>
+          <label className="block text-xs font-bold text-zinc-400">Item Portfolio ({items.length})</label>
           {items.map((item: any, idx: number) => {
             const currentType = item.type || 'image';
 
@@ -497,7 +497,7 @@ export function CmsPage() {
                       const next = items.filter((_: any, i: number) => i !== idx);
                       updateSectionField('portfolio', 'items', next);
                     }}
-                    className="text-zinc-500 hover:text-red-400 transition-colors p-1 cursor-pointer"
+                    className="text-dim hover:text-red-400 transition-colors p-1 cursor-pointer"
                   >
                     <Trash2 size={15} />
                   </button>
@@ -505,7 +505,7 @@ export function CmsPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="sm:col-span-2">
-                    <label className="block text-[11px] text-zinc-500 mb-1">Judul Project</label>
+                    <label className="block text-[11px] text-dim mb-1">Judul Project</label>
                     <input
                       type="text"
                       value={item.title || ''}
@@ -518,7 +518,7 @@ export function CmsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-zinc-500 mb-1">Kategori (Layanan)</label>
+                    <label className="block text-[11px] text-dim mb-1">Kategori (Layanan)</label>
                     <BrandedDropdown
                       value={item.category || ''}
                       options={serviceOptions}
@@ -552,7 +552,7 @@ export function CmsPage() {
 
                 {/* Optional Project Description for Lightbox */}
                 <div>
-                  <label className="block text-[11px] text-zinc-500 mb-1">Deskripsi Singkat Karya (Opsional untuk Popup Modal)</label>
+                  <label className="block text-[11px] text-dim mb-1">Deskripsi Singkat Karya (Opsional untuk Popup Modal)</label>
                   <input
                     type="text"
                     value={item.desc || ''}
@@ -600,7 +600,7 @@ export function CmsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Title</label>
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Title</label>
             <input
               type="text"
               value={formData.milestone?.title || ''}
@@ -609,7 +609,7 @@ export function CmsPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Subtitle</label>
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Subtitle</label>
             <input
               type="text"
               value={formData.milestone?.subtitle || ''}
@@ -620,7 +620,7 @@ export function CmsPage() {
         </div>
 
         <div className="space-y-4">
-          <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Items ({items.length})</label>
+          <label className="block text-xs font-bold text-zinc-400">Items ({items.length})</label>
           {items.map((ms: any, idx: number) => (
             <div key={idx} className="p-4 bg-zinc-950 border border-white/10 rounded-xl relative space-y-3">
               <div className="flex items-center justify-between">
@@ -631,14 +631,14 @@ export function CmsPage() {
                     const next = items.filter((_: any, i: number) => i !== idx);
                     updateSectionField('milestone', 'items', next);
                   }}
-                  className="text-zinc-500 hover:text-red-400 transition-colors p-1"
+                  className="text-dim hover:text-red-400 transition-colors p-1"
                 >
                   <Trash2 size={15} />
                 </button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] text-zinc-500 mb-1">Status Label</label>
+                  <label className="block text-[11px] text-dim mb-1">Status Label</label>
                   <input
                     type="text"
                     value={ms.status || ''}
@@ -652,7 +652,7 @@ export function CmsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-zinc-500 mb-1">Hitungan Angka (Count)</label>
+                  <label className="block text-[11px] text-dim mb-1">Hitungan Angka (Count)</label>
                   <input
                     type="text"
                     value={ms.count || ''}
@@ -666,7 +666,7 @@ export function CmsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-zinc-500 mb-1">Warna Border</label>
+                  <label className="block text-[11px] text-dim mb-1">Warna Border</label>
                   <input
                     type="text"
                     value={ms.color || ''}
@@ -734,7 +734,7 @@ export function CmsPage() {
                     const next = people.filter((_: any, i: number) => i !== idx);
                     setFormData((prev: any) => ({ ...prev, keyPeople: next }));
                   }}
-                  className="text-zinc-500 hover:text-red-400 transition-colors p-1"
+                  className="text-dim hover:text-red-400 transition-colors p-1"
                 >
                   <Trash2 size={15} />
                 </button>
@@ -742,7 +742,7 @@ export function CmsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] text-zinc-500 mb-1">Nama Lengkap</label>
+                  <label className="block text-[11px] text-dim mb-1">Nama Lengkap</label>
                   <input
                     type="text"
                     value={person.name || ''}
@@ -756,7 +756,7 @@ export function CmsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-zinc-500 mb-1">Role / Jabatan</label>
+                  <label className="block text-[11px] text-dim mb-1">Role / Jabatan</label>
                   <input
                     type="text"
                     value={person.role || ''}
@@ -785,7 +785,7 @@ export function CmsPage() {
               />
 
               <div>
-                <label className="block text-[11px] text-zinc-500 mb-1">Deskripsi / Bio Singkat</label>
+                <label className="block text-[11px] text-dim mb-1">Deskripsi / Bio Singkat</label>
                 <textarea
                   value={person.desc || ''}
                   placeholder="Peran dan tanggung jawab dalam tim..."
@@ -833,7 +833,7 @@ export function CmsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Header Title</label>
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Header Title</label>
             <input
               type="text"
               value={formData.clients?.title || ''}
@@ -842,7 +842,7 @@ export function CmsPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Subtitle</label>
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Subtitle</label>
             <input
               type="text"
               value={formData.clients?.subtitle || ''}
@@ -853,11 +853,11 @@ export function CmsPage() {
         </div>
 
         <div className="space-y-3">
-          <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Daftar Brand ({items.length})</label>
+          <label className="block text-xs font-bold text-zinc-400">Daftar Brand ({items.length})</label>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {items.map((client: any, idx: number) => (
               <div key={idx} className="p-4 bg-zinc-950 border border-white/10 rounded-xl space-y-3">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-3 min-w-0">
                   <input
                     type="text"
                     value={client.name || ''}
@@ -867,7 +867,7 @@ export function CmsPage() {
                       next[idx] = { ...next[idx], name: e.target.value };
                       updateSectionField('clients', 'items', next);
                     }}
-                    className="flex-1 bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#4BD200]"
+                    className="flex-1 min-w-0 bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#4BD200]"
                   />
                   <button
                     type="button"
@@ -875,7 +875,7 @@ export function CmsPage() {
                       const next = items.filter((_: any, i: number) => i !== idx);
                       updateSectionField('clients', 'items', next);
                     }}
-                    className="text-zinc-500 hover:text-red-400 transition-colors p-1"
+                    className="text-dim hover:text-red-400 transition-colors p-1 shrink-0"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -910,7 +910,7 @@ export function CmsPage() {
           <p className="text-xs text-zinc-400">Informasi kontak studio di bagian bawah landing page.</p>
         </div>
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Footer Headline</label>
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Footer Headline</label>
           <textarea
             value={formData.footer?.title || ''}
             onChange={(e) => updateSectionField('footer', 'title', e.target.value)}
@@ -918,13 +918,13 @@ export function CmsPage() {
             rows={2}
             placeholder="LET'S *BUILD*\nTHE FUTURE"
           />
-          <p className="text-[11px] text-zinc-500 mt-1.5 flex items-center gap-1">
+          <p className="text-[11px] text-dim mt-1.5 flex items-center gap-1">
             💡 <span>Tips: Gunakan tanda bintang <code className="text-[#4BD200]">*kata*</code> untuk highlight kata dengan warna hijau brand.</span>
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Email Kontak</label>
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Email Kontak</label>
             <input
               type="text"
               value={formData.footer?.email || ''}
@@ -933,7 +933,7 @@ export function CmsPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Alamat</label>
+            <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Alamat</label>
             <input
               type="text"
               value={formData.footer?.address || ''}
@@ -943,7 +943,7 @@ export function CmsPage() {
           </div>
         </div>
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Nomor Telepon (Pisahkan dengan koma)</label>
+          <label className="block text-xs font-semibold text-zinc-400 mb-1.5">Nomor Telepon (Pisahkan dengan koma)</label>
           <input
             type="text"
             value={Array.isArray(phones) ? phones.join(', ') : phones}
@@ -979,15 +979,15 @@ export function CmsPage() {
   return (
     <div className="max-w-5xl mx-auto flex flex-col h-[calc(100vh-8rem)]">
       {/* Header bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 shrink-0">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 shrink-0 border-b border-white/[0.08] pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Content Management System</h1>
-          <p className="text-xs text-zinc-400 mt-0.5">Kelola konten landing page VirAshelle secara live.</p>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">CMS</h1>
+          <p className="text-xs font-ui text-zinc-400 mt-1">Konten landing page VirAshelle. Perubahan tayang setelah disimpan.</p>
         </div>
         <div className="flex items-center gap-3">
           {message && (
-            <span className="text-xs font-medium text-[#4BD200] flex items-center gap-1.5 bg-[#4BD200]/10 border border-[#4BD200]/20 px-3 py-1.5 rounded-lg">
-              <CheckCircle2 size={14} />
+            <span className="text-xs font-ui font-medium text-[#4BD200] flex items-center gap-1.5 bg-[#4BD200]/10 border border-[#4BD200]/30 px-3 py-1.5 rounded-xl" role="status">
+              <CheckCircle2 size={14} aria-hidden="true" />
               {message}
             </span>
           )}
@@ -995,7 +995,7 @@ export function CmsPage() {
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="px-5 py-2.5 bg-[#4BD200] hover:bg-[#4BD200]/90 text-black font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 transition-transform active:scale-95 disabled:opacity-50"
+            className="px-5 py-2.5 bg-[#4BD200] hover:bg-[#7cff33] text-black font-ui font-bold text-xs rounded-xl flex items-center gap-2 transition-colors active:scale-95 disabled:opacity-50"
           >
             {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
             Simpan Perubahan
@@ -1006,25 +1006,25 @@ export function CmsPage() {
       {/* Main split view */}
       <div className="flex flex-col md:flex-row gap-6 flex-1 min-h-0 overflow-hidden">
         {/* Navigation pills */}
-        <div className="w-full md:w-52 shrink-0 flex md:flex-col gap-1 overflow-x-auto md:overflow-y-auto pb-2 md:pb-0 pr-0 md:pr-2">
+        <nav aria-label="Bagian konten" className="w-full md:w-52 shrink-0 flex md:flex-col gap-1.5 overflow-x-auto md:overflow-y-auto pb-2 md:pb-0 pr-0 md:pr-2 font-ui bg-[#111118] border border-white/10 rounded-2xl p-2">
           {TABS.map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={`text-left px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              aria-current={activeTab === tab ? 'page' : undefined}
+              className={`text-left px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
                 activeTab === tab
-                  ? 'bg-[#4BD200]/10 text-[#4BD200] border border-[#4BD200]/30 shadow-[0_0_15px_rgba(75,210,0,0.15)]'
+                  ? 'bg-[#4BD200] text-black font-bold'
                   : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
               {tab}
             </button>
           ))}
-        </div>
+        </nav>
 
-        {/* Content editing form */}
-        <div className="flex-1 bg-zinc-900/40 border border-white/10 rounded-2xl p-6 md:p-8 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 bg-[#111118] border border-white/10 rounded-2xl p-6 md:p-8 overflow-y-auto custom-scrollbar relative">
           {renderActiveTabContent()}
         </div>
       </div>

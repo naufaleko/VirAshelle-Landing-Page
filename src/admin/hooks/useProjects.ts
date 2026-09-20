@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Project, ProjectStatus } from '../types';
+import { withStatusSideEffects } from '../lib/projectStatus';
 
 export function useProjects(filters?: { status?: ProjectStatus; category?: string; search?: string }) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -12,6 +14,7 @@ export function useProjects(filters?: { status?: ProjectStatus; category?: strin
     async function fetchProjects() {
       try {
         setLoading(true);
+        setError(null);
         let query = supabase.from('projects').select('*');
         
         if (filters?.status) query = query.eq('status', filters.status);
@@ -26,8 +29,9 @@ export function useProjects(filters?: { status?: ProjectStatus; category?: strin
         if (isMounted && data) {
           setProjects(data as Project[]);
         }
-      } catch (error) {
-        console.error('Error fetching projects:', error);
+      } catch (err: any) {
+        console.error('Error fetching projects:', err);
+        if (isMounted) setError(err?.message || 'Gagal memuat daftar proyek');
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -49,13 +53,16 @@ export function useProjects(filters?: { status?: ProjectStatus; category?: strin
   }, [filters?.status, filters?.category, filters?.search]);
 
   const createProject = async (project: Partial<Project>) => {
-    const { data, error } = await supabase.from('projects').insert([project]).select().single();
+    const payload = withStatusSideEffects({ progress: 0, ...project }, null);
+    const { data, error } = await supabase.from('projects').insert([payload]).select().single();
     if (error) throw error;
     return data;
   };
 
   const updateProject = async (id: string, updates: Partial<Project>) => {
-    const { data, error } = await supabase.from('projects').update(updates).eq('id', id).select().single();
+    const current = projects.find((p) => p.id === id) ?? null;
+    const payload = withStatusSideEffects(updates, current);
+    const { data, error } = await supabase.from('projects').update(payload).eq('id', id).select().single();
     if (error) throw error;
     return data;
   };
@@ -65,5 +72,5 @@ export function useProjects(filters?: { status?: ProjectStatus; category?: strin
     if (error) throw error;
   };
 
-  return { projects, loading, createProject, updateProject, deleteProject };
+  return { projects, loading, error, createProject, updateProject, deleteProject };
 }

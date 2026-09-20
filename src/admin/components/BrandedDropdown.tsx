@@ -1,11 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, Check, Sparkles } from 'lucide-react';
+import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { ChevronDown, Check } from 'lucide-react';
+import { usePresence } from '../lib/usePresence';
+import { useAnchoredPopover } from '../lib/useAnchoredPopover';
+import { popoverIn, popoverOut, popoverInUp, popoverOutDown, rotateTo, settleIn } from '../lib/motion';
 
 export interface DropdownOption {
   value: string;
   label: string;
   badge?: string;
+  disabled?: boolean;
 }
 
 interface BrandedDropdownProps {
@@ -13,153 +17,294 @@ interface BrandedDropdownProps {
   onChange: (value: string) => void;
   options: (string | DropdownOption)[];
   placeholder?: string;
+  /** Visible label rendered above the trigger. Use `ariaLabel` instead for compact filter rows. */
   label?: string;
+  ariaLabel?: string;
+  id?: string;
   className?: string;
+  /** `sm` matches the filter-bar inputs; `md` matches form inputs. */
+  size?: 'sm' | 'md';
+  disabled?: boolean;
+  /** Shown when `options` is empty. */
+  emptyText?: string;
 }
+
+const ROW_HEIGHT = 40;
 
 export function BrandedDropdown({
   value,
   onChange,
   options,
-  placeholder = 'Pilih opsi...',
+  placeholder = 'Pilih opsi',
   label,
+  ariaLabel,
+  id,
   className = '',
+  size = 'md',
+  disabled = false,
+  emptyText = 'Belum ada opsi',
 }: BrandedDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const reactId = useId();
+  const triggerId = id ?? `${reactId}-trigger`;
+  const labelId = `${reactId}-label`;
+  const listId = `${reactId}-list`;
 
-  // Normalize options to DropdownOption[]
-  const normalizedOptions: DropdownOption[] = options.map((opt) =>
-    typeof opt === 'string' ? { value: opt, label: opt } : opt
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const chevronRef = useRef<SVGSVGElement>(null);
+  const valueRef = useRef<HTMLSpanElement>(null);
+  const lastValue = useRef(value);
+
+  const normalized: DropdownOption[] = useMemo(
+    () => options.map((opt) => (typeof opt === 'string' ? { value: opt, label: opt } : opt)),
+    [options]
+  );
+  const selected = normalized.find((opt) => opt.value === value);
+  const selectedIndex = normalized.findIndex((opt) => opt.value === value);
+
+  const estimatedHeight = Math.min(normalized.length || 1, 6) * ROW_HEIGHT + 12;
+  const { style: popoverStyle, placement } = useAnchoredPopover(isOpen, triggerRef, {
+    estimatedHeight,
+    minWidth: size === 'sm' ? 200 : 0,
+  });
+  const { mounted, ref: menuRef } = usePresence<HTMLDivElement>(
+    isOpen,
+    placement === 'top' ? popoverInUp : popoverIn,
+    placement === 'top' ? popoverOutDown : popoverOut
   );
 
-  const selectedOption = normalizedOptions.find((opt) => opt.value === value);
+  const open = () => {
+    if (disabled) return;
+    setActiveIndex(selectedIndex >= 0 ? selectedIndex : normalized.findIndex((o) => !o.disabled));
+    setIsOpen(true);
+  };
+  const close = () => setIsOpen(false);
 
-  // Close when clicking outside
+  const choose = (opt: DropdownOption) => {
+    if (opt.disabled) return;
+    onChange(opt.value);
+    close();
+  };
+
+  // Close when clicking outside both the trigger and the portaled menu.
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+    if (!isOpen) return;
+    const onPointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+      if (wrapperRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      close();
     };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('touchstart', onPointerDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('touchstart', onPointerDown);
+    };
+  }, [isOpen, menuRef]);
+
+  useEffect(() => {
+    if (chevronRef.current) rotateTo(chevronRef.current, isOpen ? 180 : 0);
   }, [isOpen]);
 
+  useLayoutEffect(() => {
+    if (lastValue.current === value) return;
+    lastValue.current = value;
+    if (valueRef.current) settleIn(valueRef.current);
+  }, [value]);
+
+  useEffect(() => {
+    if (!isOpen || activeIndex < 0) return;
+    document.getElementById(`${listId}-opt-${activeIndex}`)?.scrollIntoView({ block: 'nearest' });
+  }, [isOpen, activeIndex, listId]);
+
+  const moveActive = (delta: number) => {
+    if (normalized.length === 0) return;
+    let next = activeIndex;
+    for (let i = 0; i < normalized.length; i++) {
+      next = (next + delta + normalized.length) % normalized.length;
+      if (!normalized[next].disabled) break;
+    }
+    setActiveIndex(next);
+  };
+
+  const jumpTo = (edge: 'first' | 'last') => {
+    const enabled = normalized.map((o, i) => (o.disabled ? -1 : i)).filter((i) => i >= 0);
+    if (enabled.length === 0) return;
+    setActiveIndex(edge === 'first' ? enabled[0] : enabled[enabled.length - 1]);
+  };
+
+  const typeAhead = (char: string) => {
+    const lower = char.toLowerCase();
+    const start = activeIndex + 1;
+    for (let i = 0; i < normalized.length; i++) {
+      const idx = (start + i) % normalized.length;
+      const opt = normalized[idx];
+      if (!opt.disabled && opt.label.toLowerCase().startsWith(lower)) {
+        setActiveIndex(idx);
+        return;
+      }
+    }
+  };
+
+  const onTriggerKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (disabled) return;
+    if (!isOpen) {
+      if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) {
+        e.preventDefault();
+        open();
+      }
+      return;
+    }
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        moveActive(1);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        moveActive(-1);
+        break;
+      case 'Home':
+        e.preventDefault();
+        jumpTo('first');
+        break;
+      case 'End':
+        e.preventDefault();
+        jumpTo('last');
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (activeIndex >= 0) choose(normalized[activeIndex]);
+        break;
+      case 'Tab':
+        close();
+        break;
+      case 'Escape':
+        // Only this menu closes; the keydown must not reach a parent dialog's Escape listener.
+        e.preventDefault();
+        e.stopPropagation();
+        close();
+        break;
+      default:
+        if (e.key.length === 1 && /\S/.test(e.key)) typeAhead(e.key);
+    }
+  };
+
+  const triggerPadding = size === 'sm' ? 'px-3 py-2' : 'px-3.5 py-2.5';
+
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
+    <div className={`relative ${className}`} ref={wrapperRef}>
       {label && (
-        <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5 flex items-center gap-1.5">
-          <span>{label}</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#4BD200]/60" />
-        </label>
+        <span className="block text-xs font-ui font-semibold text-zinc-400 mb-1.5" id={labelId}>
+          {label}
+        </span>
       )}
 
-      {/* Trigger Button */}
       <button
+        ref={triggerRef}
+        id={triggerId}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-full bg-zinc-950/90 hover:bg-zinc-900/90 border rounded-xl px-3.5 py-2.5 text-left flex items-center justify-between transition-all duration-200 shadow-inner group ${
+        disabled={disabled}
+        onClick={() => (isOpen ? close() : open())}
+        onKeyDown={onTriggerKeyDown}
+        role="combobox"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls={mounted ? listId : undefined}
+        aria-activedescendant={isOpen && activeIndex >= 0 ? `${listId}-opt-${activeIndex}` : undefined}
+        aria-labelledby={label ? labelId : undefined}
+        aria-label={ariaLabel}
+        className={`w-full bg-[#0a0a0f] border rounded-xl ${triggerPadding} text-left flex items-center justify-between gap-2 transition-colors duration-150 group disabled:opacity-50 disabled:cursor-not-allowed ${
           isOpen
-            ? 'border-[#4BD200] ring-1 ring-[#4BD200]/30 shadow-[0_0_15px_rgba(75,210,0,0.15)]'
-            : 'border-white/10 hover:border-[#4BD200]/40'
+            ? 'border-[#4BD200] ring-1 ring-[#4BD200]/30'
+            : 'border-white/10 hover:border-[#4BD200]/40 hover:bg-[#111118]'
         }`}
       >
-        <div className="flex items-center gap-2.5 min-w-0 overflow-hidden">
-          {/* Status Dot / Glow */}
+        <span className="flex items-center gap-2.5 min-w-0">
           <span
-            className={`w-2 h-2 rounded-full shrink-0 transition-all duration-300 ${
-              value
-                ? 'bg-[#4BD200] shadow-[0_0_8px_#4BD200]'
-                : 'bg-zinc-600'
-            }`}
-          />
-
-          <span
-            className={`text-xs font-medium truncate ${
-              value ? 'text-white font-semibold' : 'text-zinc-500'
-            }`}
+            ref={valueRef}
+            className={`text-xs font-ui truncate ${selected ? 'text-white font-semibold' : 'text-dim font-medium'}`}
           >
-            {selectedOption ? selectedOption.label : placeholder}
+            {selected ? selected.label : placeholder}
           </span>
-
-          {selectedOption?.badge && (
-            <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-mono uppercase tracking-wider text-zinc-400">
-              {selectedOption.badge}
+          {selected?.badge && (
+            <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-mono text-zinc-400 shrink-0">
+              {selected.badge}
             </span>
           )}
-        </div>
+        </span>
 
         <ChevronDown
+          ref={chevronRef}
           size={15}
-          className={`shrink-0 transition-transform duration-300 ${
-            isOpen ? 'rotate-180 text-[#4BD200]' : 'text-zinc-500 group-hover:text-[#4BD200]'
-          }`}
+          aria-hidden="true"
+          className={`shrink-0 ${isOpen ? 'text-[#4BD200]' : 'text-dim group-hover:text-[#4BD200]'}`}
         />
       </button>
 
-      {/* Dropdown Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -6, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.98 }}
-            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+      {mounted &&
+        popoverStyle &&
+        createPortal(
+          <div
+            ref={menuRef}
+            id={listId}
             role="listbox"
-            className="absolute left-0 right-0 top-full mt-2 z-50 bg-zinc-950/95 backdrop-blur-2xl border border-white/10 rounded-xl p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.85)] space-y-1 max-h-64 overflow-y-auto"
+            aria-labelledby={label ? labelId : undefined}
+            aria-label={label ? undefined : ariaLabel}
+            style={popoverStyle}
+            // Keep focus on the trigger so arrow keys keep working after a mouse pick.
+            onMouseDown={(e) => e.preventDefault()}
+            className="z-[70] bg-[#0a0a0f] border border-white/10 rounded-xl p-1.5 shadow-[0_24px_64px_rgba(0,0,0,0.8)] overflow-y-auto"
           >
-            {normalizedOptions.length === 0 ? (
-              <div className="p-3 text-center text-xs text-zinc-500">
-                Belum ada opsi layanan
-              </div>
+            {normalized.length === 0 ? (
+              <div className="p-3 text-center text-xs font-ui text-dim">{emptyText}</div>
             ) : (
-              normalizedOptions.map((opt) => {
-                const isSelected = opt.value === value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    role="option"
-                    aria-selected={isSelected}
-                    onClick={() => {
-                      onChange(opt.value);
-                      setIsOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium flex items-center justify-between transition-all duration-150 ${
-                      isSelected
-                        ? 'bg-[#4BD200]/15 text-[#4BD200] font-semibold border border-[#4BD200]/30 shadow-[0_0_10px_rgba(75,210,0,0.1)]'
-                        : 'text-zinc-300 hover:bg-white/5 hover:text-white border border-transparent'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          isSelected ? 'bg-[#4BD200] shadow-[0_0_6px_#4BD200]' : 'bg-transparent'
-                        }`}
-                      />
+              <div className="space-y-0.5">
+                {normalized.map((opt, index) => {
+                  const isSelected = opt.value === value;
+                  const isActive = index === activeIndex;
+                  return (
+                    <button
+                      key={opt.value}
+                      id={`${listId}-opt-${index}`}
+                      type="button"
+                      role="option"
+                      tabIndex={-1}
+                      aria-selected={isSelected}
+                      aria-disabled={opt.disabled || undefined}
+                      onClick={() => choose(opt)}
+                      onMouseMove={() => !opt.disabled && activeIndex !== index && setActiveIndex(index)}
+                      className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-ui font-medium flex items-center justify-between gap-2 border transition-colors duration-100 ${
+                        opt.disabled
+                          ? 'text-dim/60 border-transparent cursor-not-allowed'
+                          : isSelected
+                            ? 'bg-[#4BD200]/15 text-[#4BD200] font-semibold border-[#4BD200]/30'
+                            : isActive
+                              ? 'bg-white/[0.07] text-white border-transparent'
+                              : 'text-zinc-300 border-transparent'
+                      }`}
+                    >
                       <span className="truncate">{opt.label}</span>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {opt.badge && (
-                        <span className="px-1.5 py-0.5 rounded bg-black/40 border border-white/5 text-[9px] font-mono text-zinc-400">
-                          {opt.badge}
-                        </span>
-                      )}
-                      {isSelected && <Check size={14} className="text-[#4BD200]" />}
-                    </div>
-                  </button>
-                );
-              })
+                      <span className="flex items-center gap-1.5 shrink-0">
+                        {opt.badge && (
+                          <span className="px-1.5 py-0.5 rounded bg-black/40 border border-white/5 text-[9px] font-mono text-zinc-400">
+                            {opt.badge}
+                          </span>
+                        )}
+                        {isSelected && <Check size={14} aria-hidden="true" className="text-[#4BD200]" />}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             )}
-          </motion.div>
+          </div>,
+          document.body
         )}
-      </AnimatePresence>
     </div>
   );
 }

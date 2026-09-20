@@ -13,8 +13,8 @@ body {
 }
 
 ::selection {
-  background: #7d39eb;
-  color: #fff;
+  background: var(--color-brand);
+  color: #000;
 }
 
 /* ───────────────── Design System (Tailwind v4 @theme) ───────────────── */
@@ -29,6 +29,8 @@ body {
   --color-surface-raised: #0a0a0f;
   --color-surface-card: #111118;
   --color-surface-glass: rgba(17, 17, 24, 0.6);
+  /* Dimmest text tier that still clears WCAG AA on every dark surface (5.6:1 on card, 6.0:1 on black). */
+  --color-dim: #8b8b95;
 
   /* Fonts */
   --font-body: "Helvetica Neue", "Helvetica", "Arial", "Arsenal", ui-sans-serif, system-ui, sans-serif;
@@ -57,11 +59,11 @@ body {
   @keyframes pulse-glow {
     0%, 100% { 
       opacity: 0.4; 
-      box-shadow: 0 0 20px rgba(125, 57, 235, 0.2); 
+      box-shadow: 0 0 20px rgba(75, 210, 0, 0.2); 
     }
     50% { 
       opacity: 0.8; 
-      box-shadow: 0 0 60px rgba(125, 57, 235, 0.5); 
+      box-shadow: 0 0 60px rgba(75, 210, 0, 0.5); 
     }
   }
 
@@ -104,6 +106,12 @@ body {
   }
 }
 
+/* Keyboard focus: one visible ring everywhere, so no control needs its own. */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
 /* ───────────────── Glass Utility ───────────────── */
 .glass {
   background: rgba(17, 17, 24, 0.7);
@@ -121,14 +129,14 @@ body {
 
 /* ───────────────── Text Gradient Utility ───────────────── */
 .text-gradient {
-  background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-light, #b588f3) 50%, white 100%);
+  background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-light, #7cff33) 50%, #ffffff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .text-gradient-bright {
-  background: linear-gradient(135deg, var(--color-brand-light, #b588f3) 0%, #ffffff 100%);
+  background: linear-gradient(135deg, var(--color-brand-light, #7cff33) 0%, #ffffff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -154,7 +162,7 @@ body {
   inset: 0;
   padding: 1px;
   border-radius: inherit;
-  background: linear-gradient(135deg, rgba(125, 57, 235, 0.5), rgba(181, 136, 243, 0.2), transparent);
+  background: linear-gradient(135deg, rgba(75, 210, 0, 0.4), rgba(124, 255, 51, 0.2), transparent);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -184,12 +192,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #7d39eb;
+  background: #328c00;
   border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a472f2;
+  background: #4BD200;
 }
 
 /* Custom Aesthetic Horizontal Scrollbar for Mobile Milestone Chart */
@@ -197,7 +205,7 @@ body {
   height: 4px;
 }
 .custom-h-scrollbar::-webkit-scrollbar-track {
-  background: rgba(125, 57, 235, 0.05);
+  background: rgba(75, 210, 0, 0.05);
   border-radius: 4px;
   margin: 0 24px; /* padding so it aligns nicely with the mask fade */
 }

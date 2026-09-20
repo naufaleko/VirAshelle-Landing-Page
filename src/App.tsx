@@ -17,6 +17,7 @@ const CmsPage = lazy(() => import('./admin/pages/CmsPage').then(m => ({ default:
 const ProjectsPage = lazy(() => import('./admin/pages/ProjectsPage').then(m => ({ default: m.ProjectsPage })));
 const ProjectDetailPage = lazy(() => import('./admin/pages/ProjectDetailPage').then(m => ({ default: m.ProjectDetailPage })));
 const InvoicePage = lazy(() => import('./admin/pages/InvoicePage').then(m => ({ default: m.InvoicePage })));
+const FinancePage = lazy(() => import('./admin/pages/FinancePage').then(m => ({ default: m.FinancePage })));
 
 // Lazy-load internal UI Component Showcase
 const UIComponentsPage = lazy(() => import('./pages/UIComponentsPage').then(m => ({ default: m.UIComponentsPage })));
@@ -81,16 +82,27 @@ export default function App() {
                   <InvoicePage />
                 </Suspense>
               } />
+              <Route path="finance" element={
+                <Suspense fallback={<AdminLoadingFallback message="Loading Laporan Keuangan..." />}>
+                  <FinancePage />
+                </Suspense>
+              } />
               <Route path="invoice" element={<Navigate to="/admin/invoices" replace />} />
             </Route>
           </Route>
 
-          {/* Internal UI Lab */}
-          <Route path="/UIComponents" element={
-            <Suspense fallback={<AdminLoadingFallback message="Loading UI Lab..." />}>
-              <UIComponentsPage />
+          {/* Internal UI Lab (admin login required) */}
+          <Route element={
+            <Suspense fallback={<AdminLoadingFallback message="Verifying Admin Access..." />}>
+              <AuthGuard />
             </Suspense>
-          } />
+          }>
+            <Route path="/UIComponents" element={
+              <Suspense fallback={<AdminLoadingFallback message="Loading UI Lab..." />}>
+                <UIComponentsPage />
+              </Suspense>
+            } />
+          </Route>
           <Route path="/uicomponents" element={<Navigate to="/UIComponents" replace />} />
 
           {/* Fallback */}

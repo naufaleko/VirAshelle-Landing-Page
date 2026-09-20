@@ -1385,13 +1385,13 @@ const tick = () => {
                       <h3 className="text-xl font-display font-bold text-white">Install All Production Dependencies</h3>
                     </div>
                     <CopyButton 
-                      text="npm install motion lucide-react react-router-dom recharts firebase @google/genai dotenv express" 
+                      text="npm install motion animejs lucide-react react-router-dom recharts firebase @google/genai dotenv express" 
                       label="Copy npm command" 
                     />
                   </div>
 
                   <div className="p-4 rounded-xl bg-black font-mono text-xs text-brand-light border border-white/10 overflow-x-auto">
-                    <code>npm install motion lucide-react react-router-dom recharts firebase @google/genai dotenv express</code>
+                    <code>npm install motion animejs lucide-react react-router-dom recharts firebase @google/genai dotenv express</code>
                   </div>
 
                   <div className="mt-4 flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t border-white/10">
@@ -1421,6 +1421,23 @@ const tick = () => {
                     <div className="pt-3 border-t border-white/5 flex items-center justify-between">
                       <span className="text-[11px] font-mono text-zinc-500">npm install motion</span>
                       <CopyButton text="npm install motion" />
+                    </div>
+                  </div>
+
+                  {/* anime.js */}
+                  <div className="glass p-6 rounded-2xl border border-white/10 flex flex-col justify-between group hover:border-brand/40 transition-all">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-base font-display font-bold text-white">animejs (anime.js v4)</span>
+                        <span className="text-[10px] font-mono text-brand-light bg-brand/10 px-2 py-0.5 rounded border border-brand/20">^4.5.0</span>
+                      </div>
+                      <p className="text-xs text-zinc-400 font-body leading-relaxed mb-4">
+                        Mesin animasi admin dashboard. Semua preset (popover, modal, collapsible, draw chart) ada di satu modul <code className="font-mono text-zinc-300">src/admin/lib/motion.ts</code>; landing page tetap memakai motion.
+                      </p>
+                    </div>
+                    <div className="pt-3 border-t border-white/5 flex items-center justify-between">
+                      <span className="text-[11px] font-mono text-zinc-500">npm install animejs</span>
+                      <CopyButton text="npm install animejs" />
                     </div>
                   </div>
 

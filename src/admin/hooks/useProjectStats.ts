@@ -13,6 +13,7 @@ export function useProjectStats() {
   });
   const [recentUpdates, setRecentUpdates] = useState<(ProjectUpdate & { project_title?: string })[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -20,7 +21,10 @@ export function useProjectStats() {
     async function fetchStats() {
       try {
         setLoading(true);
-        const { data: projects, error: projectsError } = await supabase.from('projects').select('*');
+        setError(null);
+        const { data: projects, error: projectsError } = await supabase
+          .from('projects')
+          .select('id,status,deadline,category');
         if (projectsError) throw projectsError;
         
         const { data: updates, error: updatesError } = await supabase.from('project_updates')
@@ -30,7 +34,7 @@ export function useProjectStats() {
         if (updatesError) throw updatesError;
 
         if (isMounted && projects) {
-          const projs = projects as Project[];
+          const projs = projects as Pick<Project, 'id' | 'status' | 'deadline' | 'category'>[];
           const now = new Date();
           
           const newStats = {
@@ -57,8 +61,9 @@ export function useProjectStats() {
             })));
           }
         }
-      } catch (error) {
-        console.error('Error fetching project stats:', error);
+      } catch (err: any) {
+        console.error('Error fetching project stats:', err);
+        if (isMounted) setError(err?.message || 'Gagal memuat statistik proyek');
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -76,5 +81,5 @@ export function useProjectStats() {
     };
   }, []);
 
-  return { ...stats, recentUpdates, loading };
+  return { ...stats, recentUpdates, loading, error };
 }

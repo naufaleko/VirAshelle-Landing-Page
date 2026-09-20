@@ -62,6 +62,13 @@ export function MediaUploader({
       const workerUrl = import.meta.env.VITE_R2_WORKER_URL;
 
       if (workerUrl) {
+        // Worker requires a valid Supabase session (Bearer token)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Sesi login sudah habis. Silakan login ulang.');
+          return;
+        }
+
         try {
           const form = new FormData();
           form.append('file', file);
@@ -69,8 +76,27 @@ export function MediaUploader({
 
           const res = await fetch(`${workerUrl.replace(/\/$/, '')}/upload`, {
             method: 'POST',
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
             body: form,
           });
+
+          if (res.status === 401 || res.status === 403) {
+            // Not allowed to upload: stop here, the Supabase Storage fallback would
+            // be the wrong answer to an authorisation failure.
+            let message = '';
+            try {
+              const body = await res.json();
+              message = body?.error || '';
+            } catch {
+              /* non-JSON body */
+            }
+            setError(message || 'Upload ditolak (tidak punya akses).');
+            return;
+          }
+          // Any other non-OK status (404 stale URL, 413/415, 5xx) falls through to the
+          // Supabase Storage fallback below, same as before.
 
           if (res.ok) {
             const data = await res.json();
@@ -123,20 +149,20 @@ export function MediaUploader({
   const renderHelperText = () => {
     if (category === 'clients') {
       return (
-        <p className="text-[10px] text-zinc-500 leading-normal">
+        <p className="text-[10px] text-dim leading-normal">
           💡 <strong className="text-zinc-400">Rekomendasi:</strong> Gunakan logo PNG transparan atau SVG.
         </p>
       );
     }
     if (category === 'team') {
       return (
-        <p className="text-[10px] text-zinc-500 leading-normal">
+        <p className="text-[10px] text-dim leading-normal">
           💡 <strong className="text-zinc-400">Rekomendasi:</strong> Gunakan foto profil rasio 1:1 atau portrait.
         </p>
       );
     }
     return (
-      <p className="text-[10px] text-zinc-500 leading-normal">
+      <p className="text-[10px] text-dim leading-normal">
         💡 <strong className="text-zinc-400">Upload langsung</strong> file foto/video (s.d 100MB ke R2) atau <strong className="text-zinc-400">paste link</strong> video (YouTube/Drive).
       </p>
     );
@@ -195,9 +221,9 @@ export function MediaUploader({
               </button>
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center gap-1 text-zinc-600">
+            <div className="flex flex-col items-center justify-center gap-1 text-dim">
               <UploadCloud size={18} />
-              <span className="text-[9px] font-mono tracking-wider">KOSONG</span>
+              <span className="text-[9px] font-mono">KOSONG</span>
             </div>
           )}
         </div>
@@ -211,9 +237,9 @@ export function MediaUploader({
               value={value || ''}
               onChange={(e) => handleUrlChange(e.target.value)}
               placeholder={placeholder}
-              className="w-full bg-zinc-900 border border-white/10 rounded-lg pl-7 pr-3 py-1.5 text-white text-xs focus:outline-none focus:border-[#4BD200] transition-colors placeholder:text-zinc-600"
+              className="w-full bg-zinc-900 border border-white/10 rounded-lg pl-7 pr-3 py-1.5 text-white text-xs focus:outline-none focus:border-[#4BD200] transition-colors placeholder:text-dim"
             />
-            <Link2 size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
+            <Link2 size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-dim pointer-events-none" />
           </div>
 
           {/* Action Row: Upload button + format hint */}
@@ -245,7 +271,7 @@ export function MediaUploader({
               )}
             </button>
 
-            <span className="text-[10px] font-mono text-zinc-500 uppercase">
+            <span className="text-[10px] font-mono text-dim">
               {category === 'clients' ? 'SVG • PNG' : category === 'team' ? 'JPG • PNG' : 'Max 100MB'}
             </span>
           </div>
