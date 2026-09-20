@@ -1,79 +1,135 @@
-# VirAshelle Agency Website
+# VirAshelle
 
-This is a modern, high-impact creative agency portfolio and CMS built with React, Vite, Tailwind CSS, and Firebase.
+Creative agency website with a built-in admin dashboard.
 
-## Features
-- Fully responsive modern design with advanced animations (using `motion/react`)
-- Dynamic CMS to manage all sections of the website (Hero, Services, Portfolio, Team, etc.)
-- Built-in authentication for the Admin panel
-- Integration with Firebase (Firestore for Database, Storage for Images, Auth for Admin login)
+## Overview
 
-## Prerequisites
-- Node.js (v18 or higher recommended)
-- A Firebase project (if you want to use your own database)
+A single Vite SPA with two faces:
 
-## Local Development Setup
+- **`/`** — the public landing page (Hero, About, Services, Why Us, Workflow, Portfolio, Milestone, Team, Clients, Footer). All copy and media come from the CMS, with hardcoded defaults as fallback.
+- **`/admin`** — the admin dashboard (Overview, CMS, Project Tracker, Invoice Maker), lazy-loaded and protected by an auth guard. Login lives at `/admin/login`.
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+There is no custom API server. The browser talks to Supabase directly (Postgres over PostgREST, Auth, Realtime, Storage) and to a small Cloudflare Worker for media uploads to R2. Access control is enforced by Postgres RLS.
 
-2. **Configure Environment Variables (Optional):**
-   The project currently uses a default Firebase configuration. If you want to use your own Firebase project (recommended for production):
-   - Copy `.env.example` to `.env`
-   - Fill in your Firebase configuration values in the `.env` file.
-   - You will need to enable Firestore Database, Firebase Storage, and Firebase Authentication (Email/Password) in your Firebase Console.
+## Tech stack
 
-3. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
-   The app will be available at `http://localhost:3000`.
+| Layer | Tech |
+| --- | --- |
+| UI | React 19, TypeScript, Vite 6, Tailwind CSS v4 (`@theme` tokens in `src/index.css`) |
+| Routing / motion / icons / charts | react-router v7, `motion`, `lucide-react`, `recharts` |
+| Backend | Supabase — Postgres + RLS, Auth (email/password), Realtime, Storage (upload fallback) |
+| Media | Cloudflare Worker (`workers/media-uploader`) writing to an R2 bucket |
+| Hosting | Vercel (static `dist/` + SPA rewrite) |
 
-## Building for Production
-
-To build the application for production deployment, run:
+## Getting started
 
 ```bash
-npm run build
+npm install
+cp .env.example .env   # then fill in the values below
+npm run dev            # http://localhost:3002
 ```
 
-This will create a `dist/` directory containing the static files for your application.
+`.env` variables (all read at build time via `import.meta.env`):
 
-## Deployment Options
+| Variable | Purpose |
+| --- | --- |
+| `VITE_SUPABASE_URL` | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon (public) key |
+| `VITE_R2_WORKER_URL` | URL of the deployed media-uploader Worker |
 
-Since this is a client-side SPA (Single Page Application) built with Vite, you can easily host it on any static hosting provider.
+The public URL of uploaded files is decided by the Worker (`PUBLIC_R2_URL` in its `wrangler.toml`), not by the frontend.
 
-### Vercel
-1. Push your code to a GitHub/GitLab/Bitbucket repository.
-2. Import the project in Vercel.
-3. Vercel will automatically detect that it's a Vite project.
-4. Add your Environment Variables (from your `.env` file) in the Vercel dashboard.
-5. Click **Deploy**.
+If `VITE_R2_WORKER_URL` is empty or the Worker call fails (network error, 5xx, stale URL), the admin media uploader falls back to the Supabase Storage bucket `media`. That fallback is **optional and not created by any migration**: if you want it, create a public bucket named `media` in Supabase Storage and restrict its `storage.objects` INSERT/UPDATE/DELETE policies to `public.is_admin()` (see migration `002`); otherwise leave it unconfigured and rely on the Worker.
 
-### Netlify
-1. Push your code to a repository.
-2. Create a new site from git in Netlify.
-3. Build Command: `npm run build`
-4. Publish directory: `dist`
-5. Add your Environment Variables in Site Settings.
-6. Click **Deploy Site**.
+## Database setup
 
-### Firebase Hosting
-1. Install the Firebase CLI: `npm install -g firebase-tools`
-2. Login to Firebase: `firebase login`
-3. Initialize hosting: `firebase init hosting`
-   - Select your project.
-   - What do you want to use as your public directory? `dist`
-   - Configure as a single-page app (rewrite all urls to /index.html)? `Yes`
-   - Set up automatic builds and deploys with GitHub? `No` (or Yes if preferred)
-4. Build the app: `npm run build`
-5. Deploy: `firebase deploy --only hosting`
+Apply the SQL files in `supabase/migrations/` **in order**, either by pasting them into the Supabase Dashboard SQL Editor or with the CLI (`supabase db push` against a linked project):
 
-## Accessing the Admin Dashboard
+| Migration | Contents |
+| --- | --- |
+| `001_initial_schema.sql` | Tables `site_content`, `projects`, `project_updates`, `team_members`, the `project_status` / `project_priority` enums, RLS policies, `updated_at` triggers and seed rows |
+| `002_admin_access.sql` | `public.admin_users` email whitelist plus the `is_admin()` helper; RLS write policies are restricted to whitelisted admins |
+| `003_invoices.sql` | `public.invoices` table for persisting invoices generated by the Invoice Maker |
 
-Once deployed (or running locally), you can access the admin panel by navigating to:
-`/admin` (e.g., `yourwebsite.com/admin` or `localhost:3000/admin`).
+`site_content` is a single-row table (`id = 'main'`) with one JSONB column per landing-page section (`hero`, `about`, `services`, `why_us`, `workflow`, `portfolio`, `milestone`, `key_people`, `clients`, `header`, `footer`). Public read is allowed; writes require an admin session.
 
-> Note: To create an admin account, you will need to register a user via Firebase Authentication in your Firebase project console.
+## Admin access
+
+1. In Supabase Auth, create the admin user (email + password). No signup flow exists in the app.
+2. Make sure that email is present in `public.admin_users` (see migration `002`); otherwise RLS rejects every write.
+3. In Supabase Auth settings, turn **off** "Enable email signups" so nobody can self-register an `authenticated` account.
+4. Open `/admin/login`. The ID field accepts the full email or a short login ID. IDs are resolved server-side by `resolve_login_id()` (migration `008`) from `admin_users.display_alias` and `admin_users.login_aliases`, so adding or renaming an ID is a row update, not a redeploy. The password is verified by Supabase Auth only; nothing is checked client-side.
+5. Accounts are created, reset, and removed only in the Supabase Dashboard (Authentication -> Users), then whitelisted with a role by inserting a row into `admin_users`. Never provision users through SQL migrations or scripts that contain passwords: those files get committed.
+6. **Rotate every account password once** after upgrading: older versions of this repo shipped the admin password inside the client bundle and in `scripts/visual-qa.mjs`, and the other team passwords sat in local scripts and migrations; all of that is still in git history (Supabase Dashboard > Authentication > Users > Reset password).
+
+## Media upload worker
+
+```bash
+cd workers/media-uploader
+# edit wrangler.toml: [[r2_buckets]] binding + [vars]
+npx wrangler deploy
+```
+
+`[vars]` in `wrangler.toml`:
+
+| Var | Purpose |
+| --- | --- |
+| `SUPABASE_URL` / `SUPABASE_ANON_KEY` | Used by the Worker to validate the caller's Supabase session token |
+| `ADMIN_EMAILS` | Comma-separated list of emails allowed to upload (empty = any authenticated Supabase user) |
+| `ALLOWED_ORIGINS` | Comma-separated list of origins allowed by CORS (empty = `*`) |
+| `PUBLIC_R2_URL` | Public base URL of the bucket (`pub-*.r2.dev` or a custom domain) used to build the returned file URL |
+
+The Worker only accepts `POST /upload` with a valid Supabase session token (`Authorization: Bearer <access_token>`); the dashboard sends it automatically. After deploying, put the Worker URL in `VITE_R2_WORKER_URL`. Uploads are stored under `<category>/<timestamp>-<random>-<sanitized name>` (the Supabase Storage fallback uses `<category>/<timestamp>-<sanitized name>`) and the returned public URL is saved into the CMS / project record. Only `image/*` and `video/*` files up to 100 MB are accepted.
+
+## Scripts
+
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Vite dev server on port 3002 (bound to `0.0.0.0`) |
+| `npm run build` | Production build to `dist/` (vendor chunks for react, motion, supabase, recharts) |
+| `npm run preview` | Serve the production build locally |
+| `npm run lint` | `tsc --noEmit` type check |
+| `npm run qa` | Playwright visual QA (`scripts/visual-qa.mjs`, output in `qa-results/`) |
+
+## Deployment
+
+The app deploys to **Vercel**. `vercel.json` rewrites every path to `/index.html` so client-side routes (`/admin/...`) resolve. Set the three `VITE_*` variables in the Vercel project settings; they are baked in at build time.
+
+`firebase.json` and `.firebaserc` are kept only for optional Firebase Hosting of the built `dist/` folder (`firebase deploy --only hosting`). Firestore, Firebase Storage and Firebase Auth are **not** used anywhere in the app.
+
+## Project structure
+
+```
+src/
+  main.tsx, App.tsx        entry + routes (public page, /admin/*, /UIComponents lab)
+  index.css                Tailwind v4 @theme tokens, utilities, A4 print styles
+  components/              landing-page sections (Hero, About, Services, ...) + EditableText
+  pages/                   HomePage, UIComponentsPage (internal component showcase)
+  admin/
+    AdminLayout.tsx        sidebar + header shell for /admin
+    AuthGuard.tsx          redirects to /admin/login without a session; blocks non-whitelisted accounts via is_admin()
+    pages/                 OverviewPage, CmsPage, ProjectsPage, ProjectDetailPage, InvoicePage, LoginPage
+    components/            Sidebar, ProjectCard, StatusBadge, ProjectFormModal, MediaUploader, BrandedDropdown
+    hooks/                 Supabase data hooks (projects, project detail, stats, team members, invoices)
+    lib/                   admin helpers (projectStatus.ts)
+    types.ts               shared admin types
+  lib/
+    supabase.ts            Supabase client
+    useAuth.ts             login / logout / session
+    useCms.ts              site_content loader + defaults merge + realtime
+    AdminContext.tsx       CMS content + admin-mode context for the landing page
+    textFormat.ts          *word* -> brand-green span formatter
+supabase/
+  migrations/              001 schema, 002 admin access, 003 invoices
+workers/
+  media-uploader/          Cloudflare Worker (wrangler.toml + src/index.ts)
+scripts/
+  visual-qa.mjs            Playwright screenshot QA
+```
+
+## Admin dashboard modules
+
+- **Overview** — project counters (total / active / completed / overdue), a status pie chart and a recent-activity feed built from `project_updates`.
+- **CMS** — edits the single `site_content` JSONB row, one tab per landing-page section. Wrapping a word in asterisks (`*word*`) renders it as a brand-green `<span>` on the landing page. Missing keys fall back to the built-in defaults, so a partial document never breaks the page.
+- **Project Tracker** — `projects` list and detail view with status/priority/progress, and a `project_updates` timeline per project. Changes stream to other open tabs via Supabase Realtime.
+- **Invoice Maker** — form on the left, live A4 preview on the right; prints to PDF through the browser's print dialog (styles in `src/index.css` under `@media print`). Invoices can be saved/loaded as JSON and optionally persisted to the `invoices` table.

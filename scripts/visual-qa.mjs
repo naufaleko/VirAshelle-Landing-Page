@@ -17,6 +17,9 @@
  *   node scripts/visual-qa.mjs
  *   npm run qa
  *   node scripts/visual-qa.mjs --url=https://virashelle-page.web.app
+ *
+ * Admin checks need credentials via env (never commit them):
+ *   QA_ADMIN_ID=virashelle QA_ADMIN_PASSWORD=... npm run qa
  */
 
 import { chromium } from 'playwright';
@@ -75,6 +78,20 @@ const collisionDetectorScript = () => {
     if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return false;
     const rect = el.getBoundingClientRect();
     if (rect.width <= 2 || rect.height <= 2) return false;
+
+    // Check if element is clipped by any ancestor overflow container
+    let parent = el.parentElement;
+    while (parent && parent !== document.body && parent !== document.documentElement) {
+      const pStyle = window.getComputedStyle(parent);
+      if (pStyle.overflowY === 'auto' || pStyle.overflowY === 'hidden' || pStyle.overflowY === 'scroll') {
+        const pRect = parent.getBoundingClientRect();
+        if (rect.bottom <= pRect.top + 1 || rect.top >= pRect.bottom - 1) {
+          return false; // Out of view / clipped by scroll container
+        }
+      }
+      parent = parent.parentElement;
+    }
+
     return true;
   });
 
@@ -326,9 +343,16 @@ async function runVisualQA() {
         const passInput = await page.$('input[type="password"]');
         const submitBtn = await page.$('button[type="submit"]');
 
-        if (idInput && passInput && submitBtn) {
-          await idInput.fill('VirAshelle');
-          await passInput.fill('nfmj@04290126');
+        // Credentials come from the environment so no password lives in the repo:
+        //   QA_ADMIN_ID=virashelle QA_ADMIN_PASSWORD=... npm run qa
+        const qaId = process.env.QA_ADMIN_ID || 'virashelle';
+        const qaPassword = process.env.QA_ADMIN_PASSWORD;
+
+        if (!qaPassword) {
+          console.log('    ⏭️  QA_ADMIN_PASSWORD not set — skipping authenticated admin checks.');
+        } else if (idInput && passInput && submitBtn) {
+          await idInput.fill(qaId);
+          await passInput.fill(qaPassword);
           await submitBtn.click();
           await page.waitForTimeout(3000);
 

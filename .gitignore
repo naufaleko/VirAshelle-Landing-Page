@@ -8,7 +8,6 @@ firebase-debug.log
 !package.json
 !tsconfig.json
 !firebase.json
-!firestore.rules
 !metadata.json
 !vercel.json
 
@@ -20,3 +19,8 @@ supabase/.temp/
 
 # Local brand asset exports (logo PNG/SVG/PDF), not part of the app
 exports/
+
+# Local QA and setup scripts: they carry test-account credentials and are run by hand, never shipped.
+# visual-qa.mjs stays tracked because `npm run qa` points at it and it reads credentials from env.
+scripts/*.mjs
+!scripts/visual-qa.mjs

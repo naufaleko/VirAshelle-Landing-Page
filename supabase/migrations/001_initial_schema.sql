@@ -150,7 +150,6 @@ CREATE INDEX IF NOT EXISTS idx_project_updates_created ON public.project_updates
 -- Insert initial team members
 INSERT INTO public.team_members (name, role, email) VALUES
   ('Naufal Eko', 'Leader', 'virashelle@gmail.com'),
-  ('Marshall Ramsey', 'Finance/Copywriter', null),
   ('Dixon', 'Production', null),
   ('Jessica Same', 'Marketing', null)
 ON CONFLICT DO NOTHING;
