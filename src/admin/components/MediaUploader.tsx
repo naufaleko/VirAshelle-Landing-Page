@@ -201,8 +201,7 @@ export function MediaUploader({
             <Link2 size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-dim pointer-events-none" aria-hidden="true" />
             <input
               id={inputId}
-              type="url"
-              inputMode="url"
+              type="text"
               value={value || ''}
               onChange={(e) => handleUrlChange(e.target.value)}
               placeholder={placeholder}
