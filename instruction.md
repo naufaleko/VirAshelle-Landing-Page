@@ -27,6 +27,8 @@ Create a `.env` file in the project root:
 ```env
 VITE_SUPABASE_URL=https://pkeojnwapdwvwjdkqwwz.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrZW9qbndhcGR3dndqZGtxd3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NTMxMjgsImV4cCI6MjEwNTIyOTEyOH0.IRINSfI2CF12PUBnlOc9hlf7owRJRoCWxjhxB-O0RDI
+VITE_R2_WORKER_URL=https://virashelle-media-uploader.media-uploader.workers.dev
+VITE_R2_PUBLIC_URL=https://pub-c61e4e9a5dfd40a899f95b4314976ee8.r2.dev
 ```
 
 ## 4. Run Development Server
