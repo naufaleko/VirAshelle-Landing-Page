@@ -20,6 +20,10 @@ supabase/.temp/
 # Local brand asset exports (logo PNG/SVG/PDF), not part of the app
 exports/
 Graphic Design Porto/
+PORTOFOLIO/
+PORTOFOLIO_COMPRESSED/
+.wrangler/
+workers/media-uploader/.wrangler/
 
 # Ephemeral AI session files
 gemini-code-*.md

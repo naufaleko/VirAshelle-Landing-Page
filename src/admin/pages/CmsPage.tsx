@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AlertCircle, Check, ExternalLink, Loader2, Plus, RefreshCw, Save, Trash2 } from 'lucide-react';
+import { AlertCircle, Check, ExternalLink, Loader2, Plus, RefreshCw, Save, Sparkles, Trash2 } from 'lucide-react';
 import { useAdmin } from '../../lib/useAdmin';
 import type { SiteContent } from '../../lib/useCms';
 import { formatBrandText, unformatBrandText } from '../../lib/textFormat';
+import { r2PortfolioItems } from '../data/r2Portfolio';
 import { MediaUploader } from '../components/MediaUploader';
 import { BrandedDropdown } from '../components/BrandedDropdown';
 import {
@@ -325,13 +326,37 @@ export function CmsPage() {
 
   const renderPortfolio = () => {
     const serviceOptions = form.services.items.map((s) => s.title.trim()).filter(Boolean);
+    const existingSrcs = new Set(form.portfolio.items.map((i) => i.src));
+    const unimportedItems = r2PortfolioItems.filter((i) => !existingSrcs.has(i.src));
+
+    const handleImportR2 = () => {
+      const realExisting = form.portfolio.items.filter(
+        (i) => !i.title.includes('[Placeholder]') && !i.category.includes('[Category]')
+      );
+      const curSrcs = new Set(realExisting.map((i) => i.src));
+      const toAdd = r2PortfolioItems.filter((i) => !curSrcs.has(i.src));
+      setSection('portfolio', { items: [...realExisting, ...toAdd] });
+    };
+
     return (
       <>
         <SectionHeader
           title="Karya"
           where="Tampil di bawah layanan yang sesuai kategorinya. Karya yang diklik membuka popup berisi judul, kategori, dan deskripsi."
         />
-        <SubHeading count={form.portfolio.items.length}>Daftar karya</SubHeading>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <SubHeading count={form.portfolio.items.length}>Daftar karya</SubHeading>
+          {unimportedItems.length > 0 && (
+            <button
+              type="button"
+              onClick={handleImportR2}
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-white/[0.06] hover:bg-[#4BD200]/20 border border-white/10 hover:border-[#4BD200]/40 text-xs font-ui font-semibold text-zinc-200 hover:text-white transition-all cursor-pointer"
+            >
+              <Sparkles size={14} className="text-[#4BD200]" aria-hidden="true" />
+              <span>Muat {unimportedItems.length} media R2</span>
+            </button>
+          )}
+        </div>
         <ItemList
           noun="karya"
           items={form.portfolio.items}
