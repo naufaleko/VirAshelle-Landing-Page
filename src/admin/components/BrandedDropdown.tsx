@@ -218,7 +218,7 @@ export function BrandedDropdown({
         aria-activedescendant={isOpen && activeIndex >= 0 ? `${listId}-opt-${activeIndex}` : undefined}
         aria-labelledby={label ? labelId : undefined}
         aria-label={ariaLabel}
-        className={`w-full bg-[#0a0a0f] border rounded-xl ${triggerPadding} text-left flex items-center justify-between gap-2 transition-colors duration-150 group disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`w-full pointer-coarse:min-h-11 bg-[#0a0a0f] border rounded-xl ${triggerPadding} text-left flex items-center justify-between gap-2 transition-colors duration-150 group disabled:opacity-50 disabled:cursor-not-allowed ${
           isOpen
             ? 'border-[#4BD200] ring-1 ring-[#4BD200]/30'
             : 'border-white/10 hover:border-[#4BD200]/40 hover:bg-[#111118]'

@@ -19,6 +19,10 @@ supabase/.temp/
 
 # Local brand asset exports (logo PNG/SVG/PDF), not part of the app
 exports/
+Graphic Design Porto/
+
+# Ephemeral AI session files
+gemini-code-*.md
 
 # Local QA and setup scripts: they carry test-account credentials and are run by hand, never shipped.
 # visual-qa.mjs stays tracked because `npm run qa` points at it and it reads credentials from env.

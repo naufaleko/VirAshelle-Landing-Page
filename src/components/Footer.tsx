@@ -29,7 +29,7 @@ export function Footer() {
             <Logo className="h-12 text-brand mb-12" />
             <h3 
               className="text-5xl md:text-7xl font-display font-bold tracking-[-0.04em] leading-[0.9] max-w-md uppercase"
-              dangerouslySetInnerHTML={{ __html: formatBrandText(footerData?.title || "LET'S *BUILD*\nTHE FUTURE") }}
+              dangerouslySetInnerHTML={{ __html: formatBrandText(footerData?.title || "SEND US\nYOUR *BRIEF*.") }}
             />
             <div className="mt-12 flex flex-col items-start gap-4">
               <p className="text-zinc-500 text-sm font-ui uppercase tracking-[0.15em]">Ready to start your next project?</p>

@@ -74,7 +74,7 @@ export function About() {
             <div className="relative pl-6 border-l-2 border-brand/40">
               <div className="absolute left-0 top-0 w-[2px] h-8 bg-brand rounded-full" />
               <p className="text-lg md:text-xl text-zinc-400 font-accent italic leading-relaxed">
-                Combining <span className="text-brand-light font-semibold not-italic">Cutting-Edge Visual Technology</span> with <span className="text-brand-light font-semibold not-italic">Compelling Storytelling</span>, we transform complex ideas into stunning, dynamic, and market-relevant <span className="text-brand-light font-semibold not-italic">Visual Masterpieces</span>.
+                We pair <span className="text-brand-light font-semibold not-italic">3D and interactive web work</span> with <span className="text-brand-light font-semibold not-italic">a clear story</span>, so a complicated product can be understood in <span className="text-brand-light font-semibold not-italic">one look</span>.
               </p>
             </div>
           </motion.div>

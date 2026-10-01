@@ -29,9 +29,7 @@ export function getEmbedUrl(item: PortfolioItem): string {
   }
 }
 
-// ==========================================
-// PASTE YOUR GOOGLE DRIVE LINKS BELOW
-// ==========================================
+// Google Drive Portfolio Items Configuration
 // Instructions:
 // 1. Upload your image or video to Google Drive.
 // 2. Right-click the file and select "Share".

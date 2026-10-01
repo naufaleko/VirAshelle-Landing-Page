@@ -129,7 +129,7 @@ export function Header() {
               rel="noopener noreferrer"
               className="px-5 py-2 bg-brand hover:brightness-110 text-white font-display font-bold text-[11px] tracking-[0.1em] uppercase rounded-sm transition-all duration-300 shadow-[0_0_15px_var(--color-brand)] opacity-90 hover:opacity-100"
             >
-              Contact Us
+              Chat on WhatsApp
             </a>
           </div>
           
@@ -202,7 +202,7 @@ export function Header() {
               transition={{ duration: 0.4, delay: navItems.length * 0.08 + 0.1 }}
               className="mt-8 px-8 py-3 bg-brand hover:brightness-110 text-white font-display font-bold text-sm tracking-[0.1em] uppercase rounded-sm shadow-[0_0_20px_var(--color-brand)]"
             >
-              Contact Us
+              Chat on WhatsApp
             </motion.a>
             
             <motion.div

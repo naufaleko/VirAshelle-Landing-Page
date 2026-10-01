@@ -1,0 +1,557 @@
+================================================================================
+  VIRASHELLE LANDING PAGE — REPORT CARA KERJA WEBSITE (FOKUS: ADMIN DASHBOARD)
+================================================================================
+Dibuat   : 20 September 2026
+Basis    : commit 291874b (branch main) + working tree saat ini
+Cakupan  : arsitektur keseluruhan secara singkat, lalu detail penuh untuk
+           bagian /admin: auth, layout, Overview, CMS, Project Tracker
+           (list, detail, timeline, alur end-to-end), Invoice Maker, data
+           layer Supabase, upload media, deploy — ditutup temuan & rekomendasi.
+
+
+--------------------------------------------------------------------------------
+1. GAMBARAN BESAR
+--------------------------------------------------------------------------------
+
+Satu aplikasi SPA (Single Page Application) React yang punya dua "wajah":
+
+  (a) Landing page publik   ->  route "/"
+  (b) Admin dashboard       ->  route "/admin/*"
+
+Keduanya satu bundle, satu codebase, satu backend. Tidak ada server sendiri:
+semua logika jalan di browser dan langsung ngobrol ke Supabase.
+
+Stack:
+  - React 19 + TypeScript, Vite 6 (dev server port 3002)
+  - Tailwind CSS v4 (via @tailwindcss/vite), warna brand #4BD200 (--color-brand)
+  - react-router-dom v7 untuk routing
+  - motion (Framer Motion) untuk animasi, lucide-react untuk ikon
+  - recharts untuk pie chart di Overview
+  - Supabase (Postgres + Auth + Realtime + Storage) sebagai backend utama
+  - Cloudflare Worker + R2 sebagai storage media utama (Supabase Storage fallback)
+  - Deploy: Vercel (project "virashelle-landing-page", team vir-ashelle).
+    Ada juga config Firebase Hosting (firebase.json / .firebaserc) sebagai sisa
+    dari versi lama — lihat bagian 9.
+
+Cara kerja inti (satu kalimat):
+  Landing page membaca konten dari 1 baris tabel `site_content` di Supabase;
+  admin dashboard adalah UI untuk mengedit baris itu + mengelola tabel
+  `projects` / `project_updates` + bikin invoice (lokal, tidak disimpan ke DB).
+
+
+--------------------------------------------------------------------------------
+2. ROUTING & ENTRY POINT
+--------------------------------------------------------------------------------
+
+src/main.tsx  ->  src/App.tsx
+
+App.tsx membungkus SEMUANYA dengan <AdminProvider> (src/lib/AdminContext.tsx),
+lalu <BrowserRouter>. Artinya context admin (user session + konten CMS) tersedia
+di landing page juga, bukan cuma di /admin.
+
+Route yang ada:
+
+  /                      HomePage (publik)
+  /admin/login           LoginPage
+  /login                 -> redirect ke /admin/login
+  /admin                 AuthGuard  ->  AdminLayout  ->  OverviewPage (index)
+  /admin/cms             CmsPage
+  /admin/projects        ProjectsPage
+  /admin/projects/:id    ProjectDetailPage
+  /admin/invoices        InvoicePage
+  /admin/invoice         -> redirect ke /admin/invoices
+  /UIComponents          UIComponentsPage (lab internal komponen UI, PUBLIK)
+  /uicomponents          -> redirect ke /UIComponents
+  *                      -> redirect ke /
+
+Semua halaman admin di-lazy-load (React.lazy + Suspense) supaya bundle landing
+page tetap ringan. Vite juga memecah vendor jadi chunk terpisah:
+vendor-react, vendor-motion, vendor-supabase, vendor-charts.
+
+vercel.json berisi rewrite "/(.*)" -> "/index.html" supaya deep link seperti
+/admin/projects/abc tetap ke-serve SPA-nya (bukan 404).
+
+
+--------------------------------------------------------------------------------
+3. AUTENTIKASI & KONTROL AKSES
+--------------------------------------------------------------------------------
+
+File terkait: src/lib/useAuth.ts, src/lib/AdminContext.tsx,
+              src/admin/AuthGuard.tsx, src/admin/pages/LoginPage.tsx
+
+Alur login:
+  1. User buka /admin/login, isi "Email / ID" + password.
+  2. loginWithId() di useAuth.ts:
+       - ID dinormalisasi (trim + lowercase).
+       - Dicek DI SISI CLIENT: ID harus "virashelle" atau "admin@virashelle.com"
+         DAN password harus sama dengan string yang di-hardcode di file itu.
+       - Kalau lolos, baru panggil supabase.auth.signInWithPassword() dengan
+         email admin@virashelle.com dan password yang sama.
+       - Kalau tidak lolos: throw "ID atau password salah!" tanpa ke Supabase.
+  3. Supabase mengembalikan session (JWT) -> disimpan otomatis oleh supabase-js
+     di localStorage -> onAuthStateChange men-set `user` di context.
+  4. LoginPage punya useEffect: kalau `user` sudah ada, navigate("/admin").
+
+Proteksi route:
+  - <AuthGuard> membaca { user, loading } dari context.
+      loading  -> tampil spinner
+      !user    -> <Navigate to="/admin/login" replace />
+      user     -> render <Outlet /> (yaitu AdminLayout + halaman)
+  - Session persist antar reload karena supabase.auth.getSession() dipanggil
+    saat mount.
+
+Logout: Sidebar -> logout() -> supabase.auth.signOut() -> user jadi null ->
+AuthGuard otomatis lempar ke /admin/login.
+
+Model akses: SATU akun admin (admin@virashelle.com). Tidak ada role, tidak ada
+multi-user, tidak ada tabel admins di Supabase (firestore.rules yang menyebut
+/admins adalah sisa Firebase, tidak dipakai).
+
+Keamanan di sisi database (Row Level Security, supabase/migrations/001_*.sql):
+  site_content     : SELECT publik (landing page perlu baca), INSERT/UPDATE/
+                     DELETE hanya role "authenticated"
+  projects         : semua operasi hanya "authenticated"
+  project_updates  : semua operasi hanya "authenticated"
+  team_members     : semua operasi hanya "authenticated"
+
+Catatan penting soal ini ada di bagian 9 (password hardcoded, signup Supabase).
+
+
+--------------------------------------------------------------------------------
+4. LAYOUT ADMIN
+--------------------------------------------------------------------------------
+
+src/admin/AdminLayout.tsx
+  - Flex: <Sidebar /> di kiri + <main> di kanan.
+  - Header sticky 64px: breadcrumb "Admin / <segmen terakhir URL>", email admin,
+    avatar huruf pertama email.
+  - <Outlet /> = konten halaman, scroll sendiri (overflow-y-auto).
+  - Breadcrumb ambil segmen terakhir pathname, jadi di /admin/projects/<uuid>
+    yang tampil adalah UUID-nya (minor, lihat bagian 9).
+
+src/admin/components/Sidebar.tsx
+  - Menu: Overview, CMS, Projects, Invoice Maker (NavLink, highlight aktif).
+  - Bawah: link "Website" (buka "/" di tab baru) + tombol Logout (merah).
+  - Desktop: bisa collapse jadi 80px (ikon saja) via tombol bulat di tepi.
+  - Mobile (<md): sidebar jadi drawer fixed, ada tombol hamburger di pojok
+    kiri atas + overlay gelap untuk menutup.
+
+Komponen admin reusable (src/admin/components/):
+  BrandedDropdown  : select custom bergaya brand (dot hijau, badge, animasi),
+                     menerima options string[] atau {value,label,badge}[].
+  MediaUploader    : input URL + tombol upload file; preview thumbnail
+                     (deteksi video YouTube/Drive/MP4). Detail di bagian 7.
+  ProjectCard      : kartu project di grid (judul, client, status badge,
+                     progress bar, deadline + overdue merah, priority chip,
+                     3 nama tim pertama).
+  StatusBadge      : badge warna per status project.
+  NewProjectModal  : form buat project baru (baru ditambahkan, bagian 6.3).
+
+
+--------------------------------------------------------------------------------
+5. DATA LAYER (SUPABASE)
+--------------------------------------------------------------------------------
+
+Client: src/lib/supabase.ts -> createClient(VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
+        (ada nilai fallback hardcoded kalau env kosong).
+
+Tabel (supabase/migrations/001_initial_schema.sql):
+
+  site_content
+    id TEXT PK (selalu 'main' — SINGLE ROW), lalu kolom JSONB per section:
+    hero, about, services, why_us, workflow, portfolio, milestone,
+    key_people (array), clients, header, footer, updated_at.
+    Trigger auto-update updated_at. Realtime aktif.
+
+  projects
+    id UUID, title, client, category, status (enum project_status),
+    priority (enum project_priority), description, start_date DATE,
+    deadline DATE, completed_at, progress INT 0-100 (CHECK), team TEXT[],
+    budget NUMERIC(12,2), tags TEXT[], thumbnail_url, created_at, updated_at.
+    Enum status  : briefing | concept | production | review | completed | on_hold
+    Enum priority: low | medium | high | urgent
+    Index di status & deadline. Trigger updated_at. Realtime aktif.
+
+  project_updates
+    id, project_id (FK -> projects, ON DELETE CASCADE), message, author,
+    old_status, new_status, progress, created_at. Realtime aktif.
+    Ini adalah "timeline / activity log" per project.
+
+  team_members
+    id, name, role, email, avatar_url. Seed awal 4 orang (Naufal Eko, Marshall
+    Ramsey, Dixon, Jessica Same). Catatan: di working tree saat ini ada
+    perubahan BELUM di-commit yang menghapus Marshall dari seed dan dari
+    default CMS (useCms.ts).
+
+Hooks (semua pola sama: fetch saat mount + subscribe realtime + cleanup):
+
+  src/lib/useCms.ts             -> content (site_content), updateContent()
+  src/admin/hooks/useProjects   -> list projects (filter status/category/
+                                   search ilike title), createProject,
+                                   updateProject, deleteProject
+  src/admin/hooks/useProjectDetail -> 1 project + updates-nya, updateProject,
+                                   addUpdate (insert update lalu optional
+                                   patch project), deleteProject
+  src/admin/hooks/useProjectStats  -> ambil SEMUA projects, hitung total/
+                                   active/completed/overdue/byStatus/byCategory
+                                   di client; + 10 update terbaru join
+                                   projects(title)
+  src/admin/hooks/useTeamMembers   -> list team_members (baru)
+
+Channel realtime yang dibuka:
+  'cms' (site_content id=main), 'projects-changes', 'project-<id>',
+  'stats-projects', 'stats-updates'.
+  Perubahan dari tab/device lain langsung tercermin tanpa refresh.
+
+
+--------------------------------------------------------------------------------
+6. HALAMAN-HALAMAN ADMIN
+--------------------------------------------------------------------------------
+
+6.1  OVERVIEW  (/admin)  — src/admin/pages/OverviewPage.tsx
+     - Tombol cepat: "Edit Website" (-> /admin/cms) dan "New Project"
+       (-> /admin/projects?new=true, langsung buka modal).
+     - 4 stat card: Total Projects, Active (bukan completed/on_hold),
+       Completed, Overdue (deadline lewat & belum completed).
+     - Pie chart "Projects by Status" (recharts, donut) + legend manual.
+     - "Recent Activity": 10 project_updates terbaru, author, pesan, link ke
+       detail project.
+     - Semua data dari useProjectStats, dihitung di client.
+
+6.2  CMS  (/admin/cms)  — src/admin/pages/CmsPage.tsx  (~1000 baris)
+     Tujuan: mengedit konten landing page. Konsepnya "form besar = 1 baris
+     site_content".
+
+     Alur:
+       1. Saat mount, `content` dari context di-deep-clone ke state lokal
+          `formData`. Jadi edit tidak langsung nyentuh DB.
+       2. Field hero.title, about.content, footer.title dikonversi dari HTML
+          (<span class="text-brand">…</span>, <br/>) ke sintaks ramah manusia
+          *kata* dan newline (lib/textFormat.ts: unformatBrandText).
+       3. User pindah-pindah tab, edit field. Setiap perubahan hanya ubah
+          formData (updateSectionField / setFormData).
+       4. Klik "Simpan Perubahan" -> handleSave():
+            - clone formData, konversi balik *kata* -> <span class="text-brand
+              font-semibold">, \n -> <br/> (formatBrandText)
+            - updateContent() -> upsert ke site_content id='main'
+              (mapping whyUs -> why_us, keyPeople -> key_people)
+            - pesan sukses 3.5 detik. Landing page ikut berubah secara
+              realtime di tab lain.
+
+     Tab & field:
+       Hero       : title (textarea, dukung *kata*), subtitle, buttonText
+       About      : title, content (textarea, dukung *kata*)
+       Services   : title, description, items[] {title, desc} (add/remove)
+       Why Us     : title, description, items[] {title, desc}
+       Workflow   : title, items[] {number, title, desc}
+       Portfolio  : title, description, items[] {id, title, category,
+                    desc, type image|video, src}; category diambil dari
+                    daftar judul Services (dropdown); media via MediaUploader.
+                    Item portfolio ini dirender di section Services landing
+                    page (Services.tsx membaca content.portfolio.items).
+       Milestone  : title, subtitle, items[] {status, count, desc, color}
+       Team       : keyPeople[] {name, role, desc, imageUrl} (MediaUploader
+                    kategori 'team')
+       Clients    : title, subtitle, items[] {name, logoUrl} (MediaUploader
+                    kategori 'clients', rekomendasi SVG/PNG transparan)
+       Footer     : title (dukung *kata*), email, address, phones[]
+
+     Perilaku data di useCms.ts yang perlu diketahui:
+       - mergeContent(): kalau suatu section di DB kosong / items-nya kosong,
+         dipakai DEFAULT dari kode (defaultContent). Jadi "mengosongkan semua
+         item" di CMS tidak akan bikin section hilang — malah balik ke default.
+       - sanitizeData(): mengganti class warna ungu lama (#7d39eb / #a472f2)
+         menjadi text-brand dsb. Ini migrasi dari tema lama (Firebase era).
+       - Tidak ada versioning/undo. Save = timpa.
+
+6.3  PROJECT TRACKER — DAFTAR PROJECT  (/admin/projects)
+     src/admin/pages/ProjectsPage.tsx
+     - Search (ilike judul, live), filter status (select), tombol "New Project".
+     - Grid ProjectCard (1-4 kolom responsif), klik -> detail.
+     - Skeleton loading 6 kartu; empty state kalau kosong.
+     - Modal "New Project" dikontrol lewat query string ?new=true (sehingga
+       bisa dibuka langsung dari Overview).
+     - NewProjectModal (src/admin/components/NewProjectModal.tsx) — BARU,
+       menggantikan placeholder "Create Dummy Project" yang sebelumnya
+       selalu insert data hardcoded:
+         Field: Title*, Client*, Category (dropdown dari judul Services di
+         CMS, fallback 4 default), Status, Priority, Start Date, Deadline
+         (validasi >= start), Budget, Tags (koma -> array, preview chip),
+         Description, Team (chip toggle dari tabel team_members),
+         Thumbnail (MediaUploader kategori 'projects').
+         Submit -> createProject() -> tutup modal -> navigate ke
+         /admin/projects/<id baru>.
+         Tanggal kosong dikirim null (kolom DATE menolak string kosong).
+         Status 'completed' saat create -> progress 100 & completed_at diisi.
+         Error tampil di dalam modal; Esc / klik backdrop menutup.
+
+6.4  PROJECT TRACKER — DETAIL & TIMELINE  (/admin/projects/:id)
+     src/admin/pages/ProjectDetailPage.tsx
+     - Header: status badge, priority, judul, client, tombol hapus (confirm
+       -> deleteProject -> balik ke list; project_updates ikut terhapus
+       karena ON DELETE CASCADE).
+     - Description, Progress bar (%), "Progress Workflow": 5 lingkaran
+       briefing -> concept -> production -> review -> completed; KLIK
+       lingkaran = langsung update status (tanpa konfirmasi, tanpa mencatat
+       ke timeline).
+     - Sidebar "Details": category, deadline (merah kalau overdue), budget
+       (format $), team chips.
+     - "Activity Timeline": semua project_updates, terbaru di atas, tampilkan
+       perubahan status & progress kalau ada.
+     - Form "Post an Update": pesan (wajib), optional ubah status (select)
+       dan progress (0-100). Submit -> addUpdate(): insert project_updates
+       (author = email admin) lalu patch projects kalau status/progress diisi.
+     - YANG TIDAK BISA di halaman ini: edit title/client/category/deadline/
+       budget/team/tags/description setelah project dibuat. Lihat bagian 9.
+
+6.4b PROJECT TRACKER — ALUR HIDUP SATU PROJECT (END-TO-END)
+
+     Rangkuman bagaimana satu project bergerak di sistem, dari lahir sampai
+     selesai, dan tabel mana yang tersentuh di tiap langkah:
+
+       [1] BUAT
+           Overview "New Project" atau Projects "New Project"
+           -> NewProjectModal -> INSERT projects
+              (status default 'briefing', progress 0, completed_at null)
+           -> realtime 'projects-changes' & 'stats-projects' terpicu
+           -> list & Overview stats ikut update, user diarahkan ke detail.
+
+       [2] PANTAU
+           Projects grid: kartu menampilkan status, progress %, deadline
+           (merah bila lewat & belum completed), priority, tim.
+           Filter: search judul (ilike) + status. Category filter ada di
+           hook tapi belum ada UI-nya.
+           Overview: Active / Completed / Overdue dihitung dari status &
+           deadline; pie chart per status.
+
+       [3] MAJUKAN STATUS
+           Dua jalur di halaman detail:
+             a. Klik lingkaran workflow (briefing -> concept -> production
+                -> review -> completed): UPDATE projects.status saja.
+                Tidak ada catatan di timeline.
+             b. Form "Post an Update": INSERT project_updates {message,
+                author=email admin, old_status, new_status, progress}
+                lalu UPDATE projects {status?, progress?}.
+                Ini jalur yang MENINGGALKAN JEJAK di Activity Timeline dan
+                muncul di "Recent Activity" Overview.
+           Status 'on_hold' hanya bisa lewat jalur (b) (ada di select).
+           Catatan: berpindah ke 'completed' lewat jalur mana pun TIDAK
+           otomatis mengisi completed_at / progress 100 (hanya
+           NewProjectModal yang melakukannya saat create).
+
+       [4] SELESAI
+           Status 'completed' -> keluar dari hitungan Active & Overdue,
+           masuk Completed. Deadline lewat tidak lagi ditandai merah.
+
+       [5] HAPUS
+           Tombol trash di detail -> window.confirm -> DELETE projects
+           -> project_updates ikut terhapus (FK ON DELETE CASCADE)
+           -> kembali ke /admin/projects.
+
+     Hubungan ke modul lain:
+       - Invoice Maker membaca daftar projects untuk auto-fill client + item
+         (price = budget). Satu arah, tidak menulis balik ke projects.
+       - team di project disimpan sebagai TEXT[] berisi NAMA (bukan id
+         team_members), jadi rename anggota tim tidak mengubah project lama.
+       - category project diambil dari judul Services di CMS (string bebas),
+         tidak ada FK.
+
+6.5  INVOICE MAKER  (/admin/invoices) — src/admin/pages/InvoicePage.tsx
+     Sifatnya: generator dokumen di browser, TIDAK menyimpan apa pun ke
+     Supabase. Semua state lokal (useState). Kalau refresh, data hilang
+     kecuali sudah di-save ke file JSON.
+
+     Layout: kiri panel form (tab Transaksi / Items / Branding / Pembayaran),
+     kanan preview invoice A4 dengan zoom (0.85 default, +/- / reset).
+
+     Data (InvoiceFormData): identitas bisnis (nama, tagline, telp, email,
+     lokasi, logo custom, watermark custom), no invoice, tanggal, tipe
+     pembayaran (dp | full) + persen DP, client (nama, alamat), items[]
+     {name, qty, price}, bank (nama, no rek, pemilik), 2 catatan custom.
+     Default terisi data VirAshelle (BCA, dsb) dan contoh client.
+
+     Perhitungan (useMemo): subtotal = sum(qty*price);
+       dp   : dpAmount = round(subtotal*dp%), grandTotal = dpAmount,
+              remaining = subtotal - dpAmount
+       full : grandTotal = subtotal, remaining = 0
+     Format Rupiah via Intl.NumberFormat('id-ID').
+
+     Aksi:
+       - "Auto-fill dari Project": dropdown daftar projects (useProjects) ->
+         clientName = project.client, items = 1 baris "<title> (<category>)"
+         dengan price = budget.
+       - Upload logo / watermark: FileReader -> data URL (base64 di memori).
+       - Save JSON: download file Invoice_VirAshelle_<no>_<client>.json.
+       - Load JSON: input file -> JSON.parse -> setData (tanpa validasi
+         schema).
+       - Print / PDF: ganti document.title jadi nama file, window.print().
+         CSS @media print di src/index.css: @page A4 portrait margin 0,
+         elemen .no-print disembunyikan, warna dipaksa exact. User pilih
+         "Save as PDF" di dialog print browser.
+       - Logo default = monogram VirAshelle inline SVG (path sama dengan
+         Logo.tsx).
+
+
+--------------------------------------------------------------------------------
+7. UPLOAD MEDIA (GAMBAR / VIDEO)
+--------------------------------------------------------------------------------
+
+Komponen: src/admin/components/MediaUploader.tsx (dipakai CMS Portfolio/Team/
+Clients dan NewProjectModal).
+
+Dua cara isi media:
+  (a) Paste URL langsung (YouTube, Google Drive, MP4, gambar apa pun).
+      Deteksi video & thumbnail via components/VideoPlayer.tsx
+      (isVideoMedia, getVideoThumbnail).
+  (b) Upload file (maks 100MB; accept tergantung kategori: clients -> svg/png/
+      jpg/webp, team -> png/jpg/webp, lainnya -> image/* + video/*).
+
+Alur upload file:
+  1. Nama file dibersihkan, path = <category>/<timestamp>-<nama>.
+  2. Kalau env VITE_R2_WORKER_URL ada: POST multipart {file, category} ke
+     <worker>/upload.
+       Worker: workers/media-uploader/src/index.ts (Cloudflare Worker, binding
+       R2 bucket "virashelle-media"). Simpan ke R2 dengan key
+       <category>/<ts>-<rand>-<nama>, balikan {url} berbentuk
+       https://pub-c61e4e9a5dfd40a899f95b4314976ee8.r2.dev/<key>.
+  3. Kalau worker tidak diset ATAU gagal: fallback ke Supabase Storage bucket
+     "media" (upsert, cacheControl 3600) lalu getPublicUrl().
+  4. URL hasil dimasukkan ke field via onChange -> ikut tersimpan saat
+     "Simpan Perubahan" / submit project.
+
+Catatan: src/lib/r2.ts (uploadToR2 dengan PUT + Bearer token) TIDAK dipakai
+di mana pun — dead code dari desain awal yang lebih aman (lihat bagian 9).
+
+
+--------------------------------------------------------------------------------
+8. ENV, BUILD, DEPLOY
+--------------------------------------------------------------------------------
+
+Env (.env / .env.local, template di .env.example):
+  VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY,
+  VITE_R2_WORKER_URL, VITE_R2_PUBLIC_URL
+
+Script npm:
+  dev      vite --port=3002 --host
+  build    vite build  -> dist/
+  lint     tsc --noEmit
+  qa       node scripts/visual-qa.mjs (Playwright, cek tabrakan layout,
+           hasil ke qa-results/)
+
+Deploy:
+  - Vercel: project sudah ter-link (.vercel/project.json), deploy production
+    terakhir ~2 hari lalu oleh user "virashelle-5306". Push ke main bisa
+    auto-deploy kalau Git integration Vercel aktif; kalau tidak, jalankan
+    `vercel --prod`.
+  - Firebase Hosting: firebase.json (site "virashelle-page", public dist/) dan
+    .firebaserc masih ada. Firebase CLI tidak terinstall di mesin ini. Ini
+    sisa dari versi lama; README juga masih menyebut Firebase.
+
+
+--------------------------------------------------------------------------------
+9. TEMUAN PENTING (URUT PRIORITAS)
+--------------------------------------------------------------------------------
+
+[TINGGI] Password admin di-hardcode di src/lib/useAuth.ts (sisi client).
+    Nilainya ikut masuk ke bundle JS produksi; siapa pun bisa buka DevTools /
+    view-source chunk dan membacanya. Karena password yang sama dipakai untuk
+    signInWithPassword ke Supabase, ini = kebocoran kredensial Supabase Auth.
+    Saran: hapus pengecekan client-side, cukup panggil signInWithPassword
+    dengan email+password yang diketik user; ganti password akun di Supabase
+    setelahnya.
+
+[TINGGI] Endpoint upload Worker (POST /upload) tanpa autentikasi & CORS "*".
+    Siapa pun yang tahu URL worker bisa upload file apa saja ke bucket R2
+    (biaya storage + potensi hosting konten liar di domain r2.dev kamu).
+    Saran: worker verifikasi header Authorization (JWT Supabase) sebelum put;
+    src/lib/r2.ts sudah punya pola pengiriman Bearer token, tinggal dipakai
+    dan MediaUploader diarahkan ke situ.
+
+[SEDANG] Pastikan "Enable email signups" di Supabase Auth dalam keadaan OFF.
+    RLS memberi akses penuh ke role "authenticated" (bukan ke email tertentu).
+    Kalau signup terbuka, siapa pun bisa daftar akun lalu menulis ke
+    site_content / projects.
+
+[SEDANG] /UIComponents dapat diakses publik dan punya toggle "Admin Mode"
+    (inline edit EditableText). Tanpa login, penulisan akan ditolak RLS, tapi
+    halaman ini tetap membuka UI internal + memuat semua komponen. Saran:
+    taruh di bawah AuthGuard atau hapus dari build produksi.
+
+[SEDANG] Project tidak bisa diedit setelah dibuat (selain status/progress via
+    timeline). Salah ketik judul/client/deadline/budget harus hapus & buat
+    ulang. Saran: tambah tombol "Edit" di ProjectDetailPage yang membuka
+    form yang sama dengan NewProjectModal (mode edit -> updateProject).
+
+[RENDAH] README.md usang: masih menjelaskan Firebase (Firestore/Storage/Auth),
+    padahal aplikasi sudah 100% Supabase + R2. firestore.rules, firebase.json,
+    .firebaserc tidak lagi merepresentasikan backend aktif.
+
+[RENDAH] Klik lingkaran status di Project Detail langsung mengubah status
+    tanpa konfirmasi dan tanpa entri di Activity Timeline, sehingga jejak
+    perubahan bisa hilang (timeline hanya terisi dari form "Post an Update").
+
+[RENDAH] Menandai project 'completed' dari halaman detail tidak mengisi
+    completed_at dan tidak menaikkan progress ke 100. Kolom completed_at
+    praktis selalu null kecuali project dibuat langsung berstatus completed.
+    Saran: di updateProject/addUpdate, kalau status baru = 'completed', set
+    completed_at = now() dan progress = 100 (dan null-kan lagi kalau status
+    dimundurkan).
+
+[RENDAH] Filter kategori sudah didukung useProjects (filters.category) tapi
+    belum ada kontrolnya di UI ProjectsPage.
+
+[RENDAH] Breadcrumb header menampilkan UUID di halaman detail project.
+
+[RENDAH] Overview menarik seluruh tabel projects lalu menghitung di client.
+    Aman untuk puluhan-ratusan project; kalau ribuan, pindahkan ke view/RPC
+    Supabase.
+
+[RENDAH] Invoice tidak tersimpan di DB — hilang saat refresh. Kalau perlu
+    riwayat invoice, buat tabel `invoices` (JSONB data + no_inv + client).
+
+[RENDAH] Dead code: src/lib/r2.ts, src/components/ImageUpload.tsx (hanya
+    dipakai UI lab), sisa warna ungu #7d39eb di EditableText.tsx,
+    metadata.json (menyebut Gemini API, tidak dipakai).
+
+[INFO] Working tree saat ini punya 4 file berubah yang BELUM di-commit dan
+    bukan dari sesi ini: .firebaserc (project -> virashelle-web),
+    src/lib/useCms.ts & migration SQL (hapus Marshall Ramsey),
+    scripts/visual-qa.mjs (deteksi elemen ter-clip).
+
+
+--------------------------------------------------------------------------------
+10. PETA FILE ADMIN (CEPAT)
+--------------------------------------------------------------------------------
+
+src/App.tsx                            routing + lazy load
+src/lib/AdminContext.tsx               context: user, login, logout, content
+src/lib/useAuth.ts                     login/logout Supabase (lihat temuan #1)
+src/lib/useCms.ts                      SiteContent type, default, merge, fetch,
+                                       realtime, updateContent
+src/lib/textFormat.ts                  *kata* <-> <span class="text-brand">
+src/lib/supabase.ts                    Supabase client
+src/lib/r2.ts                          (tidak dipakai)
+src/admin/AuthGuard.tsx                proteksi route
+src/admin/AdminLayout.tsx              sidebar + header + outlet
+src/admin/components/Sidebar.tsx       navigasi
+src/admin/components/BrandedDropdown.tsx
+src/admin/components/MediaUploader.tsx upload R2 / Supabase Storage / URL
+src/admin/components/NewProjectModal.tsx form project baru
+src/admin/components/ProjectCard.tsx
+src/admin/components/StatusBadge.tsx
+src/admin/hooks/useProjects.ts
+src/admin/hooks/useProjectDetail.ts
+src/admin/hooks/useProjectStats.ts
+src/admin/hooks/useTeamMembers.ts
+src/admin/pages/LoginPage.tsx
+src/admin/pages/OverviewPage.tsx
+src/admin/pages/CmsPage.tsx
+src/admin/pages/ProjectsPage.tsx
+src/admin/pages/ProjectDetailPage.tsx
+src/admin/pages/InvoicePage.tsx
+src/admin/types.ts                     Project, ProjectUpdate, TeamMember
+supabase/migrations/001_initial_schema.sql  skema + RLS + seed
+workers/media-uploader/                Cloudflare Worker upload ke R2
+src/index.css                          tema, token warna, @media print invoice
+
+================================================================================

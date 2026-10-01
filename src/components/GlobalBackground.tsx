@@ -78,7 +78,7 @@ export function GlobalBackground() {
         </div>
       </motion.div>
 
-      {/* ── Ambient Lighting / Gradient Blobs — Natural Radial Gradient without GPU Blur ── */}
+      {/* ── Ambient Lighting / Gradient Blobs, Natural Radial Gradient without GPU Blur ── */}
       {/* Primary gradient blob */}
       <div 
         className={`absolute rounded-full pointer-events-none ${
@@ -100,7 +100,7 @@ export function GlobalBackground() {
         }}
       />
 
-      {/* ── High Speed Data Nodes — reduced on mobile ── */}
+      {/* ── High Speed Data Nodes, reduced on mobile ── */}
       {isMobile ? (
         <>
           <DataNode top="30%" delay={0} duration={7} />
@@ -116,7 +116,7 @@ export function GlobalBackground() {
         </>
       )}
 
-      {/* ── Tactical UI Elements — desktop only (too small to see on mobile anyway) ── */}
+      {/* ── Tactical UI Elements, desktop only (too small to see on mobile anyway) ── */}
       {!isMobile && (
         <>
           {/* Top Left Grid Crosshair */}

@@ -33,7 +33,7 @@ export function EditableText({ contentKey, field, className = '', as: Component 
           ...content[contentKey],
           [field]: localValue
         }
-      });
+      }).catch(() => alert("Failed to update content. Are you logged in as admin?"));
     }
   };
 
@@ -46,7 +46,7 @@ export function EditableText({ contentKey, field, className = '', as: Component 
             value={localValue}
             onChange={(e) => setLocalValue(e.target.value)}
             onBlur={handleSave}
-            className={`w-full bg-zinc-800/80 text-white border border-[#7d39eb] rounded p-2 focus:outline-none focus:ring-2 focus:ring-[#7d39eb] ${className}`}
+            className={`w-full bg-zinc-800/80 text-white border border-brand rounded p-2 focus:outline-none focus:ring-2 focus:ring-brand ${className}`}
             rows={5}
           />
         ) : (
@@ -57,11 +57,11 @@ export function EditableText({ contentKey, field, className = '', as: Component 
             onChange={(e) => setLocalValue(e.target.value)}
             onBlur={handleSave}
             onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-            className={`w-full bg-zinc-800/80 text-white border border-[#7d39eb] rounded p-2 focus:outline-none focus:ring-2 focus:ring-[#7d39eb] ${className}`}
+            className={`w-full bg-zinc-800/80 text-white border border-brand rounded p-2 focus:outline-none focus:ring-2 focus:ring-brand ${className}`}
           />
         )}
         <div className="absolute top-2 right-2 flex gap-2">
-          <button onMouseDown={(e) => { e.preventDefault(); handleSave(); }} className="bg-[#7d39eb] text-white text-[10px] px-2 py-1 rounded">Save</button>
+          <button onMouseDown={(e) => { e.preventDefault(); handleSave(); }} className="bg-brand text-black text-[10px] px-2 py-1 rounded">Save</button>
         </div>
       </div>
     );
@@ -72,7 +72,7 @@ export function EditableText({ contentKey, field, className = '', as: Component 
 
   return (
     <Component 
-      className={`${className} ${isAdminMode ? 'hover:outline hover:outline-2 hover:outline-dashed hover:outline-[#7d39eb] hover:bg-[#7d39eb]/10 cursor-pointer transition-all rounded px-1 -mx-1' : ''}`}
+      className={`${className} ${isAdminMode ? 'hover:outline hover:outline-2 hover:outline-dashed hover:outline-brand hover:bg-brand/10 cursor-pointer transition-all rounded px-1 -mx-1' : ''}`}
       onClick={() => isAdminMode && setIsEditing(true)}
       dangerouslySetInnerHTML={{ __html: processedValue }}
     />

@@ -112,6 +112,14 @@ body {
   outline-offset: 2px;
 }
 
+/* transition-colors also animates outline-color; without a resting colour the ring fades in
+   from currentColor (white) to green. Base layer, so outline-* utilities still win. */
+@layer base {
+  *, ::before, ::after {
+    outline-color: var(--color-brand);
+  }
+}
+
 /* ───────────────── Glass Utility ───────────────── */
 .glass {
   background: rgba(17, 17, 24, 0.7);
@@ -302,7 +310,7 @@ html {
   }
 }
 
-/* CSS marquee for Clients section — GPU-accelerated */
+/* CSS marquee for Clients section, GPU-accelerated */
 @keyframes css-marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }

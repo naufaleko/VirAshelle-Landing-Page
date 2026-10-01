@@ -83,58 +83,58 @@ export type SiteContent = {
 const defaultContent: SiteContent = {
   hero: {
     title: "WE\n<span class=\"text-brand\">ARCHITECT</span>\nIDENTITY.",
-    subtitle: "We don't just design. We engineer digital experiences that dominate the tactical space.",
-    buttonText: "Launch Project"
+    subtitle: "Video, motion graphics, 3D, and design for brands that need to be noticed in the first few seconds.",
+    buttonText: "Chat on WhatsApp"
   },
   about: {
     title: "About Us",
-    content: "<span class=\"text-brand font-semibold\">VirAshelle</span> is a modern multimedia creative studio specializing in high-impact digital visual production.\n\n<span class=\"text-brand font-medium\">We exist to help your brand communicate more powerfully</span>, capture audience's attention within the first few seconds, and turn viewers into <span class=\"text-brand underline decoration-2 underline-offset-4\">loyal admirers</span>."
+    content: "<span class=\"text-brand font-semibold\">VirAshelle</span> is a multimedia studio in Jakarta. We make video, motion graphics, 3D, and design for brands.\n\n<span class=\"text-brand font-medium\">The job is simple to state and hard to do</span>: earn a viewer's attention in the first few seconds, then hold it long enough for the message to <span class=\"text-brand underline decoration-2 underline-offset-4\">land</span>."
   },
   services: {
-    title: "What We Can Do?",
-    description: "Our Services",
+    title: "What we do",
+    description: "Four services, one team",
     items: [
-      { title: "VIDEO EDITING", desc: "Crafting, pacing, and polishing video footage into rhythmic, emotional, and high-converting commercial narratives." },
-      { title: "MOTION GRAPHIC", desc: "Bringing graphic elements, typography, and illustrations to life through dynamic animation for digital ads, explainer videos, and social media content." },
-      { title: "3D PRODUCTION", desc: "Asset creation, 3D modeling, animation, and rendering to showcase product details in a pristine, premium manner that conventional cameras cannot replicate." },
-      { title: "GRAPHIC DESIGN", desc: "Developing visual identities, product packaging designs, promotional materials, and aesthetic social media content that aligns perfectly with your brand DNA." }
+      { title: "VIDEO EDITING", desc: "Cutting and pacing raw footage into commercial video that people watch to the end." },
+      { title: "MOTION GRAPHIC", desc: "Animated type, illustration, and graphics for ads, explainer videos, and social feeds." },
+      { title: "3D PRODUCTION", desc: "Modeling, animation, and rendering that show a product from angles and at a level of detail a camera cannot reach." },
+      { title: "GRAPHIC DESIGN", desc: "Visual identity, packaging, promotional material, and social content that all follow the same brand rules." }
     ]
   },
   whyUs: {
     title: "Why VirAshelle?",
-    description: "Data-driven creative decisions paired with radical aesthetics.",
+    description: "What you get when you work with us.",
     items: [
-      { title: 'Integrated Visual Solutions', desc: 'No need to juggle multiple vendors for 3D, animation, or editing. We handle your entire visual ecosystem under one roof.' },
-      { title: 'Result-Driven Creativity', desc: "We don't just create beautiful visuals; we design them strategically to boost engagement and maximize your product's ad conversions." },
-      { title: 'Proven Track Record', desc: 'Backed by a solid portfolio, we have successfully produced high-performing product commercials across various digital platforms.' }
+      { title: 'One team for everything visual', desc: '3D, animation, editing, and design come from the same people, so you brief once and the assets match each other.' },
+      { title: 'Designed around the campaign goal', desc: 'Every visual starts from what the ad has to do, whether that is stopping the scroll or explaining the product. The look serves that.' },
+      { title: 'Work you can see', desc: 'Our portfolio and the brands we have worked with are further down this page.' }
     ]
   },
   workflow: {
     title: "Our Workflow",
     items: [
-      { number: "01", title: "Discovery & Ideation", desc: "Deep-dive discussions to understand your brief, campaign goals, and product identity." },
-      { number: "02", title: "Concept & Storyboarding", desc: "Crafting the creative concept, script, and visual storyboard before moving into production." },
-      { number: "03", title: "Production & Execution", desc: "Where the magic happens-our team begins designing, 3D modeling, animating, and editing." },
-      { number: "04", title: "Review & Delivery", desc: "Collaborative evaluation to ensure the final output is flawless and ready to launch" }
+      { number: "01", title: "Discovery", desc: "We read your brief and ask about the campaign goal and the product before proposing anything." },
+      { number: "02", title: "Concept & Storyboard", desc: "Concept, script, and storyboard, approved by you before production starts." },
+      { number: "03", title: "Production", desc: "Design, 3D modeling, animation, and editing, depending on what the concept needs." },
+      { number: "04", title: "Review & Delivery", desc: "You review, we revise, and you receive the final files in the formats your channels need." }
     ]
   },
   portfolio: {
     title: "Selected Works.",
-    description: "A curated selection of our recent projects. Update these dynamically from your Google Drive.",
+    description: "Recent projects.",
     items: [
-      { id: "1", title: "Neon Brand Identity", category: "Branding", type: "image", src: "https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=1000&auto=format&fit=crop" },
-      { id: "2", title: "Urban Streetwear Campaign", category: "Photography", type: "image", src: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=1000&auto=format&fit=crop" },
-      { id: "3", title: "Future Tech Commercial", category: "Video Production", type: "image", src: "https://images.unsplash.com/photo-1536240478700-b869070f9279?q=80&w=1000&auto=format&fit=crop" },
-      { id: "4", title: "Abstract 3D Motion", category: "Motion Graphics", type: "image", src: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop" }
+      { id: "1", title: "[Placeholder] Project title", category: "[Category]", type: "image", src: "https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=1000&auto=format&fit=crop" },
+      { id: "2", title: "[Placeholder] Project title", category: "[Category]", type: "image", src: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=1000&auto=format&fit=crop" },
+      { id: "3", title: "[Placeholder] Project title", category: "[Category]", type: "image", src: "https://images.unsplash.com/photo-1536240478700-b869070f9279?q=80&w=1000&auto=format&fit=crop" },
+      { id: "4", title: "[Placeholder] Project title", category: "[Category]", type: "image", src: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop" }
     ]
   },
   milestone: {
     title: "Milestones",
-    subtitle: "Our Journey",
+    subtitle: "In numbers",
     items: [
-      { status: "Project Done", count: "45+", desc: "Successfully delivered high-impact visual campaigns.", color: "border-brand" },
-      { status: "On Going Project", count: "12", desc: "Currently crafting digital experiences in the lab.", color: "border-brand-light" },
-      { status: "Future Plan", count: "2025", desc: "Expanding to interactive AR/VR web experiences.", color: "border-white/20" }
+      { status: "Projects delivered", count: "[REAL DATA]", desc: "Commercials, motion pieces, and 3D work shipped to clients.", color: "border-brand" },
+      { status: "In production", count: "[REAL DATA]", desc: "Projects currently in the studio.", color: "border-brand-light" },
+      { status: "Next", count: "[REAL DATA]", desc: "Interactive AR/VR web experiences.", color: "border-white/20" }
     ]
   },
   keyPeople: [
@@ -142,12 +142,6 @@ const defaultContent: SiteContent = {
       name: "Naufal Eko",
       role: "Leader",
       desc: "The captain. Sets the overall strategy, manages the client, and keeps the project moving.",
-      imageUrl: ""
-    },
-    {
-      name: "Marshall Ramsey",
-      role: "Finance/Copywriter",
-      desc: "The brains behind the words and the money. Ensures the message hits hard and the budget makes sense.",
       imageUrl: ""
     },
     {
@@ -165,7 +159,7 @@ const defaultContent: SiteContent = {
   ],
   clients: {
     title: "Our Clients",
-    subtitle: "These are the brands that have been collaborated with our company!",
+    subtitle: "Brands we have worked with.",
     items: [
       { name: "Telin", logoUrl: "" },
       { name: "Asbanda", logoUrl: "" },
@@ -180,7 +174,7 @@ const defaultContent: SiteContent = {
     established: "EST. 2024"
   },
   footer: {
-    title: "LET'S <span class=\"text-brand\">BUILD</span><br/>THE FUTURE",
+    title: "SEND US<br/>YOUR <span class=\"text-brand\">BRIEF</span>.",
     email: "virashelle@gmail.com",
     phones: ["+62 88 1212 8323", "+62 851 7333 9084"],
     address: "Jakarta, Indonesia"
@@ -248,14 +242,22 @@ const mergeContent = (base: SiteContent, incoming: any): SiteContent => {
 export function useCms() {
   const [content, setContent] = useState<SiteContent>(defaultContent);
   const [loading, setLoading] = useState(true);
+  // Set when the live row could not be read. The page still renders the fallback, but the
+  // CMS must not save it: that would overwrite the live content with defaultContent.
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchContent = async () => {
-      const { data } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('site_content')
         .select('*')
         .eq('id', 'main')
         .single();
+
+      // PGRST116 = no row yet; the fallback is the correct content in that case.
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        setError(fetchError.message);
+      }
 
       if (data) {
         const mappedData = {
@@ -292,25 +294,27 @@ export function useCms() {
     };
   }, []);
 
+  // Throws on failure so the caller can show the error where the user is looking.
   const updateContent = async (newContent: SiteContent) => {
-    try {
-      const { whyUs, keyPeople, ...rest } = newContent;
-      const contentFields = {
-        ...rest,
-        why_us: whyUs,
-        key_people: keyPeople
-      };
-      
-      const { error } = await supabase
-        .from('site_content')
-        .upsert({ id: 'main', ...contentFields, updated_at: new Date().toISOString() });
-        
-      if (error) throw error;
-    } catch (error) {
-      console.error("Failed to update content", error);
-      alert("Failed to update content. Are you logged in as admin?");
+    const { whyUs, keyPeople, ...rest } = newContent;
+    const contentFields = {
+      ...rest,
+      why_us: whyUs,
+      key_people: keyPeople
+    };
+
+    const { error: saveError } = await supabase
+      .from('site_content')
+      .upsert({ id: 'main', ...contentFields, updated_at: new Date().toISOString() });
+
+    if (saveError) {
+      console.error("Failed to update content", saveError);
+      throw new Error(saveError.message);
     }
+    // Realtime echoes the row back, but only if the channel is up; set it here so the
+    // page never shows the old content after a save that succeeded.
+    setContent(newContent);
   };
 
-  return { content, loading, updateContent };
+  return { content, loading, error, updateContent };
 }

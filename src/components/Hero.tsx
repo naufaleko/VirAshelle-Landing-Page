@@ -15,7 +15,7 @@ export function Hero() {
     offset: ['start start', 'end start'],
   });
 
-  // Disable parallax on mobile — scroll transforms cause jank on phones
+  // Disable parallax on mobile, scroll transforms cause jank on phones
   const bgY = useTransform(scrollYProgress, [0, 1], isMobile ? ['0%', '0%'] : ['0%', '30%']);
   const textY = useTransform(scrollYProgress, [0, 1], isMobile ? ['0%', '0%'] : ['0%', '15%']);
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
@@ -44,7 +44,7 @@ export function Hero() {
           </span>
         </motion.div>
 
-        {/* Main Heading — animated line by line */}
+        {/* Main Heading, animated line by line */}
         <div className="overflow-hidden">
           <motion.div
             initial={{ y: '100%' }}

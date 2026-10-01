@@ -27,7 +27,7 @@ export function Clients() {
           className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] font-ui text-brand-light mb-6 block"
         >
           <span className="w-8 h-[1px] bg-brand-light" />
-          Trusted By
+          Clients
         </motion.span>
 
         <motion.h2
@@ -51,10 +51,10 @@ export function Clients() {
         </motion.p>
       </div>
 
-      {/* Marquee Container — uses CSS animation instead of Framer Motion for GPU-accelerated performance */}
+      {/* Marquee Container, uses CSS animation instead of Framer Motion for GPU-accelerated performance */}
       <div className="relative">
 
-        {/* First marquee row — CSS-based animation */}
+        {/* First marquee row, CSS-based animation */}
         <div className="overflow-hidden py-4">
           <div className="marquee-track gap-6">
             {marqueeItems.map((client: { name: string; logoUrl: string }, i: number) => (
@@ -82,7 +82,7 @@ export function Clients() {
           </div>
         </div>
 
-        {/* Second marquee row (reverse direction) — hidden on mobile for performance */}
+        {/* Second marquee row (reverse direction), hidden on mobile for performance */}
         {clientList.length > 3 && !isMobile && (
           <div className="overflow-hidden py-4">
             <div className="marquee-track-reverse gap-6">

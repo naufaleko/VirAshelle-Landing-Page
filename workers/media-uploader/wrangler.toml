@@ -6,3 +6,26 @@ compatibility_date = "2024-01-01"
 binding = "virashelle_media"
 bucket_name = "virashelle-media"
 
+# Worker configuration. After changing anything here, redeploy with:
+#   cd workers/media-uploader && npx wrangler deploy
+[vars]
+# Supabase project URL. The worker calls `${SUPABASE_URL}/auth/v1/user` to verify
+# the Bearer token sent by the admin dashboard.
+SUPABASE_URL = "https://pkeojnwapdwvwjdkqwwz.supabase.co"
+
+# Supabase anon (public) key - safe to commit, it is shipped to browsers anyway.
+# Must match VITE_SUPABASE_ANON_KEY used by the frontend.
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrZW9qbndhcGR3dndqZGtxd3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NTMxMjgsImV4cCI6MjEwNTIyOTEyOH0.IRINSfI2CF12PUBnlOc9hlf7owRJRoCWxjhxB-O0RDI"
+
+# Comma-separated list of emails allowed to upload (case-insensitive).
+# Leave empty to allow ANY authenticated Supabase user.
+ADMIN_EMAILS = "admin@virashelle.com"
+
+# Comma-separated list of browser origins allowed to call this worker, e.g.
+# "https://virashelle.com,https://www.virashelle.com,http://localhost:3002".
+# Leave empty to allow any origin (Access-Control-Allow-Origin: *).
+ALLOWED_ORIGINS = ""
+
+# Public base URL of the R2 bucket, used to build the URL returned after upload.
+# Use the bucket's r2.dev subdomain or your custom domain (no trailing slash).
+PUBLIC_R2_URL = "https://pub-c61e4e9a5dfd40a899f95b4314976ee8.r2.dev"

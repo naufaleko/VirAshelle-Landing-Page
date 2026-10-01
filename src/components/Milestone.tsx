@@ -68,7 +68,7 @@ const BASE_CARD_H   = 88;
 const BASE_NODE_GAP = 14;
 
 const H_PAT = [0.62, 0.88, 0.22, 0.75, 0.38, 0.9, 0.18];
-const PALETTE = ['#7d39eb', '#a472f2', '#c4a0ff', '#8b5cf6', '#6d28d9', '#7c3aed', '#9333ea'];
+const PALETTE = ['#4BD200', '#7cff33', '#22c55e', '#10b981', '#328c00', '#4ade80', '#86efac'];
 
 // ── Dynamic sizing based on item count ───────────────────────────────────────
 function getDynamicSizes(itemCount: number) {
@@ -144,7 +144,7 @@ function MilestoneCard({
       style={{
         width: cardW,
         background: isActive
-          ? 'rgba(18, 14, 38, 0.97)'
+          ? 'rgba(17, 17, 24, 0.96)'
           : 'rgba(255,255,255,0.03)',
         border: `1px solid ${isActive ? col + '90' : col + '30'}`,
         borderRadius: borderRad,
@@ -225,7 +225,7 @@ function MilestoneCard({
         <Counter target={item.count} color={col} fontSize={countFs} />
       </div>
 
-      {/* Desc area — smooth expand/collapse */}
+      {/* Desc area, smooth expand/collapse */}
       <div 
         className="milestone-scroll"
         style={{
@@ -442,7 +442,7 @@ export function Milestone() {
             className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] font-ui text-brand-light mb-6"
           >
             <span className="w-8 h-[1px] bg-brand-light" />
-            {milestoneData?.subtitle || 'Our Journey'}
+            {milestoneData?.subtitle || 'In numbers'}
             <span className="w-8 h-[1px] bg-brand-light" />
           </motion.span>
           <motion.h2
@@ -468,7 +468,7 @@ export function Milestone() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
-              <span className="text-[10px] uppercase tracking-[0.2em] font-ui">Swipe to explore</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] font-ui">Swipe for more</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
@@ -493,13 +493,13 @@ export function Milestone() {
                   >
                     <defs>
                       <linearGradient id="mgArea2m" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%"   stopColor="#7d39eb" stopOpacity="0.18" />
-                        <stop offset="100%" stopColor="#7d39eb" stopOpacity="0.02" />
+                        <stop offset="0%"   stopColor="#4BD200" stopOpacity="0.20" />
+                        <stop offset="100%" stopColor="#4BD200" stopOpacity="0.01" />
                       </linearGradient>
                       <linearGradient id="mgLine2m" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%"   stopColor="#7d39eb" />
-                        <stop offset="50%"  stopColor="#a472f2" />
-                        <stop offset="100%" stopColor="#c4a0ff" />
+                        <stop offset="0%"   stopColor="#328c00" />
+                        <stop offset="50%"  stopColor="#4BD200" />
+                        <stop offset="100%" stopColor="#7cff33" />
                       </linearGradient>
                       <filter id="mgGlow2m">
                         <feGaussianBlur stdDeviation="2.5" result="b" />
@@ -523,7 +523,7 @@ export function Milestone() {
                     {/* Baseline */}
                     <motion.line
                       x1={PAD_L} y1={CHART_B + 3} x2={VW - PAD_R} y2={CHART_B + 3}
-                      stroke="#7d39eb" strokeWidth="0.8" strokeOpacity="0.25"
+                      stroke="#4BD200" strokeWidth="0.8" strokeOpacity="0.3"
                       initial={{ pathLength: 0, opacity: 0 }} animate={isInView ? { pathLength: 1, opacity: 1 } : {}}
                       transition={{ delay: 0.2, duration: 0.8 }}
                     />
@@ -618,7 +618,7 @@ export function Milestone() {
             </div>
           </div>
         ) : (
-          /* Desktop: SVG chart — single proportional SVG */
+          /* Desktop: SVG chart, single proportional SVG */
           <div ref={wrapRef} className="w-full" style={{ position: 'relative' }}>
             <svg
               viewBox={`0 0 ${VW} ${VH}`}
@@ -626,13 +626,13 @@ export function Milestone() {
             >
               <defs>
                 <linearGradient id="mgArea2" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%"   stopColor="#7d39eb" stopOpacity="0.18" />
-                  <stop offset="100%" stopColor="#7d39eb" stopOpacity="0.02" />
+                  <stop offset="0%"   stopColor="#4BD200" stopOpacity="0.20" />
+                  <stop offset="100%" stopColor="#4BD200" stopOpacity="0.01" />
                 </linearGradient>
                 <linearGradient id="mgLine2" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%"   stopColor="#7d39eb" />
-                  <stop offset="50%"  stopColor="#a472f2" />
-                  <stop offset="100%" stopColor="#c4a0ff" />
+                  <stop offset="0%"   stopColor="#328c00" />
+                  <stop offset="50%"  stopColor="#4BD200" />
+                  <stop offset="100%" stopColor="#7cff33" />
                 </linearGradient>
                 <filter id="mgGlow2">
                   <feGaussianBlur stdDeviation="2.5" result="b" />
@@ -656,7 +656,7 @@ export function Milestone() {
               {/* Baseline */}
               <motion.line
                 x1={PAD_L} y1={CHART_B + 3} x2={VW - PAD_R} y2={CHART_B + 3}
-                stroke="#7d39eb" strokeWidth="0.8" strokeOpacity="0.25"
+                stroke="#4BD200" strokeWidth="0.8" strokeOpacity="0.3"
                 initial={{ pathLength: 0, opacity: 0 }} animate={isInView ? { pathLength: 1, opacity: 1 } : {}}
                 transition={{ delay: 0.2, duration: 0.8 }}
               />
@@ -725,7 +725,7 @@ export function Milestone() {
                       style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
                     />
 
-                    {/* Node inner dot — blip */}
+                    {/* Node inner dot, blip */}
                     <motion.circle
                       cx={nd.x} cy={nd.y} r={4.5}
                       fill={col} filter="url(#mgGlow2)"
@@ -734,7 +734,7 @@ export function Milestone() {
                       transition={{ delay: 1.1 + i * 0.12, duration: 0.4, times: [0, 0.3, 0.6, 1] }}
                     />
 
-                    {/* Card in foreignObject — close to node */}
+                    {/* Card in foreignObject, close to node */}
                     <motion.g
                       initial={{ opacity: 0, y: nd.isAbove ? 6 : -6 }}
                       animate={isInView ? { opacity: 1, y: 0 } : {}}

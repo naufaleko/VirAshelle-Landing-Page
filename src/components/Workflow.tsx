@@ -161,8 +161,8 @@ export function Workflow() {
             className="mt-16 flex items-center gap-4"
           >
             <div className="w-8 h-[1px] bg-brand/40" />
-            <p className="text-zinc-600 text-xs font-ui uppercase tracking-widest">
-              From brief to delivery — every step, on purpose.
+            <p className="text-zinc-400 text-xs font-ui uppercase tracking-widest">
+              From brief to delivery: every step, on purpose.
             </p>
           </motion.div>
         </div>

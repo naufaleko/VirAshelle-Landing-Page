@@ -16,6 +16,10 @@ type AdminContextType = {
   loginWithId: (id: string, pass: string) => Promise<any>;
   logout: () => Promise<void>;
   content: SiteContent;
+  /** True until the live site_content row has been read; content holds the fallback until then. */
+  contentLoading: boolean;
+  /** Set when the live row could not be read; content is the fallback, so it must not be saved. */
+  contentError: string | null;
   updateContent: (newContent: SiteContent) => Promise<void>;
   isAdminMode: boolean;
   setIsAdminMode: (val: boolean) => void;
@@ -26,7 +30,7 @@ const AdminContext = createContext<AdminContextType | null>(null);
 
 export function AdminProvider({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading, error, loginWithId, logout } = useAuth();
-  const { content, updateContent } = useCms();
+  const { content, loading: contentLoading, error: contentError, updateContent } = useCms();
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
@@ -75,8 +79,10 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         error, 
         loginWithId, 
         logout, 
-        content, 
-        updateContent, 
+        content,
+        contentLoading,
+        contentError,
+        updateContent,
         isAdminMode, 
         setIsAdminMode,
         refreshProfile: fetchProfile

@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { UploadCloud, CheckCircle2, AlertCircle, Loader2, Video, X, Play, Link2 } from 'lucide-react';
+import React, { useId, useRef, useState } from 'react';
+import { UploadCloud, CheckCircle2, AlertCircle, Loader2, Video, X, Play, Link2, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { isVideoMedia, getVideoThumbnail } from '../../components/VideoPlayer';
 
@@ -16,14 +16,16 @@ export function MediaUploader({
   value,
   onChange,
   category = 'media',
-  label = 'Upload Media (Foto / Video)',
-  placeholder = 'Tempel URL (YouTube / Drive / MP4) atau upload file...',
+  label = 'Foto atau video',
+  placeholder = 'Tempel URL (YouTube, Drive, MP4) atau unggah file',
   onMediaTypeChange,
 }: MediaUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
+  const hintId = `${inputId}-hint`;
 
   const isVideo = isVideoMedia(value);
   const videoThumb = getVideoThumbnail(value);
@@ -40,7 +42,7 @@ export function MediaUploader({
 
     // Support up to 100MB for direct video/image uploads to Cloudflare R2
     if (file.size > 100 * 1024 * 1024) {
-      setError('Ukuran file maksimal 100MB. Untuk video durasi panjang, disarankan menggunakan link YouTube / Vimeo / Google Drive.');
+      setError('File lebih dari 100 MB. Untuk video panjang, tempel link YouTube, Vimeo, atau Google Drive.');
       return;
     }
 
@@ -92,7 +94,7 @@ export function MediaUploader({
             } catch {
               /* non-JSON body */
             }
-            setError(message || 'Upload ditolak (tidak punya akses).');
+            setError(message || 'Unggahan ditolak: akun ini tidak punya akses upload.');
             return;
           }
           // Any other non-OK status (404 stale URL, 413/415, 5xx) falls through to the
@@ -130,7 +132,7 @@ export function MediaUploader({
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3500);
     } catch (err: any) {
-      setError(err?.message || 'Upload gagal. Silakan coba lagi.');
+      setError(err?.message || 'Unggahan gagal. Coba lagi, atau tempel link file-nya.');
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -141,154 +143,131 @@ export function MediaUploader({
 
   const handleUrlChange = (newUrl: string) => {
     onChange(newUrl);
+    setError('');
     if (onMediaTypeChange && newUrl.trim()) {
       onMediaTypeChange(isVideoMedia(newUrl) ? 'video' : 'image');
     }
   };
 
-  const renderHelperText = () => {
-    if (category === 'clients') {
-      return (
-        <p className="text-[10px] text-dim leading-normal">
-          💡 <strong className="text-zinc-400">Rekomendasi:</strong> Gunakan logo PNG transparan atau SVG.
-        </p>
-      );
-    }
-    if (category === 'team') {
-      return (
-        <p className="text-[10px] text-dim leading-normal">
-          💡 <strong className="text-zinc-400">Rekomendasi:</strong> Gunakan foto profil rasio 1:1 atau portrait.
-        </p>
-      );
-    }
-    return (
-      <p className="text-[10px] text-dim leading-normal">
-        💡 <strong className="text-zinc-400">Upload langsung</strong> file foto/video (s.d 100MB ke R2) atau <strong className="text-zinc-400">paste link</strong> video (YouTube/Drive).
-      </p>
-    );
-  };
+  const helperText =
+    category === 'clients'
+      ? 'Logo PNG transparan atau SVG. Tanpa logo, landing menampilkan nama klien.'
+      : category === 'team'
+      ? 'Foto persegi atau potret, JPG atau PNG. Tanpa foto, landing menampilkan huruf depan nama.'
+      : 'Foto atau video maksimal 100 MB. Video panjang lebih baik lewat link YouTube, Vimeo, atau Google Drive.';
 
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-xs font-semibold text-zinc-400">
+        <label htmlFor={inputId} className="block text-xs font-ui font-semibold text-zinc-300">
           {label}
         </label>
       )}
 
       <div className="flex items-start gap-3">
-        {/* Preview Thumbnail */}
-        <div className="w-16 h-16 rounded-xl bg-zinc-900 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 relative group shadow-inner">
+        {/* Preview: shows what the URL points at, so a wrong link is visible before saving. */}
+        <div className="w-16 h-16 rounded-lg bg-[#0a0a0f] border border-white/10 flex items-center justify-center overflow-hidden shrink-0 relative">
           {value ? (
-            <>
-              {isVideo ? (
-                videoThumb ? (
-                  <div className="w-full h-full relative">
-                    <img src={videoThumb} alt="Preview" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                      <Play size={14} className="text-white fill-white" />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="w-full h-full relative bg-zinc-900 flex items-center justify-center">
-                    <video
-                      src={value}
-                      className="w-full h-full object-cover"
-                      muted
-                      playsInline
-                    />
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                      <Video size={16} className="text-[#4BD200]" />
-                    </div>
-                  </div>
-                )
+            isVideo ? (
+              videoThumb ? (
+                <>
+                  <img src={videoThumb} alt="" className="w-full h-full object-cover" />
+                  <span className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <Play size={14} className="text-white fill-white" aria-hidden="true" />
+                  </span>
+                </>
               ) : (
-                <img 
-                  src={value} 
-                  alt="Preview" 
-                  className={`w-full h-full ${category === 'clients' ? 'object-contain p-2' : 'object-cover'}`} 
-                />
-              )}
-
-              {/* Clear button */}
-              <button
-                type="button"
-                onClick={() => onChange('')}
-                className="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity"
-                title="Hapus media"
-              >
-                <X size={16} className="text-red-400" />
-              </button>
-            </>
+                <>
+                  <video src={value} className="w-full h-full object-cover" muted playsInline />
+                  <span className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                    <Video size={16} className="text-white" aria-hidden="true" />
+                  </span>
+                </>
+              )
+            ) : (
+              <img
+                src={value}
+                alt=""
+                className={`w-full h-full ${category === 'clients' ? 'object-contain p-2' : 'object-cover'}`}
+              />
+            )
           ) : (
-            <div className="flex flex-col items-center justify-center gap-1 text-dim">
-              <UploadCloud size={18} />
-              <span className="text-[9px] font-mono">KOSONG</span>
-            </div>
+            <ImageIcon size={18} className="text-dim" aria-hidden="true" />
           )}
         </div>
 
-        {/* Input URL & Upload button container */}
         <div className="flex-1 min-w-0 space-y-2">
-          {/* URL Input */}
           <div className="relative w-full">
+            <Link2 size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-dim pointer-events-none" aria-hidden="true" />
             <input
-              type="text"
+              id={inputId}
+              type="url"
+              inputMode="url"
               value={value || ''}
               onChange={(e) => handleUrlChange(e.target.value)}
               placeholder={placeholder}
-              className="w-full bg-zinc-900 border border-white/10 rounded-lg pl-7 pr-3 py-1.5 text-white text-xs focus:outline-none focus:border-[#4BD200] transition-colors placeholder:text-dim"
+              aria-describedby={hintId}
+              aria-label={label ? undefined : 'URL media'}
+              className="w-full bg-[#0a0a0f] border border-white/10 rounded-lg pl-8 pr-3 py-2 text-white text-xs font-body placeholder:text-dim hover:border-white/20 transition-colors"
             />
-            <Link2 size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-dim pointer-events-none" />
           </div>
 
-          {/* Action Row: Upload button + format hint */}
-          <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             <input
               ref={fileInputRef}
               type="file"
               accept={fileAccept}
               onChange={handleFileSelect}
               className="hidden"
+              tabIndex={-1}
+              aria-hidden="true"
             />
-
             <button
               type="button"
               disabled={uploading}
               onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-1.5 bg-white/10 hover:bg-[#4BD200] hover:text-black border border-white/10 hover:border-[#4BD200] text-white font-medium rounded-lg text-xs flex items-center gap-1.5 transition-all shrink-0 active:scale-95 disabled:opacity-50 shadow-sm cursor-pointer"
+              className="h-11 pointer-fine:h-8 px-3 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-white text-xs font-ui font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-wait"
             >
               {uploading ? (
                 <>
-                  <Loader2 size={13} className="animate-spin" />
-                  <span>Mengupload...</span>
+                  <Loader2 size={13} className="animate-spin" aria-hidden="true" />
+                  Mengunggah...
                 </>
               ) : (
                 <>
-                  <UploadCloud size={13} />
-                  <span>Upload File</span>
+                  <UploadCloud size={13} aria-hidden="true" />
+                  Unggah file
                 </>
               )}
             </button>
-
-            <span className="text-[10px] font-mono text-dim">
-              {category === 'clients' ? 'SVG • PNG' : category === 'team' ? 'JPG • PNG' : 'Max 100MB'}
-            </span>
+            {value && !uploading && (
+              <button
+                type="button"
+                onClick={() => handleUrlChange('')}
+                className="h-11 pointer-fine:h-8 px-3 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 text-xs font-ui font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <X size={13} aria-hidden="true" />
+                Hapus media
+              </button>
+            )}
           </div>
 
-          {/* Feedback message */}
-          {error && (
-            <p className="text-[11px] text-red-400 flex items-center gap-1">
-              <AlertCircle size={12} className="shrink-0" /> <span className="truncate">{error}</span>
-            </p>
-          )}
-          {success && (
-            <p className="text-[11px] text-[#4BD200] flex items-center gap-1">
-              <CheckCircle2 size={12} className="shrink-0" /> <span>Berhasil diupload!</span>
-            </p>
-          )}
+          <div role="status" aria-live="polite">
+            {error && (
+              <p className="text-[11px] font-ui text-red-400 flex items-start gap-1.5">
+                <AlertCircle size={12} className="shrink-0 mt-0.5" aria-hidden="true" />
+                <span>{error}</span>
+              </p>
+            )}
+            {success && (
+              <p className="text-[11px] font-ui text-zinc-300 flex items-center gap-1.5">
+                <CheckCircle2 size={12} className="shrink-0 text-[#4BD200]" aria-hidden="true" />
+                File terunggah.
+              </p>
+            )}
+          </div>
 
-          {renderHelperText()}
+          <p id={hintId} className="text-[11px] font-ui text-dim leading-relaxed">{helperText}</p>
         </div>
       </div>
     </div>

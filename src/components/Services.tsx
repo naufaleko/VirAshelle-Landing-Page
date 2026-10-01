@@ -170,7 +170,7 @@ export function Services() {
                   ) : (
                     <div className="rounded-xl border border-white/8 p-8 text-center">
                       <p className="text-zinc-600 text-xs font-ui uppercase tracking-widest">
-                        No works yet — add portfolio items from the admin dashboard.
+                        No work published yet.
                       </p>
                     </div>
                   )}

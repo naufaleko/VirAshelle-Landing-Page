@@ -65,7 +65,7 @@ function AnimatedBar({ value, delay }: { value: number; delay: number }) {
   );
 }
 
-// ── Mobile Pentagon — static, no animations ─────────────────────────────────
+// ── Mobile Pentagon, static, no animations ─────────────────────────────────
 function PentagonMobile() {
   return (
     <div className="flex flex-col items-center gap-4">
@@ -121,7 +121,7 @@ function PentagonMobile() {
             strokeOpacity="0.3"
           />
 
-          {/* Dashed ring — static */}
+          {/* Dashed ring, static */}
           <circle
             cx={CX} cy={CY} r={OUTER_R + 18}
             fill="none"
@@ -152,7 +152,7 @@ function PentagonMobile() {
             VRA
           </text>
 
-          {/* Value nodes — static */}
+          {/* Value nodes, static */}
           {coreValues.map((val, i) => {
             const pt = outerPts[i];
             const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
@@ -195,12 +195,12 @@ function PentagonMobile() {
   );
 }
 
-// ── Desktop Pentagon — full glitch boot-up animation ────────────────────────
+// ── Desktop Pentagon, full glitch boot-up animation ────────────────────────
 function PentagonDesktop() {
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: true, margin: '-80px' });
 
-  // Controls for the whole SVG wrapper — the initial flicker burst
+  // Controls for the whole SVG wrapper, the initial flicker burst
   const wrapCtrl = useAnimationControls();
   // Controls for scanline
   const scanCtrl = useAnimationControls();
@@ -277,7 +277,7 @@ function PentagonDesktop() {
           }}
         />
 
-        {/* Static noise overlay — flashes briefly */}
+        {/* Static noise overlay, flashes briefly */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={isInView ? {
@@ -290,7 +290,7 @@ function PentagonDesktop() {
           }}
         />
 
-        {/* Main SVG — flicker wrapper */}
+        {/* Main SVG, flicker wrapper */}
         <motion.div
           animate={wrapCtrl}
           initial={{ opacity: 0 }}
@@ -317,7 +317,7 @@ function PentagonDesktop() {
             {/* Ambient glow */}
             <circle cx={CX} cy={CY} r={OUTER_R + 30} fill="url(#pentaGlow)" />
 
-            {/* Inner elements — secondary glitch layer */}
+            {/* Inner elements, secondary glitch layer */}
             <motion.g animate={innerCtrl} initial={{ opacity: 0 }}>
               {/* Spoke lines */}
               {outerPts.map((pt, i) => (
@@ -351,7 +351,7 @@ function PentagonDesktop() {
               />
             </motion.g>
 
-            {/* Rotating dashed ring — starts after boot */}
+            {/* Rotating dashed ring, starts after boot */}
             <g transform={`translate(${CX}, ${CY})`}>
               <motion.g
                 initial={{ opacity: 0, rotate: 0 }}
@@ -425,7 +425,7 @@ function PentagonDesktop() {
 
               return (
                 <g key={i}>
-                  {/* Node ring — blip entrance */}
+                  {/* Node ring, blip entrance */}
                   <motion.circle
                     cx={pt.x} cy={pt.y} r={17}
                     fill="rgba(125,57,235,0.1)"
@@ -445,7 +445,7 @@ function PentagonDesktop() {
                     }}
                   />
 
-                  {/* Node dot — blip entrance, slightly offset */}
+                  {/* Node dot, blip entrance, slightly offset */}
                   <motion.circle
                     cx={pt.x} cy={pt.y} r={8}
                     fill={val.color}
@@ -488,7 +488,7 @@ function PentagonDesktop() {
                     />
                   </g>
 
-                  {/* Label — blip in after dot */}
+                  {/* Label, blip in after dot */}
                   <motion.text
                     x={lx} y={ly}
                     textAnchor="middle"
@@ -520,8 +520,6 @@ function PentagonDesktop() {
     </div>
   );
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 export function WhyUs() {
   const { content } = useAdmin();
@@ -588,7 +586,7 @@ export function WhyUs() {
             })}
           </div>
 
-          {/* Pentagon — static on mobile, animated on desktop */}
+          {/* Pentagon, static on mobile, animated on desktop */}
           <div className="flex justify-center">
             {isMobile ? <PentagonMobile /> : <PentagonDesktop />}
           </div>
