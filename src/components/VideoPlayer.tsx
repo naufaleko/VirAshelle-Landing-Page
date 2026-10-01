@@ -3,14 +3,26 @@ import React from 'react';
 export function isVideoMedia(url: string): boolean {
   if (!url) return false;
   const clean = url.toLowerCase().split('?')[0];
+
+  // Images are never videos
+  if (
+    clean.endsWith('.webp') ||
+    clean.endsWith('.png') ||
+    clean.endsWith('.jpg') ||
+    clean.endsWith('.jpeg') ||
+    clean.endsWith('.gif') ||
+    clean.endsWith('.svg') ||
+    clean.endsWith('.avif')
+  ) {
+    return false;
+  }
+
   if (
     clean.endsWith('.mp4') ||
     clean.endsWith('.webm') ||
     clean.endsWith('.mov') ||
     clean.endsWith('.mkv') ||
-    clean.includes('cloudinary.com/video') ||
-    url.includes('pub-c61e4e9a5dfd40a899f95b4314976ee8.r2.dev') ||
-    url.includes('r2.dev') && (clean.endsWith('.mp4') || clean.endsWith('.mov'))
+    clean.includes('cloudinary.com/video')
   ) {
     return true;
   }

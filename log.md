@@ -30,3 +30,18 @@
 - Initial Wrangler CLI uploads were slow due to subshell spawning overhead; resolved by switching to direct Cloudflare REST API `PUT` requests, reducing upload time from 18s/file to under 1s/file.
 - Supabase anonymous key has read-only access to `site_content` under Row Level Security; resolved by providing both the in-CMS one-click import button (using the admin browser session) and `sync-to-supabase.mjs` for CLI.
 - All 83 uploaded files are live on Cloudflare R2.
+
+## 2026-10-01 16:53
+
+### Action Taken
+- Investigated and resolved issue where Graphic Design images were wrongly treated as videos.
+- Fixed `isVideoMedia` function in `src/components/VideoPlayer.tsx`.
+- Verified TypeScript build (`npm run build`).
+- Staged, committed, and pushed changes to GitHub `origin/main`.
+
+### Summary of Changes
+- `src/components/VideoPlayer.tsx`: Removed buggy rule `url.includes('pub-c61e4e9a5dfd40a899f95b4314976ee8.r2.dev')` which caused every single file on the R2 bucket (including `.webp` images) to be classified as a video. Added explicit guard returning `false` for image file extensions (`.webp`, `.png`, `.jpg`, `.jpeg`, `.gif`, `.svg`, `.avif`).
+
+### Status / Issues Encountered
+- Issue resolved. Graphic Design and 3D images on R2 now render cleanly as `<img>` without play buttons or `<video>` tags.
+- Build passed with 0 errors. Pushed to remote repo.
