@@ -182,6 +182,54 @@ export default {
       }
     }
 
+    if (request.method === "GET" || request.method === "HEAD") {
+      const pathname = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
+      if (!pathname || pathname === "health") {
+        return new Response("OK", { status: 200, headers: cors });
+      }
+
+      try {
+        const object = await env.virashelle_media.get(pathname, {
+          range: request.headers,
+          onlyIf: request.headers,
+        });
+
+        if (!object) {
+          return new Response("File not found in R2", { status: 404, headers: cors });
+        }
+
+        const headers = new Headers(cors);
+        object.writeHttpMetadata(headers);
+        headers.set("etag", object.httpEtag);
+
+        const currentContentType = headers.get("content-type");
+        if (!currentContentType || currentContentType === "application/octet-stream") {
+          const ext = pathname.split(".").pop()?.toLowerCase() || "";
+          if (EXTENSION_TYPES[ext]) {
+            headers.set("content-type", EXTENSION_TYPES[ext]);
+          }
+        }
+
+        headers.set("Cache-Control", "public, max-age=31536000, immutable");
+        headers.set("Accept-Ranges", "bytes");
+
+        if (request.method === "HEAD") {
+          return new Response(null, { headers, status: 200 });
+        }
+
+        const status = object.range ? 206 : 200;
+        return new Response(object.body, {
+          headers,
+          status,
+        });
+      } catch (err: any) {
+        return new Response(`Error retrieving object: ${err?.message || err}`, {
+          status: 500,
+          headers: cors,
+        });
+      }
+    }
+
     return new Response("VirAshelle Media Uploader API", {
       headers: cors,
     });

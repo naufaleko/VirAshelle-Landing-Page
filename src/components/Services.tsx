@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { useAdmin } from '../lib/AdminContext';
-import { VideoPlayer, getVideoThumbnail, isVideoMedia } from './VideoPlayer';
+import { VideoPlayer, getVideoThumbnail, isVideoMedia, getOptimizedMediaUrl } from './VideoPlayer';
 
 const SERVICE_ICONS = [];
 
@@ -119,7 +119,7 @@ export function Services() {
                           <div className="aspect-[4/3] w-full overflow-hidden relative bg-surface-card">
                             {!(item.type === 'video' || isVideoMedia(item.src)) ? (
                               <img
-                                src={item.src}
+                                src={getOptimizedMediaUrl(item.src)}
                                 alt={item.title}
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
                                 loading="lazy"
@@ -214,7 +214,7 @@ export function Services() {
                   style={{ minHeight: '55vh' }}
                 >
                   <img
-                    src={selectedItem.src}
+                    src={getOptimizedMediaUrl(selectedItem.src)}
                     alt={selectedItem.title}
                     className="w-full h-full object-contain"
                   />

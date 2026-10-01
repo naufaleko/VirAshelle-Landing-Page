@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Play } from 'lucide-react';
 import { Supergraphic } from './Supergraphic';
 import { useAdmin } from '../lib/AdminContext';
-import { VideoPlayer, getVideoThumbnail, isVideoMedia } from './VideoPlayer';
+import { VideoPlayer, getVideoThumbnail, isVideoMedia, getOptimizedMediaUrl } from './VideoPlayer';
 
 export function Portfolio() {
   const { content } = useAdmin();
@@ -81,7 +81,7 @@ export function Portfolio() {
                     {!isVideo ? (
                       <motion.img
                         layoutId={`portfolio-media-${item.id}`}
-                        src={item.src}
+                        src={getOptimizedMediaUrl(item.src)}
                         alt={item.title}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         loading="lazy"
@@ -97,7 +97,7 @@ export function Portfolio() {
                         />
                       ) : (
                         <video
-                          src={item.src}
+                          src={getOptimizedMediaUrl(item.src)}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80"
                           muted
                           playsInline
@@ -161,7 +161,7 @@ export function Portfolio() {
                 {!(selectedItem.type === 'video' || isVideoMedia(selectedItem.src)) ? (
                   <motion.img
                     layoutId={`portfolio-media-${selectedItem.id}`}
-                    src={selectedItem.src}
+                    src={getOptimizedMediaUrl(selectedItem.src)}
                     alt={selectedItem.title}
                     className="w-full h-full object-contain"
                   />
