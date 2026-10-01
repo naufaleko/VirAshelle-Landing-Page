@@ -45,6 +45,7 @@ export type SiteContent = {
       desc?: string;
       type: 'image' | 'video';
       src: string;
+      thumbnail_url?: string;
     }[];
   };
   milestone: {

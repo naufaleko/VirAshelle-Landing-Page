@@ -24,6 +24,108 @@ function matchesService(category: string, serviceIndex: number, serviceTitle?: s
   return false;
 }
 
+function ServiceMarqueeRow({
+  items,
+  reverse = false,
+  onSelect,
+}: {
+  items: any[];
+  reverse?: boolean;
+  onSelect: (id: string) => void;
+}) {
+  if (items.length === 0) return null;
+
+  // Ensure enough items to fill track on large screens without gaps before looping
+  let base = [...items];
+  while (base.length < 6) {
+    base = [...base, ...items];
+  }
+  const displayItems = [...base, ...base];
+  const duration = Math.max(25, Math.min(85, base.length * 4.5));
+
+  return (
+    <div className="relative w-full overflow-hidden marquee-pause py-2 group/track">
+      {/* Edge Fades */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-12 sm:w-24 bg-gradient-to-r from-black via-black/80 to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-12 sm:w-24 bg-gradient-to-l from-black via-black/80 to-transparent z-10" />
+
+      {/* Scrolling Track */}
+      <div
+        className={`flex gap-4 shrink-0 marquee-track ${
+          reverse ? 'animate-marquee-reverse' : 'animate-marquee'
+        }`}
+        style={{
+          width: 'max-content',
+          animationDuration: `${duration}s`,
+        }}
+      >
+        {displayItems.map((item, idx) => {
+          const isVideo = item.type === 'video' || isVideoMedia(item.src);
+          const thumb = item.thumbnail_url || getVideoThumbnail(item.src);
+
+          return (
+            <div
+              key={`${item.id}-${idx}`}
+              onClick={() => onSelect(item.id)}
+              className="group/card relative w-[280px] sm:w-[320px] md:w-[340px] aspect-[16/10] rounded-xl overflow-hidden cursor-pointer border border-white/8 hover:border-[#4BD200]/50 transition-all duration-300 hover:shadow-[0_0_24px_rgba(75,210,0,0.18)] bg-zinc-950 shrink-0"
+            >
+              {thumb ? (
+                <img
+                  src={getOptimizedMediaUrl(thumb)}
+                  alt={item.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105 opacity-80 group-hover/card:opacity-60"
+                  loading="lazy"
+                />
+              ) : !isVideo ? (
+                <img
+                  src={getOptimizedMediaUrl(item.src)}
+                  alt={item.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105 opacity-80 group-hover/card:opacity-60"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-full h-full relative bg-zinc-900 overflow-hidden">
+                  <video
+                    src={`${getOptimizedMediaUrl(item.src)}#t=0.001`}
+                    preload="metadata"
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105 opacity-80 group-hover/card:opacity-60 pointer-events-none"
+                  />
+                </div>
+              )}
+
+              {/* Video Badge & Play Icon */}
+              {isVideo && (
+                <>
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-11 h-11 rounded-full bg-black/60 border border-white/20 backdrop-blur-md flex items-center justify-center text-[#4BD200] group-hover/card:scale-110 group-hover/card:bg-[#4BD200] group-hover/card:text-black transition-all duration-300 shadow-xl">
+                      <Play size={18} className="fill-current translate-x-0.5" />
+                    </div>
+                  </div>
+                  <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[9px] font-mono text-white/90 font-bold uppercase tracking-wider pointer-events-none">
+                    VIDEO
+                  </div>
+                </>
+              )}
+
+              {/* Bottom Title & Category Overlay */}
+              <div className="absolute inset-x-0 bottom-0 p-3.5 bg-gradient-to-t from-black/95 via-black/60 to-transparent flex flex-col justify-end pointer-events-none">
+                <span className="text-white font-display font-semibold text-xs tracking-tight leading-tight line-clamp-1 group-hover/card:text-[#7cff33] transition-colors">
+                  {item.title}
+                </span>
+                <span className="text-[#7cff33] text-[9px] font-ui uppercase tracking-wider mt-0.5 font-medium">
+                  {item.category}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function Services() {
   const { content } = useAdmin();
   const servicesData = content.services || { title: '', description: '', items: [] };
@@ -114,100 +216,62 @@ export function Services() {
 
                     {/* Left: Number + Title + Icon */}
                     <div className="flex flex-col justify-center">
-                      <div className="flex items-center gap-4 mb-4">
+                      <div className="flex items-center gap-4 mb-3">
                         <div className="w-8 h-[1px] bg-brand-light/30 group-hover:bg-brand-light transition-colors duration-400" />
                         <span className="text-[10px] uppercase tracking-[0.35em] font-ui text-zinc-500 group-hover:text-brand-light transition-colors duration-400">
                           Service 0{index + 1}
                         </span>
                       </div>
-                      <h3 className="text-2xl md:text-3xl font-display font-bold tracking-tight text-white group-hover:text-gradient transition-all duration-400">
-                        {service.title}
-                      </h3>
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-2xl md:text-3xl font-display font-bold tracking-tight text-white group-hover:text-gradient transition-all duration-400">
+                          {service.title}
+                        </h3>
+                        <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-[#7cff33] font-semibold">
+                          {works.length} Karya
+                        </span>
+                      </div>
                     </div>
 
                     {/* Right: Description */}
-                    <div className="flex items-center">
+                    <div className="flex flex-col justify-center">
                       <p className="text-zinc-400 leading-relaxed font-body text-[15px] md:text-base max-w-xl whitespace-pre-wrap">
                         {service.desc}
                       </p>
+                      <span className="text-[11px] font-mono text-zinc-500 mt-2 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#4BD200] animate-pulse" />
+                        Arahkan kursor untuk pause • Klik untuk melihat karya
+                      </span>
                     </div>
                   </div>
 
-                  {/* ── Portfolio Works directly below ── */}
+                  {/* ── Portfolio Works Auto-Scroller directly below ── */}
                   {works.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {works.slice(0, 4).map((item, idx) => (
-                        <motion.div
-                          key={item.id}
-                          initial={{ opacity: 0, scale: 0.96 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          viewport={{ once: true, margin: '-40px' }}
-                          transition={{ duration: 0.5, delay: idx * 0.06, ease: [0.22, 1, 0.36, 1] }}
-                          onClick={() => setSelectedId(item.id)}
-                          className="group/card relative rounded-xl overflow-hidden cursor-pointer border border-white/8 hover:border-brand/40 transition-all duration-400 hover:shadow-[0_0_24px_rgba(125,57,235,0.15)]"
-                        >
-                          {/* Thumbnail */}
-                          <div className="aspect-[4/3] w-full overflow-hidden relative bg-surface-card">
-                            {!(item.type === 'video' || isVideoMedia(item.src)) ? (
-                              <img
-                                src={getOptimizedMediaUrl(item.src)}
-                                alt={item.title}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
-                                loading="lazy"
-                              />
-                            ) : (
-                              <div className="w-full h-full relative bg-zinc-900 overflow-hidden">
-                                {getVideoThumbnail(item.src) ? (
-                                  <img
-                                    src={getVideoThumbnail(item.src)!}
-                                    alt={item.title}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110 opacity-80 group-hover/card:opacity-60"
-                                    loading="lazy"
-                                  />
-                                ) : (
-                                  <video
-                                    src={`${getOptimizedMediaUrl(item.src)}#t=0.001`}
-                                    preload="metadata"
-                                    muted
-                                    playsInline
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110 opacity-80 group-hover/card:opacity-60 pointer-events-none"
-                                  />
-                                )}
-                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                  <div className="w-11 h-11 rounded-full bg-black/60 border border-white/20 backdrop-blur-md flex items-center justify-center text-[#4BD200] group-hover/card:scale-110 group-hover/card:bg-[#4BD200] group-hover/card:text-black transition-all duration-300 shadow-xl">
-                                    <Play size={18} className="fill-current translate-x-0.5" />
-                                  </div>
-                                </div>
-                                <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[9px] font-mono text-white/90 font-bold uppercase tracking-wider pointer-events-none">
-                                  VIDEO
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Hover overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-400 flex flex-col justify-end p-3">
-                              <span className="text-white font-display font-bold text-xs tracking-tight leading-tight">
-                                {item.title}
-                              </span>
-                              <span className="text-brand-light text-[9px] font-ui uppercase tracking-wider mt-1">
-                                {item.category}
-                              </span>
-                            </div>
-
-                            {/* View icon */}
-                            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300 scale-75 group-hover/card:scale-100">
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-                              </svg>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
+                    <div className="flex flex-col gap-3 -mx-6 px-6 sm:-mx-0 sm:px-0">
+                      {works.length > 16 ? (
+                        <>
+                          <ServiceMarqueeRow
+                            items={works.slice(0, Math.ceil(works.length / 2))}
+                            reverse={index % 2 === 1}
+                            onSelect={(id) => setSelectedId(id)}
+                          />
+                          <ServiceMarqueeRow
+                            items={works.slice(Math.ceil(works.length / 2))}
+                            reverse={index % 2 === 0}
+                            onSelect={(id) => setSelectedId(id)}
+                          />
+                        </>
+                      ) : (
+                        <ServiceMarqueeRow
+                          items={works}
+                          reverse={index % 2 === 1}
+                          onSelect={(id) => setSelectedId(id)}
+                        />
+                      )}
                     </div>
                   ) : (
                     <div className="rounded-xl border border-white/8 p-8 text-center">
                       <p className="text-zinc-600 text-xs font-ui uppercase tracking-widest">
-                        No work published yet.
+                        Belum ada karya yang dipublikasikan.
                       </p>
                     </div>
                   )}

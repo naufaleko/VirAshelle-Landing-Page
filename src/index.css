@@ -106,6 +106,19 @@ body {
   }
 }
 
+/* Infinite Marquee Controls */
+.marquee-pause:hover .marquee-track,
+.marquee-pause:focus-within .marquee-track {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-marquee-reverse {
+    animation: none !important;
+  }
+}
+
 /* Keyboard focus: one visible ring everywhere, so no control needs its own. */
 :focus-visible {
   outline: 2px solid var(--color-brand);

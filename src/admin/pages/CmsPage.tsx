@@ -6,6 +6,8 @@ import { formatBrandText, unformatBrandText } from '../../lib/textFormat';
 import { r2PortfolioItems } from '../data/r2Portfolio';
 import { MediaUploader } from '../components/MediaUploader';
 import { BrandedDropdown } from '../components/BrandedDropdown';
+import { SmartThumbnailModal } from '../components/SmartThumbnailModal';
+import { isVideoMedia } from '../../components/VideoPlayer';
 import {
   FormattedTextField,
   ItemList,
@@ -107,6 +109,7 @@ export function CmsPage() {
   const [save, setSave] = useState<SaveState>({ kind: 'idle' });
   // Another session saved while this one had unsaved edits.
   const [remoteChanged, setRemoteChanged] = useState(false);
+  const [smartThumbTarget, setSmartThumbTarget] = useState<{ id: string; url: string; title: string } | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const baselineJson = useRef<string | null>(null);
@@ -388,6 +391,51 @@ export function CmsPage() {
                   onMediaTypeChange={(type) => update({ type })}
                   placeholder="Tempel link YouTube, Vimeo, Google Drive, atau MP4"
                 />
+                {(p.type === 'video' || isVideoMedia(p.src)) && (
+                  <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-zinc-900/60 border border-white/5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {p.thumbnail_url ? (
+                        <img
+                          src={p.thumbnail_url}
+                          alt="Thumbnail"
+                          className="w-14 h-9 rounded object-cover border border-white/10 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-14 h-9 rounded bg-black/60 border border-white/10 flex items-center justify-center text-zinc-500 text-[10px] shrink-0 font-ui uppercase">
+                          Auto
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <span className="text-xs text-white font-medium block truncate">
+                          {p.thumbnail_url ? 'Smart Thumbnail Aktif' : 'Thumbnail Default (Frame Pertama)'}
+                        </span>
+                        <span className="text-[11px] text-zinc-500 block truncate">
+                          {p.thumbnail_url || 'Gunakan AI untuk memilih frame paling estetis'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {p.thumbnail_url && (
+                        <button
+                          type="button"
+                          onClick={() => update({ thumbnail_url: undefined })}
+                          className="px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-white/5 text-xs font-ui transition-colors cursor-pointer"
+                          title="Hapus custom thumbnail"
+                        >
+                          Reset
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setSmartThumbTarget({ id: p.id, url: p.src, title: p.title })}
+                        className="px-3 py-1.5 rounded-lg bg-[#4BD200]/10 hover:bg-[#4BD200]/20 border border-[#4BD200]/30 text-[#4BD200] text-xs font-ui font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                      >
+                        <Sparkles size={13} />
+                        <span>Smart Frame (AI)</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <TextAreaField
                   label="Deskripsi di popup (opsional)"
                   value={p.desc || ''}
@@ -396,6 +444,19 @@ export function CmsPage() {
                 />
               </>
             );
+          }}
+        />
+        <SmartThumbnailModal
+          isOpen={!!smartThumbTarget}
+          onClose={() => setSmartThumbTarget(null)}
+          videoUrl={smartThumbTarget?.url || ''}
+          videoTitle={smartThumbTarget?.title || ''}
+          onSelectThumbnail={(url) => {
+            if (!smartThumbTarget) return;
+            const items = form.portfolio.items.map((item) =>
+              item.id === smartThumbTarget.id ? { ...item, thumbnail_url: url } : item
+            );
+            setSection('portfolio', { items });
           }}
         />
       </>

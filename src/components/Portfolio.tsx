@@ -118,8 +118,14 @@ export function Portfolio() {
                         loading="lazy"
                       />
                     ) : (
-                    <div className="w-full h-full relative group/vid">
-                      {getVideoThumbnail(item.src) ? (
+                      {item.thumbnail_url ? (
+                        <img
+                          src={getOptimizedMediaUrl(item.thumbnail_url)}
+                          alt={item.title}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80"
+                          loading="lazy"
+                        />
+                      ) : getVideoThumbnail(item.src) ? (
                         <img
                           src={getVideoThumbnail(item.src)!}
                           alt={item.title}
