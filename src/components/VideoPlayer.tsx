@@ -85,6 +85,25 @@ export function getVideoThumbnail(url: string): string | null {
   return null;
 }
 
+export function isLikelyVerticalMedia(src: string, title?: string): boolean {
+  if (!src) return false;
+  const str = `${src} ${title || ''}`.toLowerCase();
+  return (
+    str.includes('sleep_timer') ||
+    str.includes('bad_posture') ||
+    str.includes('gv50') ||
+    str.includes('ma_series') ||
+    str.includes('upbeat') ||
+    str.includes('eye_care') ||
+    str.includes('68bba12a107e77f16879c3a4a37ecfff') ||
+    str.includes('vertical') ||
+    str.includes('short') ||
+    str.includes('reels') ||
+    str.includes('tiktok') ||
+    str.includes('portrait')
+  );
+}
+
 function formatTime(seconds: number): string {
   if (isNaN(seconds) || seconds < 0) return '0:00';
   const mins = Math.floor(seconds / 60);
@@ -94,6 +113,7 @@ function formatTime(seconds: number): string {
 
 export interface VideoPlayerProps {
   src: string;
+  title?: string;
   autoPlay?: boolean;
   onAspectRatioChange?: (ratio: number) => void;
   className?: string;
@@ -101,6 +121,7 @@ export interface VideoPlayerProps {
 
 export function VideoPlayer({
   src,
+  title,
   autoPlay = true,
   onAspectRatioChange,
   className = '',
@@ -131,12 +152,50 @@ export function VideoPlayer({
   const [showControls, setShowControls] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Notify aspect ratio for non-direct video on mount
+  // Notify initial aspect ratio if predictable
   useEffect(() => {
     if (!isDirectVideo && onAspectRatioChange) {
       onAspectRatioChange(16 / 9);
+    } else if (isDirectVideo && onAspectRatioChange && isLikelyVerticalMedia(src, title)) {
+      onAspectRatioChange(9 / 16);
     }
-  }, [isDirectVideo, onAspectRatioChange]);
+  }, [isDirectVideo, onAspectRatioChange, src, title]);
+
+  const updateMetadata = useCallback(() => {
+    const video = videoRef.current;
+    if (video) {
+      if (video.duration && !isNaN(video.duration)) {
+        setDuration(video.duration);
+      }
+      const w = video.videoWidth;
+      const h = video.videoHeight;
+      if (w && h && onAspectRatioChange) {
+        onAspectRatioChange(w / h);
+      }
+    }
+  }, [onAspectRatioChange]);
+
+  useEffect(() => {
+    updateMetadata();
+  }, [targetUrl, updateMetadata]);
+
+  // Handle autoplay with graceful fallback to muted if unmuted autoplay is blocked by browser
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !autoPlay) return;
+
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        // If unmuted autoplay fails, try muted autoplay
+        video.muted = true;
+        setIsMuted(true);
+        video.play().catch(() => {
+          setIsPlaying(false);
+        });
+      });
+    }
+  }, [autoPlay, targetUrl]);
 
   const scheduleHideControls = useCallback(() => {
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
@@ -152,7 +211,14 @@ export function VideoPlayer({
     const video = videoRef.current;
     if (!video) return;
     if (video.paused || video.ended) {
-      video.play().catch(() => {});
+      video.play().catch((err) => {
+        console.warn('Play error:', err);
+        if (video.muted === false) {
+          video.muted = true;
+          setIsMuted(true);
+          video.play().catch(() => {});
+        }
+      });
     } else {
       video.pause();
     }
@@ -269,6 +335,7 @@ export function VideoPlayer({
           src={targetUrl}
           autoPlay={autoPlay}
           playsInline
+          preload="auto"
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onEnded={() => setIsPlaying(false)}
@@ -281,17 +348,9 @@ export function VideoPlayer({
               setBuffered((video.buffered.end(video.buffered.length - 1) / video.duration) * 100);
             }
           }}
-          onLoadedMetadata={() => {
-            const video = videoRef.current;
-            if (video) {
-              setDuration(video.duration || 0);
-              const w = video.videoWidth;
-              const h = video.videoHeight;
-              if (w && h && onAspectRatioChange) {
-                onAspectRatioChange(w / h);
-              }
-            }
-          }}
+          onLoadedMetadata={updateMetadata}
+          onLoadedData={updateMetadata}
+          onCanPlay={updateMetadata}
           onClick={togglePlay}
           className="w-full h-full object-contain cursor-pointer max-h-full"
         >

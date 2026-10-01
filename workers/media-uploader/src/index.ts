@@ -39,7 +39,8 @@ function resolveContentType(file: File): string {
 function buildCorsHeaders(request: Request, env: Env): Record<string, string> {
   const headers: Record<string, string> = {
     "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, Range",
+    "Access-Control-Expose-Headers": "Content-Range, Content-Length, Accept-Ranges, ETag",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
   };
@@ -214,13 +215,39 @@ export default {
         headers.set("Accept-Ranges", "bytes");
 
         if (request.method === "HEAD") {
+          headers.set("Content-Length", String(object.size));
           return new Response(null, { headers, status: 200 });
         }
 
-        const status = object.range ? 206 : 200;
+        if (object.range) {
+          const r = object.range as { offset?: number; length?: number; suffix?: number };
+          let start = 0;
+          let end = object.size - 1;
+          let len = object.size;
+
+          if (r.offset !== undefined && r.length !== undefined) {
+            start = r.offset;
+            end = Math.min(start + r.length - 1, object.size - 1);
+            len = end - start + 1;
+          } else if (r.suffix !== undefined) {
+            start = Math.max(0, object.size - r.suffix);
+            end = object.size - 1;
+            len = end - start + 1;
+          }
+
+          headers.set("Content-Range", `bytes ${start}-${end}/${object.size}`);
+          headers.set("Content-Length", String(len));
+
+          return new Response(object.body, {
+            headers,
+            status: 206,
+          });
+        }
+
+        headers.set("Content-Length", String(object.size));
         return new Response(object.body, {
           headers,
-          status,
+          status: 200,
         });
       } catch (err: any) {
         return new Response(`Error retrieving object: ${err?.message || err}`, {

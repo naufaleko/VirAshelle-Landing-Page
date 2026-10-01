@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Play } from 'lucide-react';
 import { useAdmin } from '../lib/AdminContext';
-import { VideoPlayer, getVideoThumbnail, isVideoMedia, getOptimizedMediaUrl } from './VideoPlayer';
+import { VideoPlayer, getVideoThumbnail, isVideoMedia, getOptimizedMediaUrl, isLikelyVerticalMedia } from './VideoPlayer';
 
 const SERVICE_ICONS = [];
 
@@ -32,8 +33,16 @@ export function Services() {
   const selectedItem = portfolioItems.find((item) => item.id === selectedId);
 
   useEffect(() => {
-    setMediaAspectRatio(null);
-  }, [selectedId]);
+    if (selectedItem) {
+      if (isLikelyVerticalMedia(selectedItem.src, selectedItem.title)) {
+        setMediaAspectRatio(9 / 16);
+      } else {
+        setMediaAspectRatio(null);
+      }
+    } else {
+      setMediaAspectRatio(null);
+    }
+  }, [selectedId, selectedItem]);
 
   useEffect(() => {
     if (selectedId) {
@@ -213,100 +222,109 @@ export function Services() {
       </div>
 
       {/* ── Lightbox Modal ── */}
-      <AnimatePresence>
-        {selectedId && selectedItem && (() => {
-          const isVideo = selectedItem.type === 'video' || isVideoMedia(selectedItem.src);
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {selectedId && selectedItem && (() => {
+            const isVideo = selectedItem.type === 'video' || isVideoMedia(selectedItem.src);
+            const isVertical = mediaAspectRatio !== null && mediaAspectRatio < 0.85;
 
-          let maxWidthClass = 'max-w-4xl';
-          if (mediaAspectRatio) {
-            if (mediaAspectRatio < 0.8) {
+            let maxWidthClass = 'max-w-4xl';
+            if (isVertical) {
               // 9:16 vertical (Reels / TikTok / portrait)
-              maxWidthClass = 'max-w-[340px] sm:max-w-[390px]';
-            } else if (mediaAspectRatio < 1.25) {
-              // 1:1 square / 4:5
-              maxWidthClass = 'max-w-md sm:max-w-lg';
-            } else if (mediaAspectRatio > 1.9) {
-              // 21:9 ultrawide
-              maxWidthClass = 'max-w-5xl';
-            } else {
-              // 16:9 / 4:3 standard landscape
-              maxWidthClass = 'max-w-3xl lg:max-w-4xl';
+              maxWidthClass = 'max-w-[340px] sm:max-w-[380px]';
+            } else if (mediaAspectRatio) {
+              if (mediaAspectRatio < 1.25) {
+                // 1:1 square / 4:5
+                maxWidthClass = 'max-w-md sm:max-w-lg';
+              } else if (mediaAspectRatio > 1.9) {
+                // 21:9 ultrawide
+                maxWidthClass = 'max-w-5xl';
+              } else {
+                // 16:9 / 4:3 standard landscape
+                maxWidthClass = 'max-w-3xl lg:max-w-4xl';
+              }
             }
-          }
 
-          return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-hidden">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setSelectedId(null)}
-                className="absolute inset-0 bg-black/90 backdrop-blur-xl cursor-pointer"
-              />
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96 }}
-                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                className={`relative w-full ${maxWidthClass} max-h-[90vh] bg-surface-card border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-2xl z-10 transition-[max-width] duration-300`}
-              >
-                <button
-                  type="button"
+            return (
+              <div className="fixed inset-0 z-[999] flex items-center justify-center p-3 sm:p-6 overflow-hidden">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   onClick={() => setSelectedId(null)}
-                  aria-label="Tutup popup"
-                  className="absolute top-3 right-3 z-30 w-8 h-8 rounded-full bg-black/70 hover:bg-black/95 border border-white/20 text-white hover:text-[#4BD200] flex items-center justify-center transition-colors cursor-pointer"
+                  className="fixed inset-0 bg-black/90 backdrop-blur-xl cursor-pointer"
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.96, y: 12 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, y: 12 }}
+                  transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                  className={`relative w-full ${maxWidthClass} max-h-[88vh] bg-surface-card border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-2xl z-10 transition-[max-width] duration-300 my-auto`}
                 >
-                  <X size={18} />
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(null)}
+                    aria-label="Tutup popup"
+                    className="absolute top-3 right-3 z-30 w-8 h-8 rounded-full bg-black/70 hover:bg-black/95 border border-white/20 text-white hover:text-[#4BD200] flex items-center justify-center transition-colors cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
 
-                {/* Media area */}
-                <div
-                  className="w-full relative bg-black flex items-center justify-center overflow-hidden shrink-0"
-                  style={{
-                    maxHeight: 'min(60vh, 560px)',
-                    aspectRatio: mediaAspectRatio ? `${mediaAspectRatio}` : (isVideo ? '16/9' : undefined),
-                  }}
-                >
-                  {!isVideo ? (
-                    <img
-                      src={getOptimizedMediaUrl(selectedItem.src)}
-                      alt={selectedItem.title}
-                      onLoad={(e) => {
-                        const img = e.currentTarget;
-                        if (img.naturalWidth && img.naturalHeight) {
-                          setMediaAspectRatio(img.naturalWidth / img.naturalHeight);
-                        }
-                      }}
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <VideoPlayer
-                      src={selectedItem.src}
-                      onAspectRatioChange={(ratio) => setMediaAspectRatio(ratio)}
-                      className="w-full h-full"
-                    />
-                  )}
-                </div>
+                  {/* Media area */}
+                  <div
+                    className="w-full relative bg-black flex items-center justify-center overflow-hidden shrink-0"
+                    style={{
+                      maxHeight: isVertical ? 'min(68vh, 580px)' : 'min(62vh, 540px)',
+                      aspectRatio: mediaAspectRatio
+                        ? `${mediaAspectRatio}`
+                        : (isVideo ? (isLikelyVerticalMedia(selectedItem.src, selectedItem.title) ? '9/16' : '16/9') : undefined),
+                    }}
+                  >
+                    {!isVideo ? (
+                      <img
+                        src={getOptimizedMediaUrl(selectedItem.src)}
+                        alt={selectedItem.title}
+                        onLoad={(e) => {
+                          const img = e.currentTarget;
+                          if (img.naturalWidth && img.naturalHeight) {
+                            setMediaAspectRatio(img.naturalWidth / img.naturalHeight);
+                          }
+                        }}
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <VideoPlayer
+                        src={selectedItem.src}
+                        title={selectedItem.title}
+                        onAspectRatioChange={(ratio) => setMediaAspectRatio(ratio)}
+                        className="w-full h-full"
+                      />
+                    )}
+                  </div>
 
-                {/* Text / Info area */}
-                <div className="p-4 sm:p-5 bg-surface-card border-t border-white/10 shrink-0 overflow-y-auto max-h-[28vh]">
-                  <h3 className="text-lg sm:text-xl font-display font-bold tracking-tight text-white leading-snug">
-                    {selectedItem.title}
-                  </h3>
-                  <p className="text-brand-light mt-1 text-[10px] sm:text-xs font-ui uppercase tracking-widest font-semibold">
-                    {selectedItem.category}
-                  </p>
-                  {selectedItem.desc && (
-                    <p className="text-zinc-400 mt-2 text-xs sm:text-sm font-body leading-relaxed whitespace-pre-wrap">
-                      {selectedItem.desc}
-                    </p>
-                  )}
-                </div>
-              </motion.div>
-            </div>
-          );
-        })()}
-      </AnimatePresence>
+                  {/* Text / Info area */}
+                  <div className={`p-4 ${isVertical ? 'sm:p-4' : 'sm:p-5'} bg-surface-card border-t border-white/10 shrink-0 overflow-y-auto max-h-[22vh]`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className={`${isVertical ? 'text-base sm:text-lg' : 'text-lg sm:text-xl'} font-display font-bold tracking-tight text-white leading-snug line-clamp-2`}>
+                        {selectedItem.title}
+                      </h3>
+                      <span className="text-brand-light text-[9px] sm:text-[10px] font-ui uppercase tracking-wider font-semibold px-2.5 py-0.5 rounded-full bg-brand-light/10 border border-brand-light/20 shrink-0">
+                        {selectedItem.category}
+                      </span>
+                    </div>
+                    {selectedItem.desc && (
+                      <p className="text-zinc-400 mt-2 text-xs sm:text-sm font-body leading-relaxed whitespace-pre-wrap">
+                        {selectedItem.desc}
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              </div>
+            );
+          })()}
+        </AnimatePresence>,
+        document.body
+      )}
     </section>
   );
 }
