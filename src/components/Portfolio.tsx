@@ -119,7 +119,7 @@ export function Portfolio() {
                         />
                       ) : (
                         <video
-                          src={getOptimizedMediaUrl(item.src)}
+                          src={`${getOptimizedMediaUrl(item.src)}#t=0.001`}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80"
                           muted
                           playsInline

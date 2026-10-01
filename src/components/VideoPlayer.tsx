@@ -53,19 +53,35 @@ export function getOptimizedMediaUrl(url: string): string {
 
 export function getVideoThumbnail(url: string): string | null {
   if (!url) return null;
-  if (url.includes('youtube.com/watch')) {
+  const clean = url.trim();
+
+  // YouTube (watch, shorts, embed, youtu.be)
+  if (clean.includes('youtube.com') || clean.includes('youtu.be')) {
+    let videoId = '';
     try {
-      const urlObj = new URL(url);
-      const videoId = urlObj.searchParams.get('v');
-      if (videoId) return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+      if (clean.includes('youtube.com/watch')) {
+        const urlObj = new URL(clean);
+        videoId = urlObj.searchParams.get('v') || '';
+      } else if (clean.includes('youtu.be/')) {
+        videoId = clean.split('youtu.be/')[1]?.split(/[?#]/)[0] || '';
+      } else if (clean.includes('youtube.com/shorts/')) {
+        videoId = clean.split('youtube.com/shorts/')[1]?.split(/[?#]/)[0] || '';
+      } else if (clean.includes('youtube.com/embed/')) {
+        videoId = clean.split('youtube.com/embed/')[1]?.split(/[?#]/)[0] || '';
+      }
     } catch (e) {}
-  } else if (url.includes('youtu.be/')) {
-    const videoId = url.split('youtu.be/')[1]?.split('?')[0];
-    if (videoId) return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-  } else if (url.includes('drive.google.com/file/d/')) {
-    const videoId = url.split('file/d/')[1]?.split('/')[0];
+
+    if (videoId) {
+      return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+    }
+  }
+
+  // Google Drive
+  if (clean.includes('drive.google.com/file/d/')) {
+    const videoId = clean.split('file/d/')[1]?.split('/')[0];
     if (videoId) return `https://drive.google.com/thumbnail?id=${videoId}&sz=w1280-h720`;
   }
+
   return null;
 }
 

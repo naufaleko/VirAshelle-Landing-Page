@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X } from 'lucide-react';
+import { X, Play } from 'lucide-react';
 import { useAdmin } from '../lib/AdminContext';
 import { VideoPlayer, getVideoThumbnail, isVideoMedia, getOptimizedMediaUrl } from './VideoPlayer';
 
@@ -147,25 +147,31 @@ export function Services() {
                                 loading="lazy"
                               />
                             ) : (
-                              <div className="w-full h-full relative bg-zinc-900">
+                              <div className="w-full h-full relative bg-zinc-900 overflow-hidden">
                                 {getVideoThumbnail(item.src) ? (
-                                  <>
-                                    <img
-                                      src={getVideoThumbnail(item.src)!}
-                                      alt={item.title}
-                                      className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110 opacity-70 group-hover/card:opacity-50"
-                                      loading="lazy"
-                                    />
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center drop-shadow-2xl">
-                                      <span className="text-4xl text-white opacity-90 group-hover/card:scale-110 transition-transform">▶</span>
-                                    </div>
-                                  </>
+                                  <img
+                                    src={getVideoThumbnail(item.src)!}
+                                    alt={item.title}
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110 opacity-80 group-hover/card:opacity-60"
+                                    loading="lazy"
+                                  />
                                 ) : (
-                                  <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-                                    <span className="text-2xl">▶</span>
-                                    <span className="text-zinc-500 uppercase tracking-widest text-[9px] font-ui">Video</span>
-                                  </div>
+                                  <video
+                                    src={`${getOptimizedMediaUrl(item.src)}#t=0.001`}
+                                    preload="metadata"
+                                    muted
+                                    playsInline
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110 opacity-80 group-hover/card:opacity-60 pointer-events-none"
+                                  />
                                 )}
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                  <div className="w-11 h-11 rounded-full bg-black/60 border border-white/20 backdrop-blur-md flex items-center justify-center text-[#4BD200] group-hover/card:scale-110 group-hover/card:bg-[#4BD200] group-hover/card:text-black transition-all duration-300 shadow-xl">
+                                    <Play size={18} className="fill-current translate-x-0.5" />
+                                  </div>
+                                </div>
+                                <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[9px] font-mono text-white/90 font-bold uppercase tracking-wider pointer-events-none">
+                                  VIDEO
+                                </div>
                               </div>
                             )}
 
