@@ -3,6 +3,24 @@
 ## Active File Claims
 *(None - All files released)*
 
+## 2026-10-20 (Done - Banner Redesign with Hero & Big White Logo) [gemini]
+### Action Taken
+- Redesigned WhatsApp/social link preview banner (`public/og-image.jpg`) to align with the Hero visual structure:
+  - Left column: Large white VirAshelle vector logo with ambient green glow + `● VIRASHELLE` label.
+  - Divider: Sleek vertical tactical gradient divider line.
+  - Right column: Hero layout:
+    - Overline: `— CREATIVE STUDIO` in `#4BD200`
+    - Main headline: `WE` (white), `ARCHITECT` (brand green `#4BD200`), `IDENTITY.` (white) in tight 900-weight display typography.
+    - Subtitle: *"We don't just design. We engineer digital experiences that dominate the tactical space."*
+    - Pill button: `Launch Project >` in glowing brand green.
+  - Background: Pitch-black obsidian theme with cybernetic Supergraphic stealth geometry and subtle grid.
+- Generated 1200x630 JPEG via Playwright with file size 95.1 KB (well below WhatsApp's 300 KB ceiling).
+- Built via `npm run build` (verified zero errors).
+- Deployed live to Firebase Hosting (`https://virashelle-page.web.app/`).
+- Verified live crawler response via `scripts/qa-og-crawler.mjs` (Status 200, Content-Type `image/jpeg`, size 95.1 KB).
+
+---
+
 ## 2026-10-20 (Done) [gemini]
 ### Action Taken
 - Resolved CSR blank preview bug on WhatsApp, Telegram, Email, and social network crawlers.

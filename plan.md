@@ -1,3 +1,25 @@
+# Plan: Redesign OpenGraph Banner with Hero Visual & Big White Logo [gemini] (Completed)
+
+## Goal
+Redesign the WhatsApp/social preview banner (`public/og-image.jpg`) to exactly match the Hero visual aesthetic requested by the user:
+- Left side: Big, prominent white VirAshelle vector logo (`logo putih gede`)
+- Right side: Hero visual block
+  - Overline: `— CREATIVE STUDIO`
+  - Headline: `WE` (white) \n `ARCHITECT` (brand green `#4BD200`) \n `IDENTITY.` (white)
+  - Subtitle: `We don't just design. We engineer digital experiences that dominate the tactical space.`
+  - Button pill: `Launch Project >` in vibrant brand green
+- Background: Pitch black with tactical stealth Supergraphic pattern and ambient glow.
+- Output: Standard OpenGraph 1200x630 JPEG under 300KB for instant WhatsApp loading.
+
+## Work Steps
+1. [x] Update `scripts/generate-og-image.mjs` with two-column split layout (Big white logo on left, Hero headline and CTA on right, Supergraphic background).
+2. [x] Render and export `public/og-image.jpg` using Playwright.
+3. [x] Verify generated image visual quality and file size (< 300 KB).
+4. [x] Build via `npm run build` and deploy to Firebase Hosting (`firebase deploy --only hosting`).
+5. [x] Run crawler QA to verify live serving.
+
+---
+
 # Plan: Static OpenGraph & Rich Social Preview Optimization [gemini] (Completed)
 
 ## Goal
