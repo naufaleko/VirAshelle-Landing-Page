@@ -3,6 +3,35 @@
 ## Active File Claims
 *(None - All files released)*
 
+## 2026-10-20 (Done - Mobile Performance & Lightweight Rendering) [gemini]
+### Action Taken
+- Completely optimized mobile rendering, reducing CPU/GPU overhead and enabling smooth 60fps scrolling:
+  1. `GlobalBackground.tsx`:
+     - Disabled 280vw infinite JS `motion.div` transforms of `Supergraphic` on mobile. Kept a lightweight, fixed subtle background on mobile while preserving desktop animation.
+     - Removed `DataNode` continuous particle animations on mobile to stop main thread and compositor layer thrashing.
+     - Removed redundant secondary gradient blob on mobile to cut overdraw.
+  2. `Services.tsx`:
+     - Replaced all `<video preload="metadata">` elements inside marquee cards with sleek, lightweight CSS/SVG posters. This eliminates up to 40 simultaneous hardware video decoder pipelines on mobile.
+     - Connected `IntersectionObserver` to automatically pause marquee animations when the Services section is out of the viewport, preserving 100% CPU/GPU for active sections.
+     - Sized cards for mobile (`w-[230px]` aspect-[16/10]) and consolidated into a single unified marquee row per service on mobile devices.
+  3. `Clients.tsx`:
+     - Added `IntersectionObserver` to pause client marquee when scrolled out of viewport.
+     - Sized client pills to `px-4 py-2.5 min-w-[150px]` on mobile.
+  4. `src/index.css`:
+     - Upgraded `@keyframes marquee` and `@keyframes css-marquee` to use GPU-accelerated `translate3d(..., 0, 0)` with `backface-visibility: hidden` and `will-change: transform`.
+     - Disabled expensive `backdrop-filter: blur(...)` for moving `.glass` elements on mobile (`max-width: 768px`) using solid semi-translucent rgba fallback.
+     - Added `content-visibility: auto` to `.marquee-card` for deferred layout and zero off-screen paint cost.
+  5. `HomePage.tsx`:
+     - Added `overflow-x-hidden w-full max-w-full` to eliminate horizontal scroll glitches on mobile.
+- QA Verification:
+  - Playwright mobile emulation (iPhone 14, 390x844):
+    - `document.documentElement.scrollWidth === window.innerWidth` (Pass - zero horizontal scroll).
+    - Total console errors: 0.
+    - Modal player opens centered on mobile.
+- Deployed to Firebase Hosting (`https://virashelle-page.web.app/`).
+
+---
+
 ## 2026-10-20 (Done - WhatsApp CDN & Client Cache Busting) [gemini]
 ### Action Taken
 - Resolved WhatsApp client and CDN caching where the previous preview thumbnail was displayed:

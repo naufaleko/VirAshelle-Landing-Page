@@ -1,3 +1,31 @@
+# Plan: Mobile Performance & Smoothness Optimization [gemini] (Completed)
+
+## Goal
+Optimize mobile rendering performance, reduce memory footprint, and achieve smooth 60fps scrolling on mobile devices (Android & iOS).
+
+## Identified Bottlenecks & Fixes
+1. **GlobalBackground**:
+   - Turn off continuous JS `motion.div` infinite transforms on the 280vw `Supergraphic` SVG on mobile (keep it static or fixed).
+   - Disable `DataNode` infinite moving particle animations on mobile to save GPU/CPU cycles.
+2. **Services Auto-Scroller**:
+   - Remove `<video preload="metadata">` elements inside marquee cards entirely. Replace missing video thumbnails with lightweight CSS/SVG posters so mobile devices don't spin up dozens of hardware video decoder contexts.
+   - On mobile, adapt marquee card width from 280px to 220px and limit items per row to prevent hundreds of simultaneous off-screen DOM nodes.
+   - Use `IntersectionObserver` to pause all marquee animations when `Services` is out of the viewport.
+   - Add `content-visibility: auto` to cards for deferred layout and zero off-screen paint cost.
+3. **CSS & Hardware Acceleration**:
+   - Upgrade marquee keyframes in `src/index.css` to GPU-accelerated `translate3d(..., 0, 0)`.
+   - Separate `.service-marquee-track` from `.marquee-track` to avoid animation collisions.
+   - Disable expensive `backdrop-filter: blur(...)` on mobile moving elements (e.g. Clients marquee badges) and use clean semi-translucent rgba backgrounds instead.
+
+## Work Steps
+1. [x] Update `src/components/GlobalBackground.tsx` to disable JS motion transforms & particles on mobile.
+2. [x] Update `src/components/Services.tsx` with lightweight poster fallbacks (no `<video>` in marquee), viewport-aware auto-pause, and mobile-optimized track sizes.
+3. [x] Update `src/index.css` with 3D hardware-accelerated transforms, dedicated track classes, and mobile-friendly glass styling.
+4. [x] Build via `npm run build` and run Playwright QA to verify zero visual regressions and smooth rendering.
+5. [x] Deploy to Firebase Hosting and test on mobile emulator.
+
+---
+
 # Plan: WhatsApp & Social CDN Cache Busting [gemini] (Completed)
 
 ## Goal

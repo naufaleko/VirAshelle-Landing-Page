@@ -68,13 +68,13 @@ body {
   }
 
   @keyframes marquee {
-    0% { transform: translateX(0%); }
-    100% { transform: translateX(-50%); }
+    0% { transform: translate3d(0%, 0, 0); }
+    100% { transform: translate3d(-50%, 0, 0); }
   }
 
   @keyframes marquee-reverse {
-    0% { transform: translateX(-50%); }
-    100% { transform: translateX(0%); }
+    0% { transform: translate3d(-50%, 0, 0); }
+    100% { transform: translate3d(0%, 0, 0); }
   }
 
   @keyframes gradient-shift {
@@ -107,9 +107,31 @@ body {
 }
 
 /* Infinite Marquee Controls */
+.marquee-pause:hover .service-marquee-track,
+.marquee-pause:focus-within .service-marquee-track,
 .marquee-pause:hover .marquee-track,
 .marquee-pause:focus-within .marquee-track {
   animation-play-state: paused !important;
+}
+
+.service-marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.marquee-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 280px 175px;
+}
+
+@media (max-width: 768px) {
+  .marquee-card {
+    contain-intrinsic-size: 220px 138px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -146,6 +168,19 @@ body {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 768px) {
+  .glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(18, 18, 24, 0.94);
+  }
+  .glass-strong {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(15, 15, 20, 0.98);
+  }
 }
 
 /* ───────────────── Text Gradient Utility ───────────────── */
@@ -325,19 +360,22 @@ html {
 
 /* CSS marquee for Clients section, GPU-accelerated */
 @keyframes css-marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% { transform: translate3d(0%, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
 
 @keyframes css-marquee-reverse {
-  0% { transform: translateX(-50%); }
-  100% { transform: translateX(0); }
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0%, 0, 0); }
 }
 
 .marquee-track {
   display: flex;
   width: max-content;
   will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   animation: css-marquee 35s linear infinite;
 }
 
@@ -345,6 +383,9 @@ html {
   display: flex;
   width: max-content;
   will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   animation: css-marquee-reverse 40s linear infinite;
 }
 

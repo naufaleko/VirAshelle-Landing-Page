@@ -59,54 +59,58 @@ export function GlobalBackground() {
       className="fixed inset-0 z-[-50] bg-surface overflow-hidden pointer-events-none selection:bg-brand selection:text-white"
       style={{ transform: 'translate3d(0, 0, 0)', contain: 'strict' }}
     >
-      {/* ── Giant Infinite Scrolling Supergraphic (Desktop & Mobile) ── */}
-      <motion.div 
-        className="absolute top-1/2 -translate-y-1/2 flex opacity-[0.035] md:opacity-[0.03] pointer-events-none will-change-transform"
-        style={{ transform: 'translate3d(0, 0, 0)' }}
-        animate={{ x: ['-50%', '0%'] }}
-        transition={{ 
-          duration: isMobile ? 45 : 60, 
-          repeat: Infinity, 
-          ease: 'linear' 
-        }}
-      >
-        <div className="w-[280vw] md:w-[150vw] shrink-0 flex items-center justify-center">
+      {/* ── Giant Infinite Scrolling Supergraphic (Desktop only; static on Mobile to preserve 60fps) ── */}
+      {isMobile ? (
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160vw] opacity-[0.025] pointer-events-none"
+          style={{ transform: 'translate3d(-50%, -50%, 0)' }}
+        >
           <Supergraphic className="w-full h-auto text-brand" />
         </div>
-        <div className="w-[280vw] md:w-[150vw] shrink-0 flex items-center justify-center">
-          <Supergraphic className="w-full h-auto text-brand" />
-        </div>
-      </motion.div>
+      ) : (
+        <motion.div 
+          className="absolute top-1/2 -translate-y-1/2 flex opacity-[0.03] pointer-events-none will-change-transform"
+          style={{ transform: 'translate3d(0, 0, 0)' }}
+          animate={{ x: ['-50%', '0%'] }}
+          transition={{ 
+            duration: 60, 
+            repeat: Infinity, 
+            ease: 'linear' 
+          }}
+        >
+          <div className="w-[150vw] shrink-0 flex items-center justify-center">
+            <Supergraphic className="w-full h-auto text-brand" />
+          </div>
+          <div className="w-[150vw] shrink-0 flex items-center justify-center">
+            <Supergraphic className="w-full h-auto text-brand" />
+          </div>
+        </motion.div>
+      )}
 
       {/* ── Ambient Lighting / Gradient Blobs, Natural Radial Gradient without GPU Blur ── */}
       {/* Primary gradient blob */}
       <div 
         className={`absolute rounded-full pointer-events-none ${
-          isMobile ? 'w-[360px] h-[360px] -top-16 -right-16 opacity-50' : 'w-[750px] h-[750px] -top-32 -right-32 opacity-40'
+          isMobile ? 'w-[320px] h-[320px] -top-12 -right-12 opacity-35' : 'w-[750px] h-[750px] -top-32 -right-32 opacity-40'
         }`}
         style={{
-          background: 'radial-gradient(circle, rgba(75, 210, 0, 0.14) 0%, rgba(75, 210, 0, 0.03) 40%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(75, 210, 0, 0.12) 0%, rgba(75, 210, 0, 0.02) 40%, transparent 70%)',
           transform: 'translate3d(0, 0, 0)',
         }}
       />
-      {/* Secondary gradient blob */}
-      <div 
-        className={`absolute rounded-full pointer-events-none ${
-          isMobile ? 'w-[280px] h-[280px] bottom-0 left-1/4 opacity-40' : 'w-[550px] h-[550px] bottom-0 left-1/4 opacity-35'
-        }`}
-        style={{
-          background: 'radial-gradient(circle, rgba(50, 140, 0, 0.10) 0%, rgba(25, 70, 0, 0.02) 40%, transparent 70%)',
-          transform: 'translate3d(0, 0, 0)',
-        }}
-      />
+      {/* Secondary gradient blob (desktop only to save mobile overdraw) */}
+      {!isMobile && (
+        <div 
+          className="absolute rounded-full pointer-events-none w-[550px] h-[550px] bottom-0 left-1/4 opacity-35"
+          style={{
+            background: 'radial-gradient(circle, rgba(50, 140, 0, 0.10) 0%, rgba(25, 70, 0, 0.02) 40%, transparent 70%)',
+            transform: 'translate3d(0, 0, 0)',
+          }}
+        />
+      )}
 
-      {/* ── High Speed Data Nodes, reduced on mobile ── */}
-      {isMobile ? (
-        <>
-          <DataNode top="30%" delay={0} duration={7} />
-          <DataNode top="70%" delay={3} duration={6} />
-        </>
-      ) : (
+      {/* ── High Speed Data Nodes (Desktop only, eliminated on mobile to keep scroll thread free) ── */}
+      {!isMobile && (
         <>
           <DataNode top="20%" delay={0} duration={6} />
           <DataNode top="45%" delay={2.5} duration={5} />

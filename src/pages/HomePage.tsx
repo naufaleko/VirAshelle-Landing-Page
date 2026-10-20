@@ -80,7 +80,7 @@ export function HomePage() {
   const [loading, setLoading] = useState(true);
 
   return (
-    <div className="text-white min-h-screen font-body selection:bg-brand selection:text-white">
+    <div className="text-white min-h-screen font-body selection:bg-brand selection:text-white overflow-x-hidden w-full max-w-full">
       <GlobalBackground />
 
       {/* Preloader overlay */}
