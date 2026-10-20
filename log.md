@@ -3,6 +3,19 @@
 ## Active File Claims
 *(None - All files released)*
 
+## 2026-10-20 (Done - WhatsApp CDN & Client Cache Busting) [gemini]
+### Action Taken
+- Resolved WhatsApp client and CDN caching where the previous preview thumbnail was displayed:
+  - Created unique fresh asset `public/og-hero.jpg` alongside `public/og-image.jpg`.
+  - Updated `index.html` to target `https://virashelle-page.web.app/og-hero.jpg?v=2` with refreshed title and description ("VirAshelle — We Architect Identity").
+  - Configured custom HTTP headers in `firebase.json`:
+    - `/` and `/index.html`: `Cache-Control: no-cache, no-store, must-revalidate`
+    - `/og-*.jpg`: `Cache-Control: public, max-age=60, must-revalidate`
+  - Built (`npm run build`) and deployed to Firebase Hosting (`virashelle-page.web.app`).
+  - Verified live headers via HTTP GET (Status 200, Content-Type `image/jpeg`, size 97,420 bytes).
+
+---
+
 ## 2026-10-20 (Done - Banner Redesign with Hero & Big White Logo) [gemini]
 ### Action Taken
 - Redesigned WhatsApp/social link preview banner (`public/og-image.jpg`) to align with the Hero visual structure:

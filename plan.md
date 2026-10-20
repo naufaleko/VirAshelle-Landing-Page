@@ -1,3 +1,22 @@
+# Plan: WhatsApp & Social CDN Cache Busting [gemini] (Completed)
+
+## Goal
+Resolve WhatsApp client-side and CDN proxy cache that serves the old banner image:
+1. Rename image to `public/og-hero.jpg` and keep `public/og-image.jpg` as sync.
+2. Update `index.html` with cache-busted URL `https://virashelle-page.web.app/og-hero.jpg?v=2` for all meta tags.
+3. Configure `firebase.json` headers to disable caching for HTML and ensure immediate cache revalidation on Firebase CDN.
+4. Build, deploy, verify live headers and status.
+5. Provide user clear testing steps (e.g., using `?v=2` or fresh link on WA).
+
+## Work Steps
+1. [x] Copy `public/og-image.jpg` to `public/og-hero.jpg` and update generator output.
+2. [x] Update `index.html` with `https://virashelle-page.web.app/og-hero.jpg?v=2`.
+3. [x] Add `headers` configuration in `firebase.json` for `no-cache` on `index.html`.
+4. [x] Run `npm run build` and deploy to Firebase Hosting.
+5. [x] Verify live headers and image availability.
+
+---
+
 # Plan: Redesign OpenGraph Banner with Hero Visual & Big White Logo [gemini] (Completed)
 
 ## Goal
