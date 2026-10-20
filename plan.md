@@ -1,3 +1,25 @@
+# Plan: Static OpenGraph & Rich Social Preview Optimization [gemini] (Completed)
+
+## Goal
+Fix CSR crawler blank preview issue for WhatsApp, Telegram, Email, and social platforms by providing static OpenGraph meta tags, Twitter card tags, and a studio-grade 1200x630 OpenGraph image (`og-image.jpg`) in `index.html`.
+
+## Work Steps
+1. [x] **Design & Generate OG Image (`public/og-image.jpg`)**:
+   - Create a 1200x630 banner with dark luxury theme, brand green `#4BD200` glowing accents, authentic VirAshelle vector geometry, elegant typography, and service tags.
+   - Render via Playwright Chromium and export as crisp, optimized JPEG (< 200 KB) compliant with WhatsApp's 300 KB limit.
+2. [x] **Implement Static OpenGraph Meta in `index.html`**:
+   - Add absolute URL `og:image`, `og:image:secure_url`, `og:image:width`, `og:image:height`, `og:image:type`, `og:title`, `og:description`, `og:url`, `og:site_name`, `og:locale`.
+   - Add Twitter card tags (`summary_large_image`, title, description, image).
+   - Add fallback `<link rel="image_src">` for older SMS/email scrapers.
+   - Refine title and description copy according to anti-slop guidelines (luxurious, punchy, professional, no fluff).
+3. [x] **Build & Verify Packaging**:
+   - Run `npm run build` to ensure `dist/og-image.jpg` and `dist/index.html` are correctly packaged.
+4. [x] **Deploy & Live Crawler QA**:
+   - Deploy to Firebase Hosting (`firebase deploy --only hosting`).
+   - Run Playwright test simulating WhatsApp, Facebook, and Twitter bot user agents against live URL `https://virashelle-page.web.app/` to verify headers, meta tags, and image reachability.
+
+---
+
 # Plan: Compress & Upload Portfolio Media to CMS
 
 ## Current Goal / Task

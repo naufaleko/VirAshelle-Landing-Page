@@ -1,5 +1,30 @@
 # Execution Log
 
+## Active File Claims
+*(None - All files released)*
+
+## 2026-10-20 (Done) [gemini]
+### Action Taken
+- Resolved CSR blank preview bug on WhatsApp, Telegram, Email, and social network crawlers.
+- Designed and generated studio-grade 1200x630 OpenGraph preview image (`public/og-image.jpg`) using Playwright Chromium:
+  - High-impact dark theme (`#050605`) with VirAshelle signature neon green (`#4BD200`) volumetric glow.
+  - Authentic vector geometry from VirAshelle brand logo.
+  - Clean typography: "VirAshelle Creative", "Architecting brand identity through cutting-edge 3D production, motion graphics, and high-impact visual storytelling".
+  - Four distinct capability badges: `3D PRODUCTION`, `MOTION GRAPHICS`, `VIDEO EDITING`, `GRAPHIC DESIGN`.
+  - Optimized file size: 82.5 KB (well within WhatsApp's strict 300 KB limit).
+- Updated `index.html` with static SEO and OpenGraph metadata:
+  - `title`, `meta[name="description"]`, `meta[name="author"]`, `link[rel="canonical"]`
+  - OpenGraph tags: `og:title`, `og:description`, `og:image`, `og:image:secure_url`, `og:image:type`, `og:image:width`, `og:image:height`, `og:image:alt`, `og:url`, `og:site_name`, `og:locale`
+  - Twitter Card: `twitter:card` (`summary_large_image`), `twitter:title`, `twitter:description`, `twitter:image`
+  - Legacy/fallback: `link[rel="image_src"]`, `itemprop` microdata for email clients and SMS crawlers.
+- Executed `npm run build` (passed, zero errors).
+- Deployed to Firebase Hosting (`virashelle-page.web.app`).
+- Verified live crawler response via `scripts/qa-og-crawler.mjs`:
+  - WhatsApp User-Agent crawl: HTTP 200 with all OpenGraph tags present.
+  - Image fetch `https://virashelle-page.web.app/og-image.jpg`: HTTP 200, Content-Type `image/jpeg`, size 82.5 KB (PASS).
+
+---
+
 ## 2026-10-01 16:44
 
 ### Action Taken
